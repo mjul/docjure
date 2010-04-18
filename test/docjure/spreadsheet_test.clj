@@ -62,6 +62,14 @@
 	sheet      (first (sheet-seq workbook))]
     (is (= name (sheet-name sheet)) "Expected correct sheet name.")))
 
+(deftest select-sheet-test
+  (let [name       "Sheet 1" 
+	data       [["foo" "bar"]]
+	workbook   (create-workbook name data)
+	first-sheet (first (sheet-seq workbook))]
+    (is (= first-sheet (select-sheet name workbook)) "Expected to find the sheet.")
+    (is (nil? (select-sheet "unknown name" workbook)) "Expected to get nil for no match.")))
+
 
 (deftest select-columns-test
   (let [data     [["Name" "Quantity" "Price"] 

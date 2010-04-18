@@ -42,6 +42,13 @@
   [#^Sheet sheet]
   (.getSheetName sheet))
 
+(defn select-sheet 
+  "Select a sheet from the workbook by name."
+  [name workbook]
+  (->> (sheet-seq workbook)
+       (filter #(= name (sheet-name %)))
+       first))
+
 (defn row-seq 
   "Return a sequence of the rows in a sheet."
   [#^Sheet sheet]
