@@ -2,3 +2,5 @@ pom.xml
 *jar
 lib
 classes
+
+test/docjure/testdata/~$*.xlsx

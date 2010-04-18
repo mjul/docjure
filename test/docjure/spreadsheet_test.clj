@@ -55,6 +55,13 @@
     (is (= 1 (count actual)))
     (is (= sheet-name (.getSheetName (first actual))))))
 
+(deftest sheet-name-test
+  (let [name       "Sheet 1" 
+	data       [["foo" "bar"]]
+	workbook   (create-workbook name data)
+	sheet      (first (sheet-seq workbook))]
+    (is (= name (sheet-name sheet)) "Expected correct sheet name.")))
+
 
 (deftest select-columns-test
   (let [data     [["Name" "Quantity" "Price"] 

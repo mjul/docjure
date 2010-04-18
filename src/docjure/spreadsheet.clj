@@ -37,6 +37,11 @@
   (for [idx (range (.getNumberOfSheets workbook))]
     (.getSheetAt workbook idx)))
 
+(defn sheet-name
+  "Return the name of a worksheet."
+  [#^Sheet sheet]
+  (.getSheetName sheet))
+
 (defn row-seq 
   "Return a sequence of the rows in a sheet."
   [#^Sheet sheet]
