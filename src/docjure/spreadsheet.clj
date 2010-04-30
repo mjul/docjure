@@ -32,7 +32,7 @@
     (.write workbook file-out)))
 
 (defn sheet-seq 
-  "Return a seq of the sheets in a workbook."
+  "Return a lazy seq of the sheets in a workbook."
   [#^Workbook workbook]
   (for [idx (range (.getNumberOfSheets workbook))]
     (.getSheetAt workbook idx)))
@@ -112,11 +112,16 @@
     (if (date-or-calendar? value)
       (apply-date-format! cell "m/d/yy"))))
 
+
 (defn add-row! [sheet values]
-  (let [row (.createRow sheet (inc (.getLastRowNum sheet)))]
+  (let [row-num (if (= 0 (.getPhysicalNumberOfRows sheet)) 
+		  0 
+		  (inc (.getLastRowNum sheet)))
+	row (.createRow sheet row-num)]
     (doseq [[column-index value] (partition 2 (interleave (iterate inc 0) values))]
       (set-cell! (.createCell row column-index) value))
     row))
+
 
 (defn add-rows! [sheet rows]
   (doseq [row rows]
