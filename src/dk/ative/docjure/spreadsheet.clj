@@ -1,4 +1,4 @@
-(ns docjure.spreadsheet
+(ns dk.ative.docjure.spreadsheet
   (:import
     (java.io FileOutputStream FileInputStream)
     (java.util Date Calendar)
@@ -58,7 +58,7 @@
   "Return a seq of the cells in one or more sheets, ordered by row and column."
   [#^Sheet sheet-or-coll]
   (for [sheet (if (seq? sheet-or-coll) sheet-or-coll (list sheet-or-coll))
-	row   (iterator-seq (.iterator sheet))
+	row (row-seq sheet)
 	cell   (iterator-seq (.iterator row))]
     cell))
 

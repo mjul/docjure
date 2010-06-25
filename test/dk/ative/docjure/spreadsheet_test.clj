@@ -1,11 +1,11 @@
-(ns docjure.spreadsheet-test
-  (:use [docjure.spreadsheet] :reload-all)
+(ns dk.ative.docjure.spreadsheet-test
+  (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row)
 	   (org.apache.poi.xssf.usermodel XSSFWorkbook)
 	   (java.util Date)))
 
-(def config {:datatypes-file "test/docjure/testdata/datatypes.xlsx"})
+(def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"})
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific})
 
 (deftest add-sheet!-test
