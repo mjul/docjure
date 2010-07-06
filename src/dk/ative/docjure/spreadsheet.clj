@@ -10,7 +10,7 @@
   (.formatAsString (CellReference. (.getRowIndex cell) (.getColumnIndex cell))))
 
 (defmulti read-cell #(.getCellType %))
-(defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     "")
+(defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [cell]  (.getCellFormula cell))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [cell]  (.getBooleanCellValue cell))

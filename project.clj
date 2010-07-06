@@ -1,4 +1,4 @@
-(defproject dk.ative/docjure "1.2.0"
+(defproject dk.ative/docjure "1.3.0"
   :description "Easily read and write Office documents from Clojure."
   :url "http://github.com/ative/docjure"
   :dependencies [[org.clojure/clojure "1.1.0"]

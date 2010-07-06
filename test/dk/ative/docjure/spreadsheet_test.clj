@@ -36,6 +36,27 @@
 	     (.getCell (second rows) 0) (first (second sheet-data))
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
 
+(defn date [year month day]
+  (Date. (- year 1900) (dec month) day))
+
+(defn july [day]
+  (Date. 2010 7 day))
+
+(deftest read-cell-test
+  (let [sheet-data [["Nil" "Blank" "Date" "String" "Number"]
+ 		    [nil "" (july 1) "foo" 42]]
+ 	workbook (create-workbook "Sheet 1" sheet-data)
+	sheet (.getSheetAt workbook 0)
+ 	rows  (vec (iterator-seq (.iterator sheet)))
+	data-row (vec (iterator-seq (.cellIterator (second rows))))
+	[nil-cell blank-cell date-cell string-cell number-cell] data-row]
+    (testing "Should read all cell types"
+      (is (= 2 (count rows)))
+      (is (nil? (read-cell nil-cell)))
+      (is (= "" (read-cell blank-cell)))
+      (is (= (july 1) (read-cell date-cell)))
+      (is (= 42 (read-cell number-cell))))))
+
 
 (deftest sheet-seq-test
   (let [sheet-name "Sheet 1" 
