@@ -14,7 +14,9 @@
 	actual   (add-sheet! workbook sheet-name)]
     (testing "Sheet creation"
       (is (= 1 (.getNumberOfSheets workbook)) "Expected sheet to be added.")
-      (is (= sheet-name (.. workbook (getSheetAt 0) (getSheetName))) "Expected sheet to have correct name."))))
+      (is (= sheet-name (.. workbook (getSheetAt 0) (getSheetName))) "Expected sheet to have correct name."))
+    (testing "Should fail on non-Workbook"
+      (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (add-sheet! "not-a-workbook" "sheet-name"))))))
 
 (deftest create-workbook-test
   (let [sheet-name "Sheet 1" 
@@ -35,6 +37,15 @@
 	     (.getCell (first rows) 1) (second (first sheet-data))
 	     (.getCell (second rows) 0) (first (second sheet-data))
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
+
+(deftest add-row!-test
+  (testing "Should fail on invalid parameter types."
+    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-row! "not-a-sheet" [1 2 3])))))
+
+(deftest add-rows!-test
+  (testing "Should fail on invalid parameter types."
+    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-rows! "not-a-sheet" [[1 2 3]])))))
+
 
 (defn date [year month day]
   (Date. (- year 1900) (dec month) day))
@@ -77,15 +88,18 @@
 	    sheet3 (.createSheet workbook "Sheet 3")
 	    actual (sheet-seq workbook)]
 	(is (= 3 (count actual)))
-	(is (= [sheet2 sheet3] (rest actual)))))))
-
+	(is (= [sheet2 sheet3] (rest actual)))))
+    (testing "Should fail on invalid type"
+      (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (sheet-seq "not-a-workbook"))))))
 
 (deftest sheet-name-test
   (let [name       "Sheet 1" 
 	data       [["foo" "bar"]]
 	workbook   (create-workbook name data)
 	sheet      (first (sheet-seq workbook))]
-    (is (= name (sheet-name sheet)) "Expected correct sheet name.")))
+    (is (= name (sheet-name sheet)) "Expected correct sheet name."))
+  (testing "Should fail on invalid parameter type"
+    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (sheet-name "not-a-sheet")))))
 
 (deftest select-sheet-test
   (let [name       "Sheet 1" 
@@ -93,7 +107,10 @@
 	workbook   (create-workbook name data)
 	first-sheet (first (sheet-seq workbook))]
     (is (= first-sheet (select-sheet name workbook)) "Expected to find the sheet.")
-    (is (nil? (select-sheet "unknown name" workbook)) "Expected to get nil for no match.")))
+    (is (nil? (select-sheet "unknown name" workbook)) "Expected to get nil for no match."))
+  (testing "Should fail on invalid parameter type"
+    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet "name" "not-a-workbook")))))
+
 
 (deftest select-columns-test
   (let [data     [["Name" "Quantity" "Price" "On Sale"] 
@@ -121,7 +138,18 @@
 	(are [actual expected] (= actual (let [[a b c d] expected] 
 					   {:string a, :number b, :boolean d}))
 	     (first data-rows) (data 1)
-	     (second data-rows) (data 2))))))
+	     (second data-rows) (data 2))))
+    (testing "Should fail on invalid parameter types."
+      (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (select-columns {:A :first, :B :second} "not-a-worksheet"))))))
+
+(deftest row-seq-test
+  (testing "Should fail on invalid parameter types."
+    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (row-seq "not-a-sheet")))))
+
+
+(deftest save-workbook!-test
+  (testing "Should fail on invalid parameter types."
+    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (save-workbook! "filename.xlsx" "not-a-workbook")))))
 
 
 (deftest load-workbook-integration-test
@@ -158,5 +186,4 @@
       (is (every? number? (datatypes-data file :percentage)))
       (is (every? number? (datatypes-data file :fraction)))
       (is (every? number? (datatypes-data file :scientific))))))
-
 
