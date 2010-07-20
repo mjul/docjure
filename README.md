@@ -32,7 +32,7 @@ to the top header row, then save the spreadsheet.
           header-row (first (row-seq sheet))]
       (do
         (set-row-style! header-row (create-cell-style! wb {:background :yellow,
-                                                       :font {:bold true}}))
+                                                           :font {:bold true}}))
         (save-workbook! "spreadsheet.xlsx" wb)))
     
 
