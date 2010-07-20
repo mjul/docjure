@@ -3,7 +3,8 @@
     (java.io FileOutputStream FileInputStream)
     (java.util Date Calendar)
     (org.apache.poi.xssf.usermodel XSSFWorkbook)
-    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row WorkbookFactory DateUtil)
+    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row WorkbookFactory DateUtil
+				 IndexedColors CellStyle Font)
     (org.apache.poi.ss.util CellReference)))
 
 (defmacro assert-type [value expected-type]
@@ -58,18 +59,30 @@
        first))
 
 (defn row-seq 
-  "Return a sequence of the rows in a sheet."
+  "Return a lazy sequence of the rows in a sheet."
   [#^Sheet sheet]
   (assert-type sheet Sheet)
   (iterator-seq (.iterator sheet)))
 
-(defn cell-seq
-  "Return a seq of the cells in one or more sheets, ordered by row and column."
-  [#^Sheet sheet-or-coll]
-  (for [sheet (if (seq? sheet-or-coll) sheet-or-coll (list sheet-or-coll))
-	row (row-seq sheet)
-	cell   (iterator-seq (.iterator row))]
-    cell))
+(defn- cell-seq-dispatch [x]
+  (cond
+   (isa? (class x) Row) :row
+   (isa? (class x) Sheet) :sheet
+   (seq? x) :coll
+   :else :default))
+  
+(defmulti cell-seq
+  "Return a seq of the cells in the input which can be a sheet, a row, or a collection
+   of one of these. The seq is ordered ordered by sheet, row and column."
+  cell-seq-dispatch)
+(defmethod cell-seq :row  [row] (iterator-seq (.iterator row)))
+(defmethod cell-seq :sheet [sheet] (for [row (row-seq sheet)
+					 cell (cell-seq row)]
+				     cell))
+(defmethod cell-seq :coll [coll] (for [x coll,
+				       cell (cell-seq x)]
+				   cell))
+
 
 (defn into-seq
   [sheet-or-row]
@@ -164,3 +177,74 @@
     (add-rows! sheet data)
     workbook))
 
+(defn create-font!
+  "Create a new font in the workbook.
+
+   Options are
+
+       :bold    true/false   bold or normal font
+
+   Example:
+
+      (create-font! wb {:bold true})
+   "
+  [#^Workbook workbook options]
+  (let [defaults {:bold false}
+	cfg (merge defaults options)]
+    (assert-type workbook Workbook)
+    (let [f (.createFont workbook)]
+      (doto f
+	(.setBoldweight (if (:bold cfg) Font/BOLDWEIGHT_BOLD Font/BOLDWEIGHT_NORMAL)))
+      f)))
+  
+
+(defn create-cell-style!
+  "Create a new cell-style.
+   Options is a map with the cell style configuration:
+
+      :background     the name of the background colour (as keyword)
+
+   Valid keywords are the colour names defined in
+   org.apache.ss.usermodel.IndexedColors as lowercase keywords, eg.
+
+     :black, :white, :red, :blue, :green, :yellow, ...
+
+   Example:
+
+   (create-cell-style! wb {:background :yellow})
+  "
+  ([#^Workbook workbook] (create-cell-style! workbook {}))
+  
+  ([#^Workbook workbook styles]
+     (assert-type workbook Workbook)
+     (let [cs (.createCellStyle workbook)
+	   {background :background, font-style :font} styles
+	   font (create-font! workbook font-style)]
+       (do
+	 (.setFont cs font)
+	 (when background
+	   (let [bg-idx (.getIndex (IndexedColors/valueOf
+				    (.toUpperCase (name background))))]
+	     (.setFillForegroundColor cs bg-idx)
+	     (.setFillPattern cs CellStyle/SOLID_FOREGROUND)))
+	 cs))))
+
+(defn set-cell-style!
+  "Apply a style to a cell.
+   See also: create-cell-style!.
+  "
+  [#^Cell cell #^CellStyle style]
+  (assert-type cell Cell)
+  (assert-type style CellStyle)
+  (.setCellStyle cell style)
+  cell)
+
+(defn set-row-style!
+  "Apply a style to all the cells in a row.
+   Returns the row."
+  [#^Row row #^CellStyle style]
+  (assert-type row Row)
+  (assert-type style CellStyle)
+  (dorun (map #(.setCellStyle % style) (cell-seq row)))
+  row)
+    

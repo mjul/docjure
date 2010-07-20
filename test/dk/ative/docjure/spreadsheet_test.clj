@@ -1,7 +1,7 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row)
+  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font)
 	   (org.apache.poi.xssf.usermodel XSSFWorkbook)
 	   (java.util Date)))
 
@@ -92,6 +92,42 @@
     (testing "Should fail on invalid type"
       (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (sheet-seq "not-a-workbook"))))))
 
+(deftest row-seq-test
+  (let [sheet-name "Sheet 1" 
+	sheet-data [["A1" "B1"] ["A2" "B2"]]
+	workbook (create-workbook sheet-name sheet-data)
+	sheet (select-sheet sheet-name workbook)]
+    (testing "Sheet"
+      (let [actual (row-seq sheet)]
+	(is (= 2 (count actual)))))))
+
+(deftest cell-seq-test
+  (let [sheet-name "Sheet 1" 
+	sheet-data [["A1" "B1"] ["A2" "B2"]]
+	workbook (create-workbook sheet-name sheet-data)
+	sheet (select-sheet sheet-name workbook)]
+    (testing "for sheet"
+      (let [actual (cell-seq sheet)]
+	(is (= 4 (count actual)))))
+    (testing "for row"
+      (let [actual (cell-seq (first (row-seq sheet)))]
+	(is (= 2 (count actual)) "Expected correct number of cells.")
+	(is (= "A1" (read-cell (first actual))))
+	(is (= "B1" (read-cell (second actual))))))
+    (testing "for row collection"
+      (let [actual (cell-seq (row-seq sheet))]
+	(is (= 4 (count actual)) "Expected to get all cells.")
+	(is (= ["A1" "B1" "A2" "B2"] (map read-cell actual)))))
+    (testing "for sheet collection"
+      (let [sheet2 (add-sheet! workbook "Sheet 2")]
+	(do (add-rows! sheet2 [["S2/A1" "S2/B1"] ["S2/A2" "S2/B2"]]))
+	(let [actual (cell-seq (sheet-seq workbook))]
+	  (is (= ["A1" "B1"
+		  "A2" "B2"
+		  "S2/A1" "S2/B1"
+		  "S2/A2" "S2/B2"] (map read-cell actual))))))))
+
+
 (deftest sheet-name-test
   (let [name       "Sheet 1" 
 	data       [["foo" "bar"]]
@@ -146,11 +182,66 @@
   (testing "Should fail on invalid parameter types."
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (row-seq "not-a-sheet")))))
 
-
 (deftest save-workbook!-test
   (testing "Should fail on invalid parameter types."
     (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (save-workbook! "filename.xlsx" "not-a-workbook")))))
 
+(deftest create-cell-style!-test
+  (testing "Should create a cell style based on the options"
+    (testing ":background"
+      (let [wb (create-workbook "Dummy" [["foo"]])]
+	(let [cs (create-cell-style! wb)]
+	  (is (= CellStyle/NO_FILL (.getFillPattern cs)))
+	  (is (= Font/BOLDWEIGHT_NORMAL (.. cs getFont getBoldweight))))
+	(let [cs (create-cell-style! wb {:background :yellow})]
+	  (is (= CellStyle/SOLID_FOREGROUND (.getFillPattern cs)))
+	  (is (= (.getIndex IndexedColors/YELLOW) (.getFillForegroundColor cs))))))
+    (testing ":font"
+      (let [wb (create-workbook "Dummy" [["fonts"]])
+	    cs (create-cell-style! wb {:font {:bold true}})]
+	(is (= Font/BOLDWEIGHT_BOLD (.. cs getFont getBoldweight)))))))
+
+(deftest create-font!-test
+    (let [wb (create-workbook "Dummy" [["foo"]])]
+      (testing "Should create font based on options."
+	(let [f-default (create-font! wb {})
+	      f-not-bold (create-font! wb {:bold false})
+	      f-bold    (create-font! wb {:bold true})]
+	  (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight f-default)))
+	  (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight f-not-bold)))
+	  (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight f-bold)))))
+      (is (thrown-with-msg? IllegalArgumentException #"^workbook.*"
+	    (create-font! "not-a-workbook" {})))))
+	    
+
+(deftest set-cell-style!-test
+  (testing "Should apply style to cell."
+    (let [wb (create-workbook "Dummy" [["foo"]])
+	  cs (create-cell-style! wb {:background :yellow})
+	  cell (-> (sheet-seq wb) first cell-seq first)]
+      (do 
+	(is (= cell (set-cell-style! cell cs)))
+	(is (= (.getCellStyle cell) cs))))))
+
+
+(deftest set-row-style!-test
+  (testing "Should apply style to all cells in row."
+    (let [wb (create-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
+	  cs (create-cell-style! wb {:background :yellow})
+	  rs (row-seq (select-sheet "Dummy" wb))
+	  [header-row, data-row] rs
+	  [a1, b1] (cell-seq header-row)
+	  [a2, b2] (cell-seq data-row)]
+      (do (set-row-style! header-row cs))
+      (is (= (.getIndex IndexedColors/YELLOW) (.. a1 getCellStyle getFillForegroundColor)))
+      (is (= (.getIndex IndexedColors/YELLOW) (.. b1 getCellStyle getFillForegroundColor)))
+      (is (not= (.getIndex IndexedColors/YELLOW) (.. a2 getCellStyle getFillForegroundColor)))
+      (is (not= (.getIndex IndexedColors/YELLOW) (.. b2 getCellStyle getFillForegroundColor)))
+      )))
+
+;; ----------------------------------------------------------------
+;; Integration tests
+;; ----------------------------------------------------------------
 
 (deftest load-workbook-integration-test
   (let [file (config :datatypes-file)
@@ -186,4 +277,5 @@
       (is (every? number? (datatypes-data file :percentage)))
       (is (every? number? (datatypes-data file :fraction)))
       (is (every? number? (datatypes-data file :scientific))))))
+
 
