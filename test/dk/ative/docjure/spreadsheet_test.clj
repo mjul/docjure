@@ -39,8 +39,13 @@
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
 
 (deftest row-vec-test
-  (testing "Should create vector with map values in column order."
-    (is (= ["foo" "bar" "baz"] (row-vec [:foo :bar :baz] {:foo "foo", :bar "bar", :baz "baz"})))))
+  (testing "Should transform row struct to row vector."
+    (is (= ["foo" "bar"] (row-vec [:foo :bar] {:foo "foo", :bar "bar"}))
+	"Should map all columns.")
+    (is (= ["bar" "foo"] (row-vec [:bar :foo] {:foo "foo", :bar "bar"}))
+	"Should respect column order.")
+    (is (= [nil nil] (row-vec [:foo :bar] {})) "Should generate all columns.")
+    (is (= [] (row-vec [] {:foo "foo", :bar "bar"})) "Should accept empty column-order.")))
 
 (deftest add-row!-test
   (testing "Should fail on invalid parameter types."
