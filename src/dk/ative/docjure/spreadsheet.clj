@@ -45,7 +45,7 @@
     (.getSheetAt workbook idx)))
 
 (defn sheet-name
-  "Return the name of a worksheet."
+  "Return the name of a sheet."
   [#^Sheet sheet]
   (assert-type sheet Sheet)
   (.getSheetName sheet))
@@ -153,7 +153,7 @@
     (add-row! sheet row)))
 
 (defn add-sheet! 
-  "Add a new worksheet to the workbook."
+  "Add a new sheet to the workbook."
   [#^Workbook workbook name]
   (assert-type workbook Workbook)
   (.createSheet workbook name))
@@ -247,4 +247,31 @@
   (assert-type style CellStyle)
   (dorun (map #(.setCellStyle % style) (cell-seq row)))
   row)
-    
+
+
+(defn row-vec 
+  "Transform the row struct (hash-map) to a row vector according to the column order.
+   Example:
+
+     (row-vec [:foo :bar] {:foo \"Foo text\", :bar \"Bar text\"})
+     > [\"Foo text\" \"Bar text\"]
+  "
+  [column-order row]
+  (vec (map row column-order)))
+
+(defn remove-row!
+  "Remove a row from the sheet."
+  [sheet row]
+  (do
+    (assert-type sheet Sheet)
+    (assert-type row Row)
+    (.removeRow sheet row)
+    sheet))
+
+(defn remove-all-rows!
+  "Remove all the rows from the sheet."
+  [sheet]
+  (doall
+   (for [row (doall (row-seq sheet))]
+     (remove-row! sheet row)))
+  sheet)

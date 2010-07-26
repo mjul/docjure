@@ -38,6 +38,10 @@
 	     (.getCell (second rows) 0) (first (second sheet-data))
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
 
+(deftest row-vec-test
+  (testing "Should create vector with map values in column order."
+    (is (= ["foo" "bar" "baz"] (row-vec [:foo :bar :baz] {:foo "foo", :bar "bar", :baz "baz"})))))
+
 (deftest add-row!-test
   (testing "Should fail on invalid parameter types."
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-row! "not-a-sheet" [1 2 3])))))
@@ -46,6 +50,34 @@
   (testing "Should fail on invalid parameter types."
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-rows! "not-a-sheet" [[1 2 3]])))))
 
+(deftest remove-row!-test
+  (let [sheet-name "Sheet 1" 
+	sheet-data [["A1" "B1" "C1"]
+		    ["A2" "B2" "C2"]]
+	workbook (create-workbook sheet-name sheet-data)
+	sheet (select-sheet sheet-name workbook)
+	first-row (first (row-seq sheet))]
+    (testing "Should fail on invalid parameter types."
+      (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (remove-row! "not-a-sheet" (first (row-seq sheet)))))
+      (is (thrown-with-msg? IllegalArgumentException #"row.*" (remove-row! sheet "not-a-row"))))
+    (testing "Should remove row."
+      (do 
+	(is (= sheet (remove-row! sheet first-row)))
+	(is (= 1 (.getPhysicalNumberOfRows sheet)))
+	(is (= [{:A "A2", :B "B2", :C "C2"}] (select-columns {:A :A, :B :B :C :C} sheet)))))))
+
+(deftest remove-all-row!-test
+  (let [sheet-name "Sheet 1" 
+	sheet-data [["A1" "B1" "C1"]
+		    ["A2" "B2" "C2"]]
+	workbook (create-workbook sheet-name sheet-data)
+	sheet (first (sheet-seq workbook))]
+    (testing "Should remove all rows."
+      (do
+	(is (= sheet (remove-all-rows! sheet)))
+	(is (= 0 (.getPhysicalNumberOfRows sheet)))))
+    (testing "Should fail on invalid parameter types."
+      (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (remove-all-rows! "not-a-sheet"))))))
 
 (defn date [year month day]
   (Date. (- year 1900) (dec month) day))
@@ -185,6 +217,10 @@
 (deftest save-workbook!-test
   (testing "Should fail on invalid parameter types."
     (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (save-workbook! "filename.xlsx" "not-a-workbook")))))
+
+;; ----------------------------------------------------------------
+;; Styling
+;; ----------------------------------------------------------------
 
 (deftest create-cell-style!-test
   (testing "Should create a cell style based on the options"

@@ -1,6 +1,11 @@
 # CHANGELOG for Docjure
 
 
+## Version 1.5.0-SNAPSHOT
+* Introduces remove-row! and remove-all-rows!.
+* Adds row-vec function to create row data for adding to sheet from a struct to ease writing select, transform, write-back tasks.
+
+
 ## Version 1.4 
 * Introduces cell styling (font control, background colour).
 * A more flexible cell-seq (supports sheet, row or collections of these).
