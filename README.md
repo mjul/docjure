@@ -91,7 +91,8 @@ For more information on Apache POI refer to the
 * [Docjure on GitHub](http://github.com/ative/docjure)
 
 Martin Jul
-* Email: mj@.....
+
+* Email: mj@......dk
 * Twitter: mjul
 
 
