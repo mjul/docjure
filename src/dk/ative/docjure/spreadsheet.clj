@@ -5,7 +5,7 @@
     (org.apache.poi.xssf.usermodel XSSFWorkbook)
     (org.apache.poi.ss.usermodel Workbook Sheet Cell Row WorkbookFactory DateUtil
 				 IndexedColors CellStyle Font)
-    (org.apache.poi.ss.util CellReference)))
+    (org.apache.poi.ss.util CellReference AreaReference)))
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
@@ -275,3 +275,31 @@
    (for [row (doall (row-seq sheet))]
      (remove-row! sheet row)))
   sheet)
+
+(defn- named-area-ref [#^Workbook workbook n]
+  (let [index (.getNameIndex workbook (name n))]
+    (if (>= index 0)
+      (->> index
+        (.getNameAt workbook)
+        (.getRefersToFormula)
+        (AreaReference.))
+      nil)))
+
+(defn- cell-from-ref [#^Workbook workbook #^CellReference cref]
+  (let [row (.getRow cref)
+        col (-> cref .getCol .intValue)
+        sheet (->> cref (.getSheetName) (.getSheet workbook))]
+    (-> sheet (.getRow row) (.getCell col))))
+
+(defn select-name
+  "Given a workbook and name (string or keyword) of a named range, select-name returns a seq of cells or nil if the name could not be found."
+  [#^Workbook workbook n]
+  (if-let [aref (named-area-ref workbook n)]
+      (map (partial cell-from-ref workbook) (.getAllReferencedCells aref))
+    nil))
+
+(defn add-name! [#^Workbook workbook n string-ref]
+  (let [the-name (.createName workbook)]
+    (.setNameName the-name (name n))
+    (.setRefersToFormula the-name string-ref)))
+

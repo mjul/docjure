@@ -319,4 +319,18 @@
       (is (every? number? (datatypes-data file :fraction)))
       (is (every? number? (datatypes-data file :scientific))))))
 
+(deftest name-test
+  (let [data [["Test1"  "First"    "Second"]
+              ["Test2"  "Third"    "Fourth"]
+              [nil      "Fifth"    "Sixth"]
+              [nil      "Seventh"  "Eight"]
+              [nil      "Ninth"    "Tenth"]]
+	workbook (create-workbook "Sheet 1" data)]
+    (testing "Set named range and retrieve cells from it."
+             (add-name! workbook "test1" "'Sheet 1'!$A$1")
+             (add-name! workbook "ten" "'Sheet 1'!$B$1:$C$5")
+             (is (= "Test1" (read-cell (first (select-name workbook "test1")))))
+             (is (= (reduce concat (map (fn [[_ a b]] [a b]) data))
+                    (map read-cell (select-name workbook "ten"))))
+             (is (nil? (select-name workbook "bill"))))))
 
