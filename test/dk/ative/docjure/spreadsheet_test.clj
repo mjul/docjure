@@ -1,12 +1,14 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font)
+  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
 	   (org.apache.poi.xssf.usermodel XSSFWorkbook)
 	   (java.util Date)))
 
-(def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"})
+(def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"
+	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"})
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific})
+(def formulae-map {:A :formula, :B :expected})
 
 (deftest add-sheet!-test
   (let [workbook (XSSFWorkbook.)
@@ -89,6 +91,22 @@
 
 (defn july [day]
   (Date. 2010 7 day))
+
+
+(deftest read-cell-value-test
+  (let [date (july 1)
+	workbook (create-workbook "Just a date" [[date]])
+	sheet (.getSheetAt workbook 0)
+ 	rows  (vec (iterator-seq (.iterator sheet)))
+	data-row (vec (iterator-seq (.cellIterator (first rows))))
+	date-cell (first data-row)]
+  (testing "Should read all cell types"
+    (are [expected cv date-format?] (= expected (read-cell-value cv date-format?))
+         2.0 (CellValue. 2.0) false
+	 "foo" (CellValue. "foo") false
+	 true (CellValue/valueOf true) false
+	 date (.. workbook getCreationHelper createFormulaEvaluator (evaluate date-cell)) true
+	 ))))
 
 (deftest read-cell-test
   (let [sheet-data [["Nil" "Blank" "Date" "String" "Number"]
@@ -319,4 +337,13 @@
       (is (every? number? (datatypes-data file :fraction)))
       (is (every? number? (datatypes-data file :scientific))))))
 
+(deftest select-columns-formula-evaluation-integration-test
+  (testing "Formula evaluation"
+    (let [file (config :formulae-file)
+	  formula-expected-pairs (->> (load-workbook file)
+				      sheet-seq
+				      first
+				      (select-columns formulae-map)
+				      rest)]
+      (is (every? #(= (:formula %) (:expected %)) formula-expected-pairs)))))
 

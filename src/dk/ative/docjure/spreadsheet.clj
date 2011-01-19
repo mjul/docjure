@@ -4,7 +4,7 @@
     (java.util Date Calendar)
     (org.apache.poi.xssf.usermodel XSSFWorkbook)
     (org.apache.poi.ss.usermodel Workbook Sheet Cell Row WorkbookFactory DateUtil
-				 IndexedColors CellStyle Font)
+				 IndexedColors CellStyle Font CellValue)
     (org.apache.poi.ss.util CellReference)))
 
 (defmacro assert-type [value expected-type]
@@ -14,10 +14,22 @@
 (defn cell-reference [cell]
   (.formatAsString (CellReference. (.getRowIndex cell) (.getColumnIndex cell))))
 
+(defmulti read-cell-value (fn [cv date-format?] (.getCellType cv)))
+(defmethod read-cell-value Cell/CELL_TYPE_BOOLEAN  [cv _]  (.getBooleanValue cv))
+(defmethod read-cell-value Cell/CELL_TYPE_STRING   [cv _]  (.getStringValue cv))
+(defmethod read-cell-value Cell/CELL_TYPE_NUMERIC  [cv date-format?]
+	   (if date-format? 
+	     (DateUtil/getJavaDate (.getNumberValue cv))
+	     (.getNumberValue cv)))
+
 (defmulti read-cell #(.getCellType %))
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [cell]  (.getStringCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_FORMULA   [cell]  (.getCellFormula cell))
+(defmethod read-cell Cell/CELL_TYPE_FORMULA   [cell]
+	   (let [evaluator (.. cell getSheet getWorkbook
+			       getCreationHelper createFormulaEvaluator)
+		 cv (.evaluate evaluator cell)]
+	     (read-cell-value cv (DateUtil/isCellDateFormatted cell))))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [cell]
   (if (DateUtil/isCellDateFormatted cell)
