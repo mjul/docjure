@@ -248,6 +248,17 @@
   (dorun (map #(.setCellStyle % style) (cell-seq row)))
   row)
 
+(defn get-row-styles
+  "Returns a seq of the row's CellStyles."
+  [#^Row row]
+  (map #(.getCellStyle %) (cell-seq row)))
+
+(defn set-row-styles!
+  "Apply a seq of styles to the cells in a row."
+  [#^Row row styles]
+  (let [pairs (partition 2 (interleave (cell-seq row) styles))]
+    (doseq [[c s] pairs]
+      (.setCellStyle c s))))
 
 (defn row-vec 
   "Transform the row struct (hash-map) to a row vector according to the column order.
