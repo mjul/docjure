@@ -29,7 +29,7 @@
 	   (let [evaluator (.. cell getSheet getWorkbook
 			       getCreationHelper createFormulaEvaluator)
 		 cv (.evaluate evaluator cell)]
-	     (read-cell-value cv (DateUtil/isCellDateFormatted cell))))
+	     (read-cell-value cv false)))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [cell]
   (if (DateUtil/isCellDateFormatted cell)
