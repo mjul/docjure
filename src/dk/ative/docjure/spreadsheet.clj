@@ -44,27 +44,27 @@
 
 (defn save-workbook! 
   "Save the workbook into a file."
-  [filename #^Workbook workbook]
+  [filename ^Workbook workbook]
   (assert-type workbook Workbook)
   (with-open [file-out (FileOutputStream. filename)]
     (.write workbook file-out)))
 
 (defn sheet-seq 
   "Return a lazy seq of the sheets in a workbook."
-  [#^Workbook workbook]
+  [^Workbook workbook]
   (assert-type workbook Workbook)
   (for [idx (range (.getNumberOfSheets workbook))]
     (.getSheetAt workbook idx)))
 
 (defn sheet-name
   "Return the name of a sheet."
-  [#^Sheet sheet]
+  [^Sheet sheet]
   (assert-type sheet Sheet)
   (.getSheetName sheet))
 
 (defn select-sheet 
   "Select a sheet from the workbook by name."
-  [name #^Workbook workbook]
+  [name ^Workbook workbook]
   (assert-type workbook Workbook)
   (->> (sheet-seq workbook)
        (filter #(= name (sheet-name %)))
@@ -72,7 +72,7 @@
 
 (defn row-seq 
   "Return a lazy sequence of the rows in a sheet."
-  [#^Sheet sheet]
+  [^Sheet sheet]
   (assert-type sheet Sheet)
   (iterator-seq (.iterator sheet)))
 
@@ -100,7 +100,7 @@
   [sheet-or-row]
   (vec (for [item (iterator-seq (.iterator sheet-or-row))] item)))
 
-(defn- project-cell [column-map #^Cell cell]
+(defn- project-cell [column-map ^Cell cell]
   (let [colname (-> cell
 		    .getColumnIndex 
 		    org.apache.poi.ss.util.CellReference/convertNumToColString
@@ -109,7 +109,7 @@
     (when new-key
       {new-key (read-cell cell)})))
 
-(defn select-columns [column-map #^Sheet sheet]
+(defn select-columns [column-map ^Sheet sheet]
   "Takes two arguments: column hashmap where the keys are the
    spreadsheet column names as keys and the values represent the names they are mapped to, 
    and a sheet.
@@ -146,7 +146,7 @@
     (if (date-or-calendar? value)
       (apply-date-format! cell "m/d/yy"))))
 
-(defn add-row! [#^Sheet sheet values]
+(defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
   (let [row-num (if (= 0 (.getPhysicalNumberOfRows sheet)) 
 		  0 
@@ -156,7 +156,7 @@
       (set-cell! (.createCell row column-index) value))
     row))
 
-(defn add-rows! [#^Sheet sheet rows]
+(defn add-rows! [^Sheet sheet rows]
   "Add rows to the sheet. The rows is a sequence of row-data, where
    each row-data is a sequence of values for the columns in increasing
    order on that row."
@@ -166,7 +166,7 @@
 
 (defn add-sheet! 
   "Add a new sheet to the workbook."
-  [#^Workbook workbook name]
+  [^Workbook workbook name]
   (assert-type workbook Workbook)
   (.createSheet workbook name))
 
@@ -200,7 +200,7 @@
 
       (create-font! wb {:bold true})
    "
-  [#^Workbook workbook options]
+  [^Workbook workbook options]
   (let [defaults {:bold false}
 	cfg (merge defaults options)]
     (assert-type workbook Workbook)
@@ -225,9 +225,9 @@
 
    (create-cell-style! wb {:background :yellow})
   "
-  ([#^Workbook workbook] (create-cell-style! workbook {}))
+  ([^Workbook workbook] (create-cell-style! workbook {}))
   
-  ([#^Workbook workbook styles]
+  ([^Workbook workbook styles]
      (assert-type workbook Workbook)
      (let [cs (.createCellStyle workbook)
 	   {background :background, font-style :font} styles
@@ -245,7 +245,7 @@
   "Apply a style to a cell.
    See also: create-cell-style!.
   "
-  [#^Cell cell #^CellStyle style]
+  [^Cell cell ^CellStyle style]
   (assert-type cell Cell)
   (assert-type style CellStyle)
   (.setCellStyle cell style)
@@ -254,7 +254,7 @@
 (defn set-row-style!
   "Apply a style to all the cells in a row.
    Returns the row."
-  [#^Row row #^CellStyle style]
+  [^Row row ^CellStyle style]
   (assert-type row Row)
   (assert-type style CellStyle)
   (dorun (map #(.setCellStyle % style) (cell-seq row)))
