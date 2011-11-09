@@ -110,7 +110,7 @@
 
 (deftest read-cell-test
   (let [sheet-data [["Nil" "Blank" "Date" "String" "Number"]
- 		    [nil "" (july 1) "foo" 42]]
+ 		    [nil "" (july 1) "foo" 42.0]]
  	workbook (create-workbook "Sheet 1" sheet-data)
 	sheet (.getSheetAt workbook 0)
  	rows  (vec (iterator-seq (.iterator sheet)))
@@ -121,7 +121,7 @@
       (is (nil? (read-cell nil-cell)))
       (is (= "" (read-cell blank-cell)))
       (is (= (july 1) (read-cell date-cell)))
-      (is (= 42 (read-cell number-cell))))))
+      (is (= 42.0 (read-cell number-cell))))))
 
 
 (deftest sheet-seq-test
@@ -205,8 +205,8 @@
 
 (deftest select-columns-test
   (let [data     [["Name" "Quantity" "Price" "On Sale"] 
-		  ["foo" 1 42 true] 
-		  ["bar" 2 108 false]]
+		  ["foo" 1.0 42 true] 
+		  ["bar" 2.0 108 false]]
 	workbook (create-workbook "Sheet 1" data)
 	sheet    (first (sheet-seq workbook))]
     (testing "Find existing columns should create map."
