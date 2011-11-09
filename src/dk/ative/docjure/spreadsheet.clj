@@ -139,12 +139,15 @@
 		    (.. format-helper createDataFormat (getFormat format)))
     (.setCellStyle cell date-style)))
 
-(defn set-cell! [cell value]
-  (let [converted-value (cond (number? value) (double value)
-                          true value)]
-    (.setCellValue cell converted-value)
-    (if (date-or-calendar? value)
-      (apply-date-format! cell "m/d/yy"))))
+(defn set-cell! [^Cell cell value]
+  (if (nil? value)
+    (let [^String null nil]
+      (.setCellValue cell null)) ;do not call setCellValue(Date) with null
+    (let [converted-value (cond (number? value) (double value)
+                                true value)]
+      (.setCellValue cell converted-value)
+      (if (date-or-calendar? value)
+        (apply-date-format! cell "m/d/yy")))))
 
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
