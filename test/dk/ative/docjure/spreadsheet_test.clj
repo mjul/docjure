@@ -298,6 +298,36 @@
       (is (not= (.getIndex IndexedColors/YELLOW) (.. b2 getCellStyle getFillForegroundColor)))
       )))
 
+(deftest set-row-styles!-test
+  (testing "Should apply the given styles to the row's cells in order."
+    (let [wb (create-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
+	  cs1 (create-cell-style! wb {:background :yellow})
+	  cs2 (create-cell-style! wb {:background :red})
+	  rs (row-seq (select-sheet "Dummy" wb))
+	  [header-row, data-row] rs
+	  [a1, b1] (cell-seq header-row)
+	  [a2, b2] (cell-seq data-row)]
+      (do (set-row-styles! header-row (list cs1 cs2)))
+      (is (= (.getIndex IndexedColors/YELLOW) (.. a1 getCellStyle getFillForegroundColor)))
+      (is (= (.getIndex IndexedColors/RED) (.. b1 getCellStyle getFillForegroundColor)))
+      (is (not= (.getIndex IndexedColors/YELLOW) (.. a2 getCellStyle getFillForegroundColor)))
+      (is (not= (.getIndex IndexedColors/RED) (.. b2 getCellStyle getFillForegroundColor)))
+      )))
+
+(deftest get-row-styles-test
+  (testing "Should get a seq of the row's CellStyles."
+    (let [wb (create-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
+	  cs1 (create-cell-style! wb {:background :yellow})
+	  cs2 (create-cell-style! wb {:background :red})
+	  rs (row-seq (select-sheet "Dummy" wb))
+	  [header-row, data-row] rs
+	  [a1, b1] (cell-seq header-row)
+	  [a2, b2] (cell-seq data-row)]
+      (do (set-row-styles! header-row (list cs1 cs2)))
+      (is (= (list cs1 cs2) (get-row-styles header-row)))
+      (is (= (list cs1 cs2) (get-row-styles header-row)))
+      )))
+
 ;; ----------------------------------------------------------------
 ;; Integration tests
 ;; ----------------------------------------------------------------
@@ -346,4 +376,19 @@
 				      (select-columns formulae-map)
 				      rest)]
       (is (every? #(= (:formula %) (:expected %)) formula-expected-pairs)))))
+
+(deftest name-test
+  (let [data [["Test1"  "First"    "Second"]
+              ["Test2"  "Third"    "Fourth"]
+              [nil      "Fifth"    "Sixth"]
+              [nil      "Seventh"  "Eight"]
+              [nil      "Ninth"    "Tenth"]]
+	workbook (create-workbook "Sheet 1" data)]
+    (testing "Set named range and retrieve cells from it."
+             (add-name! workbook "test1" "'Sheet 1'!$A$1")
+             (add-name! workbook "ten" "'Sheet 1'!$B$1:$C$5")
+             (is (= "Test1" (read-cell (first (select-name workbook "test1")))))
+             (is (= (reduce concat (map (fn [[_ a b]] [a b]) data))
+                    (map read-cell (select-name workbook "ten"))))
+             (is (nil? (select-name workbook "bill"))))))
 
