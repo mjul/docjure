@@ -124,6 +124,36 @@
       (is (= 42.0 (read-cell number-cell))))))
 
 
+(deftest set-cell!-test
+  (let [sheet-name "Sheet 1" 
+	sheet-data [["A1"]]
+	workbook (create-workbook sheet-name sheet-data)
+        a1 (-> workbook (.getSheetAt 0) (.getRow 0) (.getCell 0))]
+    (testing "set-cell! for Date"
+      (testing "should set value"
+        (set-cell! a1 (july 1))
+        (is (= (july 1) (.getDateCellValue a1))))
+      (testing "should set nil"
+        (let [^java.util.Date nil-date nil]
+          (set-cell! a1 nil-date))
+        (is (= nil (.getDateCellValue a1)))))
+    (testing "set-cell! for String"
+      (testing "should set value"
+        (set-cell! a1 "foo")
+        (is (= "foo" (.getStringCellValue a1)))))
+    (testing "set-cell! for boolean"
+      (testing "should set value"
+        (set-cell! a1 (boolean true))
+        (is (.getBooleanCellValue a1))))
+    (testing "set-cell! for number"
+      (testing "should set int"
+        (set-cell! a1 (int 1))
+        (is (= 1.0 (.getNumericCellValue a1))))
+      (testing "should set double"
+        (set-cell! a1 (double 1.2))
+        (is (= 1.2 (.getNumericCellValue a1)))))))
+
+
 (deftest sheet-seq-test
   (let [sheet-name "Sheet 1" 
 	sheet-data [["foo" "bar"]]]

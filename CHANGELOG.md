@@ -1,5 +1,9 @@
 # CHANGELOG for Docjure
 
+## Version 1.6.0-SNAPSHOT
+* Upgraded to Clojure 1.3 (contributed by mva)
+* Use type hints to call correct overload for setting nil date (contributed by mva)
+
 ## Version 1.5.0
 * Introduces remove-row! and remove-all-rows!.
 * Adds row-vec function to create row data for adding to sheet from a struct to ease writing select, transform, write-back tasks.
