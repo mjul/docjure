@@ -96,5 +96,9 @@ Martin Jul
 * Twitter: mjul
 
 
+## Contributors
+This library includes great contributions from:
+
+* [Carl Baatz](https://github.com/cbaatz)
 
 
