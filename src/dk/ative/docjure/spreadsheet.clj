@@ -18,7 +18,7 @@
 (defmethod read-cell-value Cell/CELL_TYPE_BOOLEAN  [cv _]  (.getBooleanValue cv))
 (defmethod read-cell-value Cell/CELL_TYPE_STRING   [cv _]  (.getStringValue cv))
 (defmethod read-cell-value Cell/CELL_TYPE_NUMERIC  [cv date-format?]
-	   (if date-format? 
+	   (if date-format?
 	     (DateUtil/getJavaDate (.getNumberValue cv))
 	     (.getNumberValue cv)))
 
@@ -36,20 +36,20 @@
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
 
-(defn load-workbook 
+(defn load-workbook
   "Load an Excel .xls or .xlsx workbook from a file."
   [filename]
   (with-open [stream (FileInputStream. filename)]
     (WorkbookFactory/create stream)))
 
-(defn save-workbook! 
+(defn save-workbook!
   "Save the workbook into a file."
   [filename ^Workbook workbook]
   (assert-type workbook Workbook)
   (with-open [file-out (FileOutputStream. filename)]
     (.write workbook file-out)))
 
-(defn sheet-seq 
+(defn sheet-seq
   "Return a lazy seq of the sheets in a workbook."
   [^Workbook workbook]
   (assert-type workbook Workbook)
@@ -62,7 +62,7 @@
   (assert-type sheet Sheet)
   (.getSheetName sheet))
 
-(defn select-sheet 
+(defn select-sheet
   "Select a sheet from the workbook by name."
   [name ^Workbook workbook]
   (assert-type workbook Workbook)
@@ -70,7 +70,7 @@
        (filter #(= name (sheet-name %)))
        first))
 
-(defn row-seq 
+(defn row-seq
   "Return a lazy sequence of the rows in a sheet."
   [^Sheet sheet]
   (assert-type sheet Sheet)
@@ -82,7 +82,7 @@
    (isa? (class x) Sheet) :sheet
    (seq? x) :coll
    :else :default))
-  
+
 (defmulti cell-seq
   "Return a seq of the cells in the input which can be a sheet, a row, or a collection
    of one of these. The seq is ordered ordered by sheet, row and column."
@@ -102,7 +102,7 @@
 
 (defn- project-cell [column-map ^Cell cell]
   (let [colname (-> cell
-		    .getColumnIndex 
+		    .getColumnIndex
 		    org.apache.poi.ss.util.CellReference/convertNumToColString
 		    keyword)
 	new-key (column-map colname)]
@@ -111,11 +111,11 @@
 
 (defn select-columns [column-map ^Sheet sheet]
   "Takes two arguments: column hashmap where the keys are the
-   spreadsheet column names as keys and the values represent the names they are mapped to, 
+   spreadsheet column names as keys and the values represent the names they are mapped to,
    and a sheet.
 
    For example, to select columns A and C as :first and :third from the sheet
-   
+
    (select-columns {:A :first, :C :third} sheet)
    => [{:first \"Value in cell A1\", :third \"Value in cell C1\"} ...] "
   (assert-type sheet Sheet)
@@ -151,8 +151,8 @@
 
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
-  (let [row-num (if (= 0 (.getPhysicalNumberOfRows sheet)) 
-		  0 
+  (let [row-num (if (= 0 (.getPhysicalNumberOfRows sheet))
+		  0
 		  (inc (.getLastRowNum sheet)))
 	row (.createRow sheet row-num)]
     (doseq [[column-index value] (partition 2 (interleave (iterate inc 0) values))]
@@ -167,7 +167,7 @@
   (doseq [row rows]
     (add-row! sheet row)))
 
-(defn add-sheet! 
+(defn add-sheet!
   "Add a new sheet to the workbook."
   [^Workbook workbook name]
   (assert-type workbook Workbook)
@@ -182,9 +182,9 @@
    For example, to create a workbook with a sheet with
    two rows of each three columns:
 
-   (create-workbook \"Sheet 1\" 
+   (create-workbook \"Sheet 1\"
                     [[\"Name\" \"Quantity\" \"Price\"]
-                     [\"Foo Widget\" 2 42]])             
+                     [\"Foo Widget\" 2 42]])
    "
   [sheet-name data]
   (let [workbook (XSSFWorkbook.)
@@ -211,7 +211,7 @@
       (doto f
 	(.setBoldweight (if (:bold cfg) Font/BOLDWEIGHT_BOLD Font/BOLDWEIGHT_NORMAL)))
       f)))
-  
+
 
 (defn create-cell-style!
   "Create a new cell-style.
@@ -229,7 +229,7 @@
    (create-cell-style! wb {:background :yellow})
   "
   ([^Workbook workbook] (create-cell-style! workbook {}))
-  
+
   ([^Workbook workbook styles]
      (assert-type workbook Workbook)
      (let [cs (.createCellStyle workbook)
@@ -275,7 +275,7 @@
     (doseq [[c s] pairs]
       (.setCellStyle c s))))
 
-(defn row-vec 
+(defn row-vec
   "Transform the row struct (hash-map) to a row vector according to the column order.
    Example:
 
