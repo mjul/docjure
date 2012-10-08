@@ -26,10 +26,12 @@
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [cell]
-	   (let [evaluator (.. cell getSheet getWorkbook
-			       getCreationHelper createFormulaEvaluator)
-		 cv (.evaluate evaluator cell)]
-	     (read-cell-value cv false)))
+  (try
+    (let [evaluator (.. cell getSheet getWorkbook
+                        getCreationHelper createFormulaEvaluator)
+          cv (.evaluate evaluator cell)]
+      (read-cell-value cv false))
+    (catch Exception e e)))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [cell]
   (if (DateUtil/isCellDateFormatted cell)
