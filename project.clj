@@ -4,8 +4,7 @@
   :dependencies [[org.clojure/clojure "1.3.0"]
 		 [org.apache.poi/poi "3.6"]
 		 [org.apache.poi/poi-ooxml "3.6"]]
-  :dev-dependencies [[swank-clojure "1.3.3"]
-		     [lein-clojars "0.6.0"]
-		     [lein-difftest "1.3.3"]]
-  :hooks [leiningen.hooks.difftest]
-  )
+  :plugins [[lein-difftest "2.0.0"]]
+  :profiles {:1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+             :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}
+             :1.5 {:dependencies [[org.clojure/clojure "1.5.0-RC1"]]}})
