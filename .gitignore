@@ -1,6 +1,6 @@
 pom.xml
 *jar
-lib
-classes
+target
 
 test/docjure/testdata/~$*.xlsx
+/.lein-failures
