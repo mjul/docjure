@@ -4,17 +4,17 @@ Docjure makes reading and writing Office documents in Clojure easy.
 
 ## Usage
 
-### Example: Read a Price List sheet
+### Example: Read a Price List spreadsheet
 
     (use 'dk.ative.docjure.spreadsheet)       
 
-    ; Load a spreadsheet and read the first two columns from the 
-    ; price list sheet:
+    ;; Load a spreadsheet and read the first two columns from the 
+    ;; price list sheet:
     (->> (load-workbook "spreadsheet.xlsx")
          (select-sheet "Price List")
          (select-columns {:A :name, :B :price}))
 
-    > [{:name "Foo Widget", :price 100}, {:name "Bar Widget", :price 200}]
+    ;=> [{:name "Foo Widget", :price 100}, {:name "Bar Widget", :price 200}]
 
 ### Example: Create a spreadsheet 
 This example creates a spreadsheet with a single sheet named "Price List".
@@ -43,17 +43,16 @@ The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure)
 If you are using the Leiningen build tool just add this line to the
 :dependencies list in project.clj to use it:
 
-    [dk.ative/docjure "1.6.0-SNAPSHOT"]	
+    [dk.ative/docjure "1.6.0"]	
 
 Remember to issue the 'lein deps' command to download it.
 
-#### Example project.clj for using Docjure 1.5.0
+#### Example project.clj for using Docjure 1.6.0
 
     (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
-      :dependencies [[org.clojure/clojure "1.2.0"]
-                     [org.clojure/clojure-contrib "1.2.0"]
-                     [dk.ative/docjure "1.5.0"]])
+      :dependencies [[org.clojure/clojure "1.4.0"]
+                     [dk.ative/docjure "1.6.0"]])
 
 
 ## Installation
@@ -73,7 +72,7 @@ Then build the library:
 
 ## License
 
-Copyright (c) 2009-2010 Martin Jul, Ative (www.ative.dk)
+Copyright (c) 2009-2013 Martin Jul, Ative (www.ative.dk)
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
@@ -97,8 +96,10 @@ Martin Jul
 
 
 ## Contributors
-This library includes great contributions from:
+This library includes great contributions from
 
 * [Carl Baatz](https://github.com/cbaatz) (cbaatz)
 * [Michael van Acken](https://github.com/mva) (mva)
+* [Ragnar Dahlén](https://github.com/ragnard) (ragnard)
 
+Thank you very much!

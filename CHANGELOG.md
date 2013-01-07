@@ -1,7 +1,10 @@
 # CHANGELOG for Docjure
 
-## Version 1.6.0-SNAPSHOT
-* Upgraded to Clojure 1.3 (contributed by mva)
+## Version 1.6.0
+* Upgraded to Clojure 1.4 as the default Clojure version.
+* Upgraded to Apache POI 3.9
+* Support for Clojure 1.3, 1.4 and 1.5 (RC 1) via lein profiles (contributed by ragnard)
+* Support for Travis-CI (contributed by ragnard)
 * Use type hints to call correct overload for setting nil date (contributed by mva)
 
 ## Version 1.5.0
@@ -24,8 +27,7 @@ First public release.
 
 ## Earlier versions
 
-Earlier versions used internally for projects in Ative in 2009 and
-2010.
+Earlier versions used internally for projects in Ative in 2009 and 2010.
 
 
 
