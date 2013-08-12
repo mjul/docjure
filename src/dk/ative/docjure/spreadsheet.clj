@@ -149,6 +149,8 @@
       (.setCellValue cell null)) ;do not call setCellValue(Date) with null
     (let [converted-value (cond (number? value) (double value)
                                 :else value)]
+      ;;The arg to setCellValue takes multiple types so no type-hinting here
+      ;; See http://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/Cell.html
       (.setCellValue cell converted-value)
       (if (date-or-calendar? value)
         (apply-date-format! cell "m/d/yy")))))
