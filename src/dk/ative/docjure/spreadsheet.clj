@@ -88,8 +88,9 @@
    :else :default))
 
 (defmulti cell-seq
-  "Return a seq of the cells in the input which can be a sheet, a row, or a collection
-   of one of these. The seq is ordered ordered by sheet, row and column."
+  "Return a seq of the cells in the input which can be a sheet, a row, or
+   a collection of one of these. The seq is ordered ordered by sheet,
+   row and column."
   cell-seq-dispatch)
 (defmethod cell-seq :row  [^Row row] (iterator-seq (.iterator row)))
 (defmethod cell-seq :sheet [sheet] (for [row (row-seq sheet)
@@ -113,15 +114,16 @@
     (when new-key
       {new-key (read-cell cell)})))
 
-(defn select-columns [column-map ^Sheet sheet]
-  "Takes two arguments: column hashmap where the keys are the
-   spreadsheet column names as keys and the values represent the names they are mapped to,
-   and a sheet.
+(defn select-columns
+  "Takes two arguments: column hashmap where the keys are the spreadsheet
+   column names as keys and the values represent the names they are
+   mapped to, and a sheet.
 
-   For example, to select columns A and C as :first and :third from the sheet
+   For example, to select columns A and C as :first and :third from the
+   sheet (select-columns {:A :first, :C :third} sheet) => [{:first
+   \"Value in cell A1\", :third \"Value in cell C1\"} ...]"
+  [column-map ^Sheet sheet]
 
-   (select-columns {:A :first, :C :third} sheet)
-   => [{:first \"Value in cell A1\", :third \"Value in cell C1\"} ...] "
   (assert-type sheet Sheet)
   (vec
    (for [row (into-seq sheet)]
@@ -165,10 +167,11 @@
       (set-cell! (.createCell row column-index) value))
     row))
 
-(defn add-rows! [^Sheet sheet rows]
-  "Add rows to the sheet. The rows is a sequence of row-data, where
-   each row-data is a sequence of values for the columns in increasing
-   order on that row."
+(defn add-rows!
+  "Add rows to the sheet. The rows is a sequence of row-data, where each
+   row-data is a sequence of values for the columns in increasing order
+   on that row."
+  [^Sheet sheet rows]
   (assert-type sheet Sheet)
   (doseq [row rows]
     (add-row! sheet row)))
@@ -181,17 +184,15 @@
 
 
 (defn create-workbook
-  "Create a new workbook with a single sheet and the data specified.
-   The data is given a vector of vectors, representing the rows
-   and the cells of the rows.
+  "Create a new workbook with a single sheet and the data specified.  The
+   data is given a vector of vectors, representing the rows and the
+   cells of the rows.
 
-   For example, to create a workbook with a sheet with
-   two rows of each three columns:
+   For example, to create a workbook with a sheet with two rows of each
+   three columns:
 
-   (create-workbook \"Sheet 1\"
-                    [[\"Name\" \"Quantity\" \"Price\"]
-                     [\"Foo Widget\" 2 42]])
-   "
+   (create-workbook \"Sheet 1\" [[\"Name\" \"Quantity\" \"Price\"]
+                    [\"Foo Widget\" 2 42]])"
   [sheet-name data]
   (let [workbook (XSSFWorkbook.)
         sheet    (add-sheet! workbook sheet-name)]
@@ -200,15 +201,11 @@
 
 (defn create-font!
   "Create a new font in the workbook.
-
    Options are
-
-       :bold    true/false   bold or normal font
+       :bold true/false bold or normal font
 
    Example:
-
-      (create-font! wb {:bold true})
-   "
+      (create-font! wb {:bold true})"
   [^Workbook workbook options]
   (let [defaults {:bold false}
         cfg (merge defaults options)]
@@ -220,10 +217,10 @@
 
 
 (defn create-cell-style!
-  "Create a new cell-style.
-   Options is a map with the cell style configuration:
+  "Create a new cell-style.  Options is a map with the cell style
+   configuration:
 
-      :background     the name of the background colour (as keyword)
+      :background the name of the background colour (as keyword)
 
    Valid keywords are the colour names defined in
    org.apache.ss.usermodel.IndexedColors as lowercase keywords, eg.
@@ -232,8 +229,7 @@
 
    Example:
 
-   (create-cell-style! wb {:background :yellow})
-  "
+   (create-cell-style! wb {:background :yellow})"
   ([^Workbook workbook] (create-cell-style! workbook {}))
 
   ([^Workbook workbook styles]
@@ -251,9 +247,7 @@
          cs))))
 
 (defn set-cell-style!
-  "Apply a style to a cell.
-   See also: create-cell-style!.
-  "
+  "Apply a style to a cell. See also: create-cell-style!."
   [^Cell cell ^CellStyle style]
   (assert-type cell Cell)
   (assert-type style CellStyle)
@@ -261,8 +255,7 @@
   cell)
 
 (defn set-row-style!
-  "Apply a style to all the cells in a row.
-   Returns the row."
+  "Apply a style to all the cells in a row.  Returns the row."
   [^Row row ^CellStyle style]
   (assert-type row Row)
   (assert-type style CellStyle)
@@ -282,12 +275,11 @@
       (.setCellStyle c s))))
 
 (defn row-vec
-  "Transform the row struct (hash-map) to a row vector according to the column order.
-   Example:
+  "Transform the row struct (hash-map) to a row vector according to the
+   column order.  Example:
 
-     (row-vec [:foo :bar] {:foo \"Foo text\", :bar \"Bar text\"})
-     > [\"Foo text\" \"Bar text\"]
-  "
+     (row-vec [:foo :bar] {:foo \"Foo text\", :bar \"Bar text\"}) >
+     [\"Foo text\" \"Bar text\"]"
   [column-order row]
   (vec (map row column-order)))
 
@@ -324,7 +316,9 @@
     (-> sheet (.getRow row) (.getCell col))))
 
 (defn select-name
-  "Given a workbook and name (string or keyword) of a named range, select-name returns a seq of cells or nil if the name could not be found."
+ "Given a workbook and name (string or keyword) of a named range,
+  select-name returns a seq of cells or nil if the name could not be
+  found."
   [^Workbook workbook n]
   (if-let [^AreaReference aref (named-area-ref workbook n)]
     (map (partial cell-from-ref workbook) (.getAllReferencedCells aref))
