@@ -101,5 +101,6 @@ This library includes great contributions from
 * [Carl Baatz](https://github.com/cbaatz) (cbaatz)
 * [Michael van Acken](https://github.com/mva) (mva)
 * [Ragnar Dahlén](https://github.com/ragnard) (ragnard)
+* [Vijay Kiran](https://github.com/vijaykiran) (vijaykiran)
 
 Thank you very much!
