@@ -114,9 +114,10 @@
       {new-key (read-cell cell)})))
 
 (defn select-columns [column-map ^Sheet sheet]
-  "Takes two arguments: column hashmap where the keys are the
-   spreadsheet column names as keys and the values represent the names they are mapped to,
-   and a sheet.
+  "Takes two arguments: column hashmap and a sheet. The column hashmap 
+   specifies the mapping from spreadsheet columns dictionary keys:
+   its keys are the spreadsheet column names and the values represent 
+   the names they are mapped to in the result.
 
    For example, to select columns A and C as :first and :third from the sheet
 
