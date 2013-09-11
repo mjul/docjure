@@ -9,6 +9,9 @@
                                 CellValue)
    (org.apache.poi.ss.util CellReference AreaReference)))
 
+(def ^:dynamic *ignore-missing-workbooks*
+  false)
+
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
      (throw (IllegalArgumentException.
@@ -31,9 +34,9 @@
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
-                      getCreationHelper createFormulaEvaluator)
-        cv (.evaluate evaluator cell)]
-    (read-cell-value cv false)))
+                      getCreationHelper createFormulaEvaluator)]
+    (.setIgnoreMissingWorkbooks evaluator *ignore-missing-workbooks*)
+    (read-cell-value (.evaluate evaluator cell) false)))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
   (if (DateUtil/isCellDateFormatted cell)
