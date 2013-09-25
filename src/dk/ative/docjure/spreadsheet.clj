@@ -49,27 +49,23 @@
 (defn save-workbook!
   "Save the workbook into a file."
   [^String filename ^Workbook workbook]
-  (assert-type workbook Workbook)
   (with-open [file-out (FileOutputStream. filename)]
     (.write workbook file-out)))
 
 (defn sheet-seq
   "Return a lazy seq of the sheets in a workbook."
   [^Workbook workbook]
-  (assert-type workbook Workbook)
   (for [idx (range (.getNumberOfSheets workbook))]
     (.getSheetAt workbook idx)))
 
 (defn sheet-name
   "Return the name of a sheet."
   [^Sheet sheet]
-  (assert-type sheet Sheet)
   (.getSheetName sheet))
 
 (defn select-sheet
   "Select a sheet from the workbook by name."
   [name ^Workbook workbook]
-  (assert-type workbook Workbook)
   (->> (sheet-seq workbook)
        (filter #(= name (sheet-name %)))
        first))
@@ -77,7 +73,6 @@
 (defn row-seq
   "Return a lazy sequence of the rows in a sheet."
   [^Sheet sheet]
-  (assert-type sheet Sheet)
   (iterator-seq (.iterator sheet)))
 
 (defn- cell-seq-dispatch [x]
@@ -114,16 +109,15 @@
       {new-key (read-cell cell)})))
 
 (defn select-columns [column-map ^Sheet sheet]
-  "Takes two arguments: column hashmap and a sheet. The column hashmap 
+  "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
-   its keys are the spreadsheet column names and the values represent 
+   its keys are the spreadsheet column names and the values represent
    the names they are mapped to in the result.
 
    For example, to select columns A and C as :first and :third from the sheet
 
    (select-columns {:A :first, :C :third} sheet)
    => [{:first \"Value in cell A1\", :third \"Value in cell C1\"} ...] "
-  (assert-type sheet Sheet)
   (vec
    (for [row (into-seq sheet)]
      (->> (map #(project-cell column-map %) row)
@@ -157,7 +151,6 @@
         (apply-date-format! cell "m/d/yy")))))
 
 (defn add-row! [^Sheet sheet values]
-  (assert-type sheet Sheet)
   (let [row-num (if (= 0 (.getPhysicalNumberOfRows sheet))
                   0
                   (inc (.getLastRowNum sheet)))
@@ -170,14 +163,12 @@
   "Add rows to the sheet. The rows is a sequence of row-data, where
    each row-data is a sequence of values for the columns in increasing
    order on that row."
-  (assert-type sheet Sheet)
   (doseq [row rows]
     (add-row! sheet row)))
 
 (defn add-sheet!
   "Add a new sheet to the workbook."
   [^Workbook workbook name]
-  (assert-type workbook Workbook)
   (.createSheet workbook name))
 
 
@@ -213,7 +204,6 @@
   [^Workbook workbook options]
   (let [defaults {:bold false}
         cfg (merge defaults options)]
-    (assert-type workbook Workbook)
     (let [f (.createFont workbook)]
       (doto f
         (.setBoldweight (if (:bold cfg) Font/BOLDWEIGHT_BOLD Font/BOLDWEIGHT_NORMAL)))
@@ -238,7 +228,6 @@
   ([^Workbook workbook] (create-cell-style! workbook {}))
 
   ([^Workbook workbook styles]
-     (assert-type workbook Workbook)
      (let [cs (.createCellStyle workbook)
            {background :background, font-style :font} styles
            font (create-font! workbook font-style)]
@@ -256,8 +245,6 @@
    See also: create-cell-style!.
   "
   [^Cell cell ^CellStyle style]
-  (assert-type cell Cell)
-  (assert-type style CellStyle)
   (.setCellStyle cell style)
   cell)
 
@@ -265,8 +252,6 @@
   "Apply a style to all the cells in a row.
    Returns the row."
   [^Row row ^CellStyle style]
-  (assert-type row Row)
-  (assert-type style CellStyle)
   (dorun (map #(.setCellStyle ^Cell % style) (cell-seq row)))
   row)
 
@@ -296,8 +281,6 @@
   "Remove a row from the sheet."
   [^Sheet sheet ^Row row]
   (do
-    (assert-type sheet Sheet)
-    (assert-type row Row)
     (.removeRow sheet row)
     sheet))
 
