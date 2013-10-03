@@ -6,7 +6,8 @@
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
-                                CellValue)
+                                CellValue
+                                HSSFFormulaEvaluator)
    (org.apache.poi.ss.util CellReference AreaReference)))
 
 (def ^:dynamic *ignore-missing-workbooks*
@@ -35,7 +36,8 @@
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
                       getCreationHelper createFormulaEvaluator)]
-    (.setIgnoreMissingWorkbooks evaluator *ignore-missing-workbooks*)
+    (when (instance? HSSFFormulaEvaluator evaluator)
+      (.setIgnoreMissingWorkbooks evaluator *ignore-missing-workbooks*))
     (read-cell-value (.evaluate evaluator cell) false)))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
@@ -117,9 +119,9 @@
       {new-key (read-cell cell)})))
 
 (defn select-columns [column-map ^Sheet sheet]
-  "Takes two arguments: column hashmap and a sheet. The column hashmap 
+  "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
-   its keys are the spreadsheet column names and the values represent 
+   its keys are the spreadsheet column names and the values represent
    the names they are mapped to in the result.
 
    For example, to select columns A and C as :first and :third from the sheet
