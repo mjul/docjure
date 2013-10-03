@@ -1,4 +1,4 @@
-(defproject dk.ative/docjure "1.7.0-SNAPSHOT"
+(defproject tgk/docjure "1.7.0-SNAPSHOT"
   :description "Easily read and write Office documents from Clojure."
   :url "http://github.com/ative/docjure"
   :license {:name "MIT License"
@@ -12,4 +12,3 @@
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}}
   :aliases {"all" ["with-profile" "1.3:1.4:1.5"]}
   :global-vars {*warn-on-reflection* true})
-

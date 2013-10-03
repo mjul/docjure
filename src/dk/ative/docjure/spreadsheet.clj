@@ -3,11 +3,15 @@
    (java.io FileOutputStream FileInputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
+   (org.apache.poi.hssf.usermodel HSSFFormulaEvaluator)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
                                 CellValue)
    (org.apache.poi.ss.util CellReference AreaReference)))
+
+(def ^:dynamic *ignore-missing-workbooks*
+  false)
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
@@ -31,9 +35,10 @@
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
-                      getCreationHelper createFormulaEvaluator)
-        cv (.evaluate evaluator cell)]
-    (read-cell-value cv false)))
+                      getCreationHelper createFormulaEvaluator)]
+    (when (instance? HSSFFormulaEvaluator evaluator)
+      (.setIgnoreMissingWorkbooks evaluator *ignore-missing-workbooks*))
+    (read-cell-value (.evaluate evaluator cell) false)))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
   (if (DateUtil/isCellDateFormatted cell)
@@ -114,9 +119,9 @@
       {new-key (read-cell cell)})))
 
 (defn select-columns [column-map ^Sheet sheet]
-  "Takes two arguments: column hashmap and a sheet. The column hashmap 
+  "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
-   its keys are the spreadsheet column names and the values represent 
+   its keys are the spreadsheet column names and the values represent
    the names they are mapped to in the result.
 
    For example, to select columns A and C as :first and :third from the sheet
