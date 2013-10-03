@@ -3,11 +3,11 @@
    (java.io FileOutputStream FileInputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
+   (org.apache.poi.hssf.usermodel HSSFFormulaEvaluator)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
-                                CellValue
-                                HSSFFormulaEvaluator)
+                                CellValue)
    (org.apache.poi.ss.util CellReference AreaReference)))
 
 (def ^:dynamic *ignore-missing-workbooks*
