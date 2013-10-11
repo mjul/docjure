@@ -1,4 +1,4 @@
-(defproject dk.ative/docjure "1.7.0-SNAPSHOT"
+(defproject tgk/docjure "1.7.0-SNAPSHOT"
   :description "Easily read and write Office documents from Clojure."
   :url "http://github.com/ative/docjure"
   :license {:name "MIT License"
