@@ -32,6 +32,8 @@
   (if date-format?
     (DateUtil/getJavaDate (.getNumberValue cv))
     (.getNumberValue cv)))
+(defmethod read-cell-value Cell/CELL_TYPE_ERROR  [^CellValue cv _]
+  (str "Error cell: " cv))
 
 (defmulti read-cell #(.getCellType ^Cell %))
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
