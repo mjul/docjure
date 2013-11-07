@@ -39,7 +39,8 @@
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
-  (when (not *ignore-formulas*)
+  (if *ignore-formulas*
+    (.getStringCellValue cell)
     (let [evaluator (.. cell getSheet getWorkbook
                         getCreationHelper createFormulaEvaluator)]
       (when (instance? HSSFFormulaEvaluator evaluator)
