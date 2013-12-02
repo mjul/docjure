@@ -40,7 +40,16 @@
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
   (if *ignore-formulas*
-    (.getStringCellValue cell)
+    (condp = (.getCachedFormulaResultType cell)
+      Cell/CELL_TYPE_BLANK   nil
+      Cell/CELL_TYPE_STRING  (.getStringCellValue cell)
+      Cell/CELL_TYPE_BOOLEAN (.getBooleanCellValue cell)
+      Cell/CELL_TYPE_NUMERIC (if (DateUtil/isCellDateFormatted cell)
+                               (.getDateCellValue cell)
+                               (.getNumericCellValue cell))
+      (throw (ex-info "Unable to read cell value when ignoring formulas"
+                      {:cell cell
+                       :cached-formula-result-type (.getCachedFormulaResultType cell)})))
     (let [evaluator (.. cell getSheet getWorkbook
                         getCreationHelper createFormulaEvaluator)]
       (when (instance? HSSFFormulaEvaluator evaluator)
@@ -51,6 +60,8 @@
   (if (DateUtil/isCellDateFormatted cell)
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
+(defmethod read-cell Cell/CELL_TYPE_ERROR [^Cell cell]
+  "ERROR")
 
 (defn load-workbook
   "Load an Excel .xls or .xlsx workbook from a file."
