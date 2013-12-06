@@ -232,6 +232,15 @@
   (testing "Should fail on invalid parameter type"
     (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet "name" "not-a-workbook")))))
 
+(deftest select-sheet-regex-test
+  (let [name       "Sheet 1"
+	data       [["foo" "bar"]]
+	workbook   (create-workbook name data)
+	first-sheet (first (sheet-seq workbook))]
+    (is (= first-sheet (select-sheet-regex #"(?i)sheet" workbook)) "Expected to find the sheet.")
+    (is (nil? (select-sheet-regex #"unknown name" workbook)) "Expected to get nil for no match."))
+  (testing "Should fail on invalid parameter type"
+    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet-regex "name" "not-a-workbook")))))
 
 (deftest select-columns-test
   (let [data     [["Name" "Quantity" "Price" "On Sale"] 

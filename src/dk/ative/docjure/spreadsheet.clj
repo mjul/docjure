@@ -74,6 +74,14 @@
        (filter #(= name (sheet-name %)))
        first))
 
+(defn select-sheet-regex
+  "Select the first sheet whose name matches a specified regex."
+  [name-regex ^Workbook workbook]
+  (assert-type workbook Workbook)
+  (->> (sheet-seq workbook)
+       (filter #(re-find name-regex (sheet-name %)))
+       first))
+
 (defn row-seq
   "Return a lazy sequence of the rows in a sheet."
   [^Sheet sheet]
