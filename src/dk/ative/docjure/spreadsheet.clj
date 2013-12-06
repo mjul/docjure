@@ -66,21 +66,22 @@
   (assert-type sheet Sheet)
   (.getSheetName sheet))
 
+(defn- find-sheet
+  [^Workbook workbook matching-fn]
+  (assert-type workbook Workbook)
+  (->> (sheet-seq workbook)
+       (filter matching-fn)
+       first))
+
 (defn select-sheet
   "Select a sheet from the workbook by name."
   [name ^Workbook workbook]
-  (assert-type workbook Workbook)
-  (->> (sheet-seq workbook)
-       (filter #(= name (sheet-name %)))
-       first))
+  (find-sheet workbook #(= name (sheet-name %))))
 
 (defn select-sheet-regex
   "Select the first sheet whose name matches a specified regex."
   [name-regex ^Workbook workbook]
-  (assert-type workbook Workbook)
-  (->> (sheet-seq workbook)
-       (filter #(re-find name-regex (sheet-name %)))
-       first))
+    (find-sheet workbook #(re-find name-regex (sheet-name %))))
 
 (defn row-seq
   "Return a lazy sequence of the rows in a sheet."
