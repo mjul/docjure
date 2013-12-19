@@ -67,21 +67,28 @@
   (.getSheetName sheet))
 
 (defn- find-sheet
-  [^Workbook workbook matching-fn]
+  [matching-fn ^Workbook workbook]
   (assert-type workbook Workbook)
   (->> (sheet-seq workbook)
        (filter matching-fn)
        first))
 
-(defn select-sheet
-  "Select a sheet from the workbook by name."
-  [name ^Workbook workbook]
-  (find-sheet workbook #(= name (sheet-name %))))
+(defmulti select-sheet
+  "Select a sheet from the workbook by name, regex or arbitrary predicate"
+  (fn [predicate ^Workbook workbook]
+    (class predicate)))
 
-(defn select-sheet-regex
-  "Select the first sheet whose name matches a specified regex."
-  [name-regex ^Workbook workbook]
-    (find-sheet workbook #(re-find name-regex (sheet-name %))))
+(defmethod select-sheet String
+  [name ^Workbook workbook]
+  (find-sheet #(= name (sheet-name %)) workbook))
+
+(defmethod select-sheet java.util.regex.Pattern
+  [regex-pattern ^Workbook workbook]
+  (find-sheet #(re-find regex-pattern (sheet-name %)) workbook))
+
+(defmethod select-sheet :default
+  [matching-fn ^Workbook workbook]
+  (find-sheet matching-fn workbook))
 
 (defn row-seq
   "Return a lazy sequence of the rows in a sheet."
