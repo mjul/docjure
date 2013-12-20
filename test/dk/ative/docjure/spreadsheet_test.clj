@@ -222,16 +222,35 @@
   (testing "Should fail on invalid parameter type"
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (sheet-name "not-a-sheet")))))
 
-(deftest select-sheet-test
-  (let [name       "Sheet 1" 
+(deftest select-sheet-using-string-test
+  (let [name       "Sheet 1"
 	data       [["foo" "bar"]]
 	workbook   (create-workbook name data)
-	first-sheet (first (sheet-seq workbook))]
-    (is (= first-sheet (select-sheet name workbook)) "Expected to find the sheet.")
+	sheet      (first (sheet-seq workbook))]
+    (is (= sheet (select-sheet "Sheet 1" workbook)) "Expected to find the sheet.")
     (is (nil? (select-sheet "unknown name" workbook)) "Expected to get nil for no match."))
   (testing "Should fail on invalid parameter type"
     (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet "name" "not-a-workbook")))))
 
+(deftest select-sheet-using-regex-test
+  (let [name       "Sheet 1"
+	data       [["foo" "bar"]]
+	workbook   (create-workbook name data)
+	first-sheet (first (sheet-seq workbook))]
+    (is (= first-sheet (select-sheet #"(?i)sheet.*" workbook)) "Expected to find the sheet.")
+    (is (nil? (select-sheet #"unknown name" workbook)) "Expected to get nil for no match."))
+  (testing "Should fail on invalid parameter type"
+    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet #"name" "not-a-workbook")))))
+
+(deftest select-sheet-using-fn-test
+  (let [name       "Sheet 1"
+	data       [["foo"] ["bar"]]
+	workbook   (create-workbook name data)
+	first-sheet (first (sheet-seq workbook))]
+    (is (= first-sheet (select-sheet (fn [sheet] (= 2 (count (row-seq sheet)))) workbook)) "Expected to find sheet")
+    (is (nil? (select-sheet (constantly false) workbook)) "Expected to get nil for no match."))
+  (testing "Should fail on invalid parameter type"
+    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet (constantly true) "not-a-workbook")))))
 
 (deftest select-columns-test
   (let [data     [["Name" "Quantity" "Price" "On Sale"] 
