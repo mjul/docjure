@@ -72,7 +72,7 @@ Then build the library:
 
 ## License
 
-Copyright (c) 2009-2013 Martin Jul, Ative (www.ative.dk)
+Copyright (c) 2009-2014 Martin Jul, Ative (www.ative.dk)
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
