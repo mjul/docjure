@@ -72,7 +72,7 @@ Then build the library:
 
 ## License
 
-Copyright (c) 2009-2014 Martin Jul, Ative (www.ative.dk)
+Copyright (c) 2009-2014 Martin Jul
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
@@ -91,9 +91,9 @@ For more information on Apache POI refer to the
 
 Martin Jul
 
-* Email: mj@......dk
+* Email: martin@.....com
 * Twitter: mjul
-
+* GitHub: [mjul](https://github.com/mjul) 
 
 ## Contributors
 This library includes great contributions from
