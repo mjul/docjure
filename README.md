@@ -86,14 +86,14 @@ For more information on Apache POI refer to the
 
 ## Contact information
 
-* [Ative website](http://www.ative.dk)
-* [Docjure on GitHub](http://github.com/ative/docjure)
+* [Docjure on GitHub](https://github.com/mjul/docjure)
 
 Martin Jul
 
 * Email: martin@.....com
 * Twitter: mjul
 * GitHub: [mjul](https://github.com/mjul) 
+
 
 ## Contributors
 This library includes great contributions from
