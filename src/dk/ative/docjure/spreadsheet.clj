@@ -1,13 +1,15 @@
 (ns dk.ative.docjure.spreadsheet
   (:import
-   (java.io FileOutputStream FileInputStream)
+  (java.io FileOutputStream FileInputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
                                 CellValue)
-   (org.apache.poi.ss.util CellReference AreaReference)))
+   (org.apache.poi.ss.util CellReference AreaReference)
+   (org.apache.poi.poifs.crypt EncryptionInfo Decryptor)
+   (org.apache.poi.poifs.filesystem NPOIFSFileSystem)))
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
@@ -45,6 +47,18 @@
   [^String filename]
   (with-open [stream (FileInputStream. filename)]
     (WorkbookFactory/create stream)))
+
+(defn load-encrypted-workbook
+  "Load a password-protected .xls or .xlsx workbook."
+  [^String filename ^String password]
+  (with-open [stream (FileInputStream. filename)
+              npoifs (NPOIFSFileSystem. stream)]
+    (let [info (EncryptionInfo. npoifs)
+          d (. Decryptor getInstance info)]
+      ;; verifyPassword sets the password as well
+      (if-not (. d verifyPassword password)
+        (throw (RuntimeException. "Unable to process: document is encrypted")))
+      (WorkbookFactory/create (. d getDataStream npoifs)))))
 
 (defn save-workbook!
   "Save the workbook into a file."
