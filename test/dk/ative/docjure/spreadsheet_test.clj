@@ -6,7 +6,8 @@
 	   (java.util Date)))
 
 (def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"
-	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"})
+	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"
+       :blanks-file "test/dk/ative/docjure/testdata/blanks.xlsx"})
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific})
 (def formulae-map {:A :formula, :B :expected})
 
@@ -71,7 +72,8 @@
       (do 
 	(is (= sheet (remove-row! sheet first-row)))
 	(is (= 1 (.getPhysicalNumberOfRows sheet)))
-	(is (= [{:A "A2", :B "B2", :C "C2"}] (select-columns {:A :A, :B :B :C :C} sheet)))))))
+	(is (= [{:A "A2", :B "B2", :C "C2"}] (select-columns {:A :A, :B :B :C :C} sheet)))
+  (is (= [{} {:A "A2", :B "B2", :C "C2"}] (dense-select-columns {:A :A, :B :B :C :C} sheet)))))))
 
 (deftest remove-all-row!-test
   (let [sheet-name "Sheet 1" 
@@ -425,6 +427,34 @@
 				      (select-columns formulae-map)
 				      rest)]
       (is (every? #(= (:formula %) (:expected %)) formula-expected-pairs)))))
+
+(deftest select-blanks-integration-test
+  ; note hard to unit test as we can't easily make blank rows using docjure!
+  (let [file (config :blanks-file)
+        workbook (load-workbook file)
+        sheet (select-sheet "test_data" workbook)]
+    (testing "reading rows"
+      (let [actual (dense-row-seq sheet)]
+        (is (= 5 (count actual)))
+        (is (nil? (second actual)))))
+    (testing "reading cells"
+      (let [row (.getRow sheet 2)
+            actual (dense-cell-seq row)]
+        (is (= 5 (count actual)))
+        (is (= ["mid left" nil "middle" nil "mid right"] (map read-cell actual)))))
+    (testing "selecting columns"
+      (let [sparse (select-columns {:A :A :B :B :C :C :D :D :E :E} sheet)
+            dense (dense-select-columns {:A :A :B :B :C :C :D :D :E :E} sheet)]
+        (is (= [{:A "top left"}
+                {:E "mid right", :D nil, :C "middle", :B nil, :A "mid left"}
+                {:E "bottom right"}]
+               sparse))
+        (is (= [{:A "top left"}
+                {}
+                {:E "mid right", :D nil, :C "middle", :B nil, :A "mid left"}
+                {}
+                {:E "bottom right"}]
+               dense))))))
 
 (deftest name-test
   (let [data [["Test1"  "First"    "Second"]

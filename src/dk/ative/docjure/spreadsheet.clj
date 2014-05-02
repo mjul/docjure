@@ -6,7 +6,7 @@
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
-                                CellValue)
+                                CellValue Row$MissingCellPolicy)
    (org.apache.poi.ss.util CellReference AreaReference)))
 
 (defmacro assert-type [value expected-type]
@@ -96,6 +96,12 @@
   (assert-type sheet Sheet)
   (iterator-seq (.iterator sheet)))
 
+(defn dense-row-seq
+  "Return a sequence of the rows in a sheet. Blank rows are returned as nil"
+  [^Sheet sheet]
+  (assert-type sheet Sheet)
+  (map #(.getRow sheet %) (range 0 (inc (.getLastRowNum sheet)))))
+
 (defn- cell-seq-dispatch [x]
   (cond
    (isa? (class x) Row) :row
@@ -115,6 +121,15 @@
                                        cell (cell-seq x)]
                                    cell))
 
+(defn dense-cell-seq
+  "Return a sequence of the cells in a row. Nil rows return an empty sequence.
+   Null cells are returned as blank cells, or you can explictly choose a policy
+   such as Row/RETURN_BLANK_AS_NULL or Row/CREATE_BLANK_AS_NULL"
+  ([^Row row] (dense-cell-seq row Row/CREATE_NULL_AS_BLANK))
+  ([^Row row ^Row$MissingCellPolicy policy]
+   (if-not row
+     '()
+     (map #(.getCell row % policy) (range 0 (.getLastCellNum row))))))
 
 (defn into-seq
   [^Iterable sheet-or-row]
@@ -144,6 +159,17 @@
    (for [row (into-seq sheet)]
      (->> (map #(project-cell column-map %) row)
           (apply merge)))))
+
+(defn dense-select-columns [column-map ^Sheet sheet]
+  "Same as select-columns, except blank rows will be returned as an empty map,
+   instead of being skipped. Not as lazy as select-columns however."
+  (assert-type sheet Sheet)
+  (vec
+    (for [row (dense-row-seq sheet)]
+      (if-not row
+        {}
+        (->> (map #(project-cell column-map %) row)
+             (apply merge))))))
 
 (defn string-cell? [^Cell cell]
   (= Cell/CELL_TYPE_STRING (.getCellType cell)))
@@ -309,7 +335,7 @@
   (vec (map row column-order)))
 
 (defn remove-row!
-  "Remove a row from the sheet."
+  "Remove a row from the sheet. Rows are not shifted up - the removed row will display as blank"
   [^Sheet sheet ^Row row]
   (do
     (assert-type sheet Sheet)
