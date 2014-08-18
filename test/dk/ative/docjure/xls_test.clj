@@ -75,9 +75,7 @@
 (defn july [day]
   (Date. 2010 7 day))
 
-
-(comment
-  (deftest read-cell-value-test
+(deftest read-cell-value-test
     (let [date (july 1)
           workbook (create-xls-workbook "Just a date" [[date]])
           sheet (.getSheetAt workbook 0)
@@ -91,10 +89,8 @@
              true (CellValue/valueOf true) false
              date (.. workbook getCreationHelper createFormulaEvaluator (evaluate date-cell)) true
              ))))
-  )
 
-(comment
-  (deftest read-cell-test
+(deftest read-cell-test
     (let [sheet-data [["Nil" "Blank" "Date" "String" "Number"]
                       [nil "" (july 1) "foo" 42.0]]
           workbook (create-xls-workbook "Sheet 1" sheet-data)
@@ -108,8 +104,6 @@
         (is (= "" (read-cell blank-cell)))
         (is (= (july 1) (read-cell date-cell)))
         (is (= 42.0 (read-cell number-cell))))))
-  )
-
 
 (deftest set-cell!-test
   (let [sheet-name "Sheet 1" 
@@ -393,26 +387,6 @@
 	  cell (-> (sheet-seq wb) first cell-seq first)]
       (is (= cell (set-cell-style! cell cs)))
       (is (= (.getCellStyle cell) cs)))))
-
-;; (deftest set-cell-style!-test2
-;;   (let  [fx (fn [wb]
-;;               (testing "Should apply style to cell."
-;;                 (let [cs (create-cell-style! wb {:background :yellow})
-;;                       cell (-> (sheet-seq wb) first cell-seq first)]
-;;                   (is (= cell (set-cell-style! cell cs)))
-;;                   (is (= (.getCellStyle cell) cs)))))
-;;          wbxls (create-xls-workbook "Dummy" [["foo"]])
-;;          wbxlsx (create-workbook "Dummy" [["foo"]])]
-;;     (doseq [wb [wbxls wbxlsx]] (fx wb))))
-
-(deftest set-cell-comment!-test
-  (testing "Should set cell comment."
-    (let [wb (create-xls-workbook "Dummy" [["foo"]])
-	  cell (-> (sheet-seq wb) first cell-seq first)
-          comment-str "This is a\nshort comment."
-          cellc (set-cell-comment! cell comment-str)
-          cstr (.. cell getCellComment getString getString)]
-      (is (= comment-str cstr)))))
 
 (deftest set-row-style!-test
   (testing "Should apply style to all cells in row."

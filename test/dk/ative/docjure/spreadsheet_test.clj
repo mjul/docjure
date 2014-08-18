@@ -92,9 +92,7 @@
 (defn july [day]
   (Date. 2010 7 day))
 
-
-(comment
-  (deftest read-cell-value-test
+(deftest read-cell-value-test
     (let [date (july 1)
           workbook (create-workbook "Just a date" [[date]])
           sheet (.getSheetAt workbook 0)
@@ -108,10 +106,8 @@
              true (CellValue/valueOf true) false
              date (.. workbook getCreationHelper createFormulaEvaluator (evaluate date-cell)) true
              ))))
-  )
 
-(comment
-  (deftest read-cell-test
+(deftest read-cell-test
     (let [sheet-data [["Nil" "Blank" "Date" "String" "Number"]
                       [nil "" (july 1) "foo" 42.0]]
           workbook (create-workbook "Sheet 1" sheet-data)
@@ -125,7 +121,6 @@
         (is (= "" (read-cell blank-cell)))
         (is (= (july 1) (read-cell date-cell)))
         (is (= 42.0 (read-cell number-cell))))))
-  )
 
 
 (deftest set-cell!-test
@@ -226,48 +221,6 @@
   (testing "Should fail on invalid parameter type"
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (sheet-name "not-a-sheet")))))
 
-(deftest legal-sheet-name?-test
-  (is (not (legal-sheet-name? "")))
-  (is (not (legal-sheet-name? "A:B")))
-  (is (not (legal-sheet-name? "A\\B")))
-  (is (not (legal-sheet-name? "A*B")))
-  (is (not (legal-sheet-name? "A?B")))
-  (is (not (legal-sheet-name? "A/B")))
-  (is (not (legal-sheet-name? "[AB")))
-  (is (not (legal-sheet-name? "AB]")))
-  (is (not (legal-sheet-name? "[AB]")))
-  (is (not (legal-sheet-name? "'AB")))
-  (is (not (legal-sheet-name? "AB'")))
-  (is (not (legal-sheet-name? "'AB'")))
-  (is (not (legal-sheet-name? "12345678901234567890123456789012")))
-  (is (legal-sheet-name? "1234567890123456789012345678901"))
-  (is (legal-sheet-name? " "))
-  (is (legal-sheet-name? "1"))
-  (is (legal-sheet-name? "!"))
-  (is (legal-sheet-name? "@"))
-  (is (legal-sheet-name? "#"))
-  (is (legal-sheet-name? "%"))
-  (is (legal-sheet-name? "^"))
-  (is (legal-sheet-name? "&"))
-  (is (legal-sheet-name? "("))
-  (is (legal-sheet-name? ")"))
-  (is (legal-sheet-name? "_"))
-  (is (legal-sheet-name? "-"))
-  (is (legal-sheet-name? "+"))
-  (is (legal-sheet-name? "="))
-  (is (legal-sheet-name? "~"))
-  (is (legal-sheet-name? "`"))
-  (is (legal-sheet-name? "{"))
-  (is (legal-sheet-name? "}"))
-  (is (legal-sheet-name? "|"))
-  (is (legal-sheet-name? ";"))
-  (is (legal-sheet-name? "\""))
-  (is (legal-sheet-name? "1'2"))
-  (is (legal-sheet-name? "<"))
-  (is (legal-sheet-name? ","))
-  (is (legal-sheet-name? ">"))
-  (is (legal-sheet-name? "."))
-  )
 
 (deftest select-sheet-using-string-test
   (let [name       "Sheet 1"
@@ -462,15 +415,6 @@
 	  cell (-> (sheet-seq wb) first cell-seq first)]
       (is (= cell (set-cell-style! cell cs)))
       (is (= (.getCellStyle cell) cs)))))
-
-(deftest set-cell-comment!-test
-  (testing "Should set cell comment."
-    (let [wb (create-workbook "Dummy" [["foo"]])
-	  cell (-> (sheet-seq wb) first cell-seq first)
-          comment-str "This is a\nshort comment."
-          cellc (set-cell-comment! cell comment-str)
-          cstr (.. cell getCellComment getString getString)]
-      (is (= comment-str cstr)))))
 
 (deftest set-row-style!-test
   (testing "Should apply style to all cells in row."

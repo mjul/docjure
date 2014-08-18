@@ -1,34 +1,20 @@
 (ns dk.ative.docjure.spreadsheet
-  ;(:require [criterium.core :as crit])
-  ;(:require [clojure.core.reducers :as r])
   (:import
    (java.io FileOutputStream FileInputStream)
    (java.util Date Calendar)
-   (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
+   (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
-                                CellValue Drawing CreationHelper
-                                ClientAnchor Comment RichTextString)
-   (org.apache.poi.ss.util CellReference AreaReference SheetBuilder
-                           WorkbookUtil)))
+                                CellValue Drawing CreationHelper)
+   (org.apache.poi.ss.util CellReference AreaReference)))
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
      (throw (IllegalArgumentException.    
              (format "%s is invalid. Expected %s. Actual type %s, value: %s"
                      (str '~value) ~expected-type (class ~value) ~value)))))
-
- ;; ;; if using this non-macro version, which really is preferable, change 
- ;; ;; the regex in create-font!-test from ^workbook.* to workbook.*
- ;; ;; That's the only change needed.
- ;;
- ;; (defn assert-type [value expected-type]
- ;;   (when-not (isa? (class value) expected-type)
- ;;      (throw (IllegalArgumentException.    
- ;;              (format "%s is invalid. Expected %s. Actual type %s, value: %s"
- ;;                      (str value) expected-type (class value) value)))))
 
 ;; not used
 (defn cell-reference [^Cell cell]
@@ -55,17 +41,6 @@
   (if (DateUtil/isCellDateFormatted cell)
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
-
-;; (defmulti get-font (fn [^CellStyle cs ^Workbook workbook] (class workbook)))
-;; (defmethod get-font HSSFWorkbook [^CellStyle cs ^Workbook workbook] (.getFont cs workbook))
-;; (defmethod get-font XSSFWorkbook [^CellStyle cs ^Workbook workbook] (.getFont cs))
-
-;; (defprotocol IFontGetable
-;;   (get-font [this cellstyle workbook]))
-
-;; (extend-protocol IFontGetable
-;;   XSSFWorkbook
-;;   (get-font [this ^Workbook workbook]))
 
 (defn load-workbook
   "Load an Excel .xls or .xlsx workbook from a file."
@@ -225,25 +200,6 @@
   (assert-type workbook Workbook)
   (.createSheet workbook name))
 
-(defn set-sheet-properties!
-  [^Sheet sheet spec]
-  (let [{:keys [auto-size-column gridlines]} spec]))
-
-(defn safe-sheet-name [proposed-name]
-  (WorkbookUtil/createSafeSheetName proposed-name))
-
-(defn legal-sheet-name?
-  "minimum length is 1
-   maximum length is 31
-   doesn't contain special chars : 0x0000 0x0003 / \\ ? * ] [
-   must not begin or end with ' (apostrophe)
-  "
-  [sheetname]  
-  (= sheetname (safe-sheet-name sheetname)))
-
-(defn- assert-legal [sheetname]
-  (assert (legal-sheet-name? sheetname) "illegal sheet name"))
-
 (defn create-workbook
   "Create a new xlsx workbook with a single sheet and the data
    specified. The data is given a vector of vectors, representing
@@ -257,7 +213,6 @@
                      [\"Foo Widget\" 2 42]])
    "
   [sheet-name data]
-  (assert-legal sheet-name)
   (let [workbook (XSSFWorkbook.)
         sheet    (add-sheet! workbook sheet-name)]
     (add-rows! sheet data)
@@ -266,30 +221,13 @@
 (defn create-xls-workbook
   "Create a new xls workbook with a single sheet and the data specified."
   [sheet-name data]
-  (assert-legal sheet-name)
   (let [workbook (HSSFWorkbook.)
         sheet    (add-sheet! workbook sheet-name)]
     (add-rows! sheet data)
     workbook))
 
-(comment ;too bad this doesn't quite work with dates and booleans
-
-  (defn create-workbook [sheet-name data]
-    (let [workbook (XSSFWorkbook.)
-          sheetbuilder (doto (SheetBuilder. workbook (to-array-2d data))
-                         (.setSheetName sheet-name)
-                         (.setCreateEmptyCells true))]
-      (.build sheetbuilder)
-      workbook))
-
- (defn create-xls-workbook [sheet-name data]
-   (let [workbook (HSSFWorkbook.)
-         sheetbuilder (doto (SheetBuilder. workbook (to-array-2d data))
-                        (.setSheetName sheet-name)
-                        (.setCreateEmptyCells true))]
-     (.build sheetbuilder)
-     workbook))
- );end comment
+;******************************************************
+;       helpers for font and style creation     
 
 
 (defn color-index
@@ -322,13 +260,6 @@
     :medium CellStyle/BORDER_MEDIUM
     :thick CellStyle/BORDER_THICK))
 
-(defmacro whenz
-  "Processes any and all clauses whose tests evaluate to true."  
-  [& clauses]
-  (when clauses
-    `(do (when ~(first clauses) ~(second clauses))
-         (whenz ~@(nnext clauses)))))
-
 (defmacro whens
   "Processes any and all expressions whose tests evaluate to true.
    Example:
@@ -345,7 +276,8 @@
   (when clauses
     `(do (when ~test ~expr)
          (whens ~@(nnext clauses)))))
- 
+
+;****************************************************
 
 (defn create-font!
   "Create a new font in the workbook with options:
@@ -390,7 +322,7 @@
     (set-font [this ^CellStyle style _]
       (.setFont style this))
    (as-font [this _]
-      this))
+     this))
 
 (defn create-cell-style!
   "Create a new cell-style in the workbook from options:
@@ -411,11 +343,11 @@
      :black, :white, :red, :blue, :light_green, :yellow, ...
 
    Examples:
-
+   I.
    (def f (create-font! wb {:name \"Arial\", :bold true, :italic true})
    (create-cell-style! wb {:background :yellow, :font f, :halign :center,
                            :wrap true, :borders :thin})
-
+   II.
    (create-cell-style! wb {:background :yellow, :halign :center,
                            :font {:name \"Arial\" :bold true :italic true},
                            :wrap true, :borders :thin})
@@ -430,8 +362,6 @@
                    border-bottom borders]} styles]
        (whens
         font   (set-font font cs workbook)
-               ;; (if (instance? Font font) (.setFont cs font)
-               ;;   (.setFont cs (create-font! workbook font)))
         background (do (.setFillForegroundColor cs (color-index background))
                        (.setFillPattern cs CellStyle/SOLID_FOREGROUND))
         halign (.setAlignment cs (horiz-align halign))
@@ -452,60 +382,6 @@
   (assert-type style CellStyle)
   (.setCellStyle cell style)
   cell)
-
-(defn set-cell-comment-orig!
-  [^Cell cell cell-comment  cwidth  clength]
-  (let [sheet (.getSheet cell)
-        wb (.getWorkbook sheet)
-        drawing (.createDrawingPatriarch sheet)
-        helper (.getCreationHelper wb)
-        anchor (.createClientAnchor helper)
-        c1 (.getColumnIndex cell)
-        c2 (+ c1 cwidth)
-        r1 (.getRowIndex cell)
-        r2 (+ r1 clength)]
-    (doto anchor
-      (.setCol1 c1) (.setCol2 c2) (.setRow1 r1) (.setRow2 r2))
-    (let [comment (. drawing (createCellComment anchor))
-          cstr (. helper (createRichTextString cell-comment))]
-      (. comment (setString cstr))
-      (. cell (setCellComment comment)))
-    cell))
-
-(defn set-cell-comment!
-  "Creates a cell comment-box that displays a comment string
-   when the cell is hovered over. Returns the cell. 
-   Options:
-
-   :font font | fontmap - font applied to the string.
-   :width int - xsize of comment-box in columns (default 1 col)
-   :length int - ysize of comment-box in rows (default 2 rows)
-
-   Example:
-  
-   (set-cell-comment! acell \"This is a\nshort comment.\" :width 2
-                     :font {:bold true :size 12 :color blue})
-   "
-  [^Cell cell comment-str & {:keys [font width length]
-                             :or {width 1, length 2}}]
-  (let [sheet (.getSheet cell)
-        wb (.getWorkbook sheet)
-        drawing (.createDrawingPatriarch sheet)
-        helper (.getCreationHelper wb)
-        anchor (.createClientAnchor helper)
-        c1 (.getColumnIndex cell)
-        c2 (+ c1 width)
-        r1 (.getRowIndex cell)
-        r2 (+ r1 length)]
-    (doto anchor
-      (.setCol1 c1) (.setCol2 c2) (.setRow1 r1) (.setRow2 r2))
-    (let [comment (. drawing (createCellComment anchor))
-          rts (. helper (createRichTextString comment-str))]
-      (when font
-        (let [^Font f (as-font font wb)] (. rts (applyFont f))))
-      (. comment (setString rts))
-      (. cell (setCellComment comment)))
-    cell))
 
 (defn set-row-style!
   "Apply a style to all the cells in a row.
