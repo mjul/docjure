@@ -163,18 +163,24 @@
                     (.. format-helper createDataFormat (getFormat format)))
     (.setCellStyle cell date-style)))
 
-(defn set-cell! [^Cell cell value]
-  (if (nil? value)
-    (let [^String null nil]
-      (.setCellValue cell null)) ;do not call setCellValue(Date) with null
-    (let [converted-value (cond (number? value) (double value)
-                                :else value)]
-      ;;The arg to setCellValue takes multiple types so no type-hinting here
-      ;; See http://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/Cell.html
-      (.setCellValue cell converted-value)
-      (if (date-or-calendar? value)
-        (apply-date-format! cell "m/d/yy")))))
+(defmulti set-cell! (fn [^Cell cell val] (type val)))
 
+(defmethod set-cell! String [^Cell cell val]
+  (.setCellValue cell ^String val))
+
+(defmethod set-cell! Number [^Cell cell val]
+  (.setCellValue cell (double val)))
+
+(defmethod set-cell! Boolean [^Cell cell val]
+  (.setCellValue cell ^Boolean val))
+
+(defmethod set-cell! Date [^Cell cell val]
+  (do (.setCellValue cell ^Date val)
+      (apply-date-format! cell "m/d/yy")))
+
+(defmethod set-cell! nil [^Cell cell val]
+  (let [^String null nil]
+      (.setCellValue cell null)))
 
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
