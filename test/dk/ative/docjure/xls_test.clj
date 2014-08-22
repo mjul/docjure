@@ -388,6 +388,15 @@
       (is (= cell (set-cell-style! cell cs)))
       (is (= (.getCellStyle cell) cs)))))
 
+(deftest set-cell-comment!-test
+  (testing "Should set cell comment."
+    (let [wb (create-xls-workbook "Dummy" [["foo"]])
+	  cell (-> (sheet-seq wb) first cell-seq first)
+          comment-str "This is a\nshort comment."
+          cellc (set-cell-comment! cell comment-str)
+          cstr (.. cell getCellComment getString getString)]
+      (is (= comment-str cstr)))))
+
 (deftest set-row-style!-test
   (testing "Should apply style to all cells in row."
     (let [wb (create-xls-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])

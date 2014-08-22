@@ -389,6 +389,42 @@
   (.setCellStyle cell style)
   cell)
 
+(defn set-cell-comment!
+  "Creates a cell comment-box that displays a comment string
+   when the cell is hovered over. Returns the cell. 
+
+   Options:
+
+   :font   (font | fontmap - font applied to the comment string)
+   :width  (int - width of comment-box in columns; default 1 cols)
+   :height (int - height of comment-box in rows; default 2 rows)
+
+   Example:
+  
+   (set-cell-comment! acell \"This comment should\nspan two lines.\"
+                     :width 2 :font {:bold true :size 12 :color blue})
+   "
+  [^Cell cell comment-str & {:keys [font width height]
+                             :or {width 1, height 2}}]
+  (let [sheet (.getSheet cell)
+        wb (.getWorkbook sheet)
+        drawing (.createDrawingPatriarch sheet)
+        helper (.getCreationHelper wb)
+        anchor (.createClientAnchor helper)
+        c1 (.getColumnIndex cell)
+        c2 (+ c1 width)
+        r1 (.getRowIndex cell)
+        r2 (+ r1 height)]
+    (doto anchor
+      (.setCol1 c1) (.setCol2 c2) (.setRow1 r1) (.setRow2 r2))
+    (let [comment (.createCellComment drawing anchor)
+          rts (.createRichTextString helper comment-str)]
+      (when font
+        (let [^Font f (as-font font wb)] (.applyFont rts f)))
+      (.setString comment rts)
+      (.setCellComment cell comment))
+    cell))
+
 (defn set-row-style!
   "Apply a style to all the cells in a row.
    Returns the row."
