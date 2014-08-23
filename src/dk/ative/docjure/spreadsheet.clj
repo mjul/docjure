@@ -315,20 +315,26 @@
     f))
 
 (defprotocol IFontable
+  "A protocol that allows:
+   1. interchangeable use of fonts and maps of font options
+   2. getting fonts from either xls or xlsx cell styles, which
+      normally requires distinct syntax."
   (set-font [this style workbook])
+  (get-font [this workbook])
   (as-font [this workbook]))
 
 (extend-protocol IFontable
   clojure.lang.PersistentArrayMap
-    (set-font [this ^CellStyle style workbook]
-      (.setFont style (create-font! workbook this)))
-    (as-font [this workbook]
-      (create-font! workbook this))
+  (set-font [this ^CellStyle style workbook]
+    (.setFont style (create-font! workbook this)))
+  (as-font [this workbook] (create-font! workbook this)) 
   org.apache.poi.ss.usermodel.Font
-    (set-font [this ^CellStyle style _]
-      (.setFont style this))
-   (as-font [this _]
-     this))
+  (set-font [this ^CellStyle style _] (.setFont style this))
+  (as-font [this _] this)  
+  org.apache.poi.xssf.usermodel.XSSFCellStyle
+  (get-font [this _] (.getFont this))  
+  org.apache.poi.hssf.usermodel.HSSFCellStyle
+  (get-font [this workbook] (.getFont this workbook)))
 
 (defn create-cell-style!
   "Create a new cell-style in the workbook from options:

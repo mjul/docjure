@@ -300,11 +300,11 @@
       (let [wb (create-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb)]
 	(is (= CellStyle/NO_FILL (.getFillPattern cs)))
-        (is (= Font/BOLDWEIGHT_NORMAL (.. cs getFont getBoldweight)))
-        (is (= Font/U_NONE (.. cs getFont getUnderline)))
+        (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight (get-font cs wb))))
+        (is (= Font/U_NONE (.getUnderline (get-font cs wb))))
         ;Font/COLOR_NORMAL doesn't work right in xssf
-        (is (= XSSFFont/DEFAULT_FONT_COLOR (.. cs getFont getColor)))
-        (is (not (.. cs getFont getItalic)))
+        (is (= XSSFFont/DEFAULT_FONT_COLOR (.getColor (get-font cs wb))))
+        (is (not (.getItalic (get-font cs wb))))
         (is (not (.getWrapText cs)))
         (is (= CellStyle/ALIGN_GENERAL (.getAlignment cs)))
         (is (= CellStyle/BORDER_NONE (.getBorderLeft cs)))
@@ -350,32 +350,32 @@
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= Font/BOLDWEIGHT_BOLD (.. cs getFont getBoldweight)))
-        (is (= Font/BOLDWEIGHT_BOLD (.. cs2 getFont getBoldweight)))))
+	(is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs wb))))
+        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs2 wb))))))
     (testing ":font :color"
       (let [wb (create-workbook "Dummy" [["fonts"]])
             fontmap {:color :light_green}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= (.getIndex IndexedColors/LIGHT_GREEN) (.. cs getFont getColor)))
-        (is (= (.getIndex IndexedColors/LIGHT_GREEN) (.. cs2 getFont getColor)))))
+	(is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (get-font cs wb))))
+        (is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (get-font cs2 wb))))))
     (testing ":font :name"
       (let [wb (create-workbook "Dummy" [["fonts"]])
             fontmap {:name "Verdana"}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= "Verdana" (.. cs getFont getFontName)))
-        (is (= "Verdana" (.. cs2 getFont getFontName)))))
+	(is (= "Verdana" (.getFontName (get-font cs wb))))
+        (is (= "Verdana" (.getFontName (get-font cs2 wb))))))
     (testing ":font :size"
       (let [wb (create-workbook "Dummy" [["fonts"]])
             fontmap {:size 8}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= 8 (.. cs getFont getFontHeightInPoints)))
-        (is (= 8 (.. cs2 getFont getFontHeightInPoints)))))
+	(is (= 8 (.getFontHeightInPoints (get-font cs wb))))
+        (is (= 8 (.getFontHeightInPoints (get-font cs2 wb))))))
     (testing ":font :italic"
       (let [wb (create-workbook "Dummy" [["fonts"]])
             fontmap {:italic true}
@@ -390,8 +390,8 @@
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= Font/U_SINGLE (.. cs getFont getUnderline)))
-        (is (= Font/U_SINGLE (.. cs2 getFont getUnderline)))))))
+	(is (= Font/U_SINGLE (.getUnderline (get-font cs wb))))
+        (is (= Font/U_SINGLE (.getUnderline (get-font cs2 wb))))))))
 
 (deftest create-font!-test
     (let [wb (create-workbook "Dummy" [["foo"]])]
@@ -424,6 +424,8 @@
           cellc (set-cell-comment! cell comment-str)
           cstr (.. cell getCellComment getString getString)]
       (is (= comment-str cstr)))))
+
+
 
 (deftest set-row-style!-test
   (testing "Should apply style to all cells in row."
