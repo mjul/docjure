@@ -3,18 +3,20 @@
    (java.io FileOutputStream FileInputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
+   (org.apache.poi.hssf.usermodel HSSFWorkbook)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
-                                CellValue)
+                                CellValue Drawing CreationHelper)
    (org.apache.poi.ss.util CellReference AreaReference)))
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
-     (throw (IllegalArgumentException.
+     (throw (IllegalArgumentException.    
              (format "%s is invalid. Expected %s. Actual type %s, value: %s"
                      (str '~value) ~expected-type (class ~value) ~value)))))
 
+;; not used
 (defn cell-reference [^Cell cell]
   (.formatAsString (CellReference. (.getRowIndex cell) (.getColumnIndex cell))))
 
@@ -45,7 +47,7 @@
   [^String filename]
   (with-open [stream (FileInputStream. filename)]
     (WorkbookFactory/create stream)))
-
+ 
 (defn save-workbook!
   "Save the workbook into a file."
   [^String filename ^Workbook workbook]
@@ -94,7 +96,8 @@
   "Return a lazy sequence of the rows in a sheet."
   [^Sheet sheet]
   (assert-type sheet Sheet)
-  (iterator-seq (.iterator sheet)))
+  (iterator-seq (.iterator sheet))
+  )
 
 (defn- cell-seq-dispatch [x]
   (cond
@@ -160,17 +163,24 @@
                     (.. format-helper createDataFormat (getFormat format)))
     (.setCellStyle cell date-style)))
 
-(defn set-cell! [^Cell cell value]
-  (if (nil? value)
-    (let [^String null nil]
-      (.setCellValue cell null)) ;do not call setCellValue(Date) with null
-    (let [converted-value (cond (number? value) (double value)
-                                :else value)]
-      ;;The arg to setCellValue takes multiple types so no type-hinting here
-      ;; See http://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/Cell.html
-      (.setCellValue cell converted-value)
-      (if (date-or-calendar? value)
-        (apply-date-format! cell "m/d/yy")))))
+(defmulti set-cell! (fn [^Cell cell val] (type val)))
+
+(defmethod set-cell! String [^Cell cell val]
+  (.setCellValue cell ^String val))
+
+(defmethod set-cell! Number [^Cell cell val]
+  (.setCellValue cell (double val)))
+
+(defmethod set-cell! Boolean [^Cell cell val]
+  (.setCellValue cell ^Boolean val))
+
+(defmethod set-cell! Date [^Cell cell val]
+  (do (.setCellValue cell ^Date val)
+      (apply-date-format! cell "m/d/yy")))
+
+(defmethod set-cell! nil [^Cell cell val]
+  (let [^String null nil]
+      (.setCellValue cell null)))
 
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
@@ -178,7 +188,7 @@
                   0
                   (inc (.getLastRowNum sheet)))
         row (.createRow sheet row-num)]
-    (doseq [[column-index value] (partition 2 (interleave (iterate inc 0) values))]
+    (doseq [[column-index value] (map-indexed #(list %1 %2) values)]
       (set-cell! (.createCell row column-index) value))
     row))
 
@@ -196,11 +206,10 @@
   (assert-type workbook Workbook)
   (.createSheet workbook name))
 
-
 (defn create-workbook
-  "Create a new workbook with a single sheet and the data specified.
-   The data is given a vector of vectors, representing the rows
-   and the cells of the rows.
+  "Create a new xlsx workbook with a single sheet and the data
+   specified. The data is given a vector of vectors, representing
+   the rows and the cells of the rows.
 
    For example, to create a workbook with a sheet with
    two rows of each three columns:
@@ -215,57 +224,166 @@
     (add-rows! sheet data)
     workbook))
 
+(defn create-xls-workbook
+  "Create a new xls workbook with a single sheet and the data specified."
+  [sheet-name data]
+  (let [workbook (HSSFWorkbook.)
+        sheet    (add-sheet! workbook sheet-name)]
+    (add-rows! sheet data)
+    workbook))
+
+;******************************************************
+;       helpers for font and style creation     
+
+
+(defn color-index
+  "Returns color index from org.apache.ss.usermodel.IndexedColors
+   from lowercase keywords"
+  [colorkw]
+  (.getIndex (IndexedColors/valueOf (.toUpperCase (name colorkw)))))
+
+(defn horiz-align
+  "Returns horizontal alignment"
+  [kw]
+  (case kw
+    :left CellStyle/ALIGN_LEFT
+    :right CellStyle/ALIGN_RIGHT
+    :center CellStyle/ALIGN_CENTER))
+
+(defn vert-align
+  "Returns vertical alignment"
+  [kw]
+  (case kw
+    :top CellStyle/VERTICAL_TOP
+    :bottom CellStyle/VERTICAL_BOTTOM
+    :center CellStyle/VERTICAL_CENTER))
+
+(defn border
+  "Returns border style"
+  [kw]
+  (case kw
+    :thin CellStyle/BORDER_THIN
+    :medium CellStyle/BORDER_MEDIUM
+    :thick CellStyle/BORDER_THICK))
+
+(defmacro whens
+  "Processes any and all expressions whose tests evaluate to true.
+   Example:
+   (let [m (java.util.HashMap.)]
+    (whens
+     false (.put m :z 0)
+     true  (.put m :a 1)
+     true  (.put m :b 2)
+     nil   (.put m :w 3))
+    m)
+   => {:b=2, :a=1}
+  "
+  [& [test expr :as clauses]]
+  (when clauses
+    `(do (when ~test ~expr)
+         (whens ~@(nnext clauses)))))
+
+;****************************************************
+
 (defn create-font!
-  "Create a new font in the workbook.
+  "Create a new font in the workbook with options:
 
-   Options are
-
-       :bold    true/false   bold or normal font
+       :name      font family (string)
+       :size      font size  (integer)
+       :color     font color (keyword)
+       :bold      true | false
+       :italic    true | false
+       :underline true | false
 
    Example:
 
-      (create-font! wb {:bold true})
+      (create-font! wb
+       {:name \"Arial\", :size 12, :color :blue,
+        :bold true, :underline true})
    "
   [^Workbook workbook options]
-  (let [defaults {:bold false}
-        cfg (merge defaults options)]
-    (assert-type workbook Workbook)
-    (let [f (.createFont workbook)]
-      (doto f
-        (.setBoldweight (if (:bold cfg) Font/BOLDWEIGHT_BOLD Font/BOLDWEIGHT_NORMAL)))
-      f)))
+  (assert-type workbook Workbook)
+  (let [f (.createFont workbook)
+        {:keys [name size color bold italic underline]} options]
+    (whens
+     name      (.setFontName f name)
+     size      (.setFontHeightInPoints f size)
+     color     (.setColor f (color-index color))
+     bold      (.setBoldweight f Font/BOLDWEIGHT_BOLD)
+     italic    (.setItalic f true)
+     underline (.setUnderline f Font/U_SINGLE))
+    f))
 
+(defprotocol IFontable
+  "A protocol that allows:
+   1. interchangeable use of fonts and maps of font options
+   2. getting fonts from either xls or xlsx cell styles, which
+      normally requires distinct syntax."
+  (set-font [this style workbook])
+  (get-font [this workbook])
+  (as-font [this workbook]))
+
+(extend-protocol IFontable
+  clojure.lang.PersistentArrayMap
+  (set-font [this ^CellStyle style workbook]
+    (.setFont style (create-font! workbook this)))
+  (as-font [this workbook] (create-font! workbook this)) 
+  org.apache.poi.ss.usermodel.Font
+  (set-font [this ^CellStyle style _] (.setFont style this))
+  (as-font [this _] this)  
+  org.apache.poi.xssf.usermodel.XSSFCellStyle
+  (get-font [this _] (.getFont this))  
+  org.apache.poi.hssf.usermodel.HSSFCellStyle
+  (get-font [this workbook] (.getFont this workbook)))
 
 (defn create-cell-style!
-  "Create a new cell-style.
-   Options is a map with the cell style configuration:
+  "Create a new cell-style in the workbook from options:
 
-      :background     the name of the background colour (as keyword)
+      :background    background colour (as keyword)
+      :font          font | fontmap (of font options)
+      :halign        :left | :right | :center
+      :valign        :top | :bottom | :center
+      :wrap          true | false - controls text wrapping
+      :border-left   :thin | :medium | :thick
+      :border-right  :thin | :medium | :thick
+      :border-top    :thin | :medium | :thick
+      :border-bottom :thin | :medium | :thick
 
-   Valid keywords are the colour names defined in
+   Valid color keywords are the colour names defined in
    org.apache.ss.usermodel.IndexedColors as lowercase keywords, eg.
 
-     :black, :white, :red, :blue, :green, :yellow, ...
+     :black, :white, :red, :blue, :light_green, :yellow, ...
 
-   Example:
-
-   (create-cell-style! wb {:background :yellow})
+   Examples:
+   I.
+   (def f (create-font! wb {:name \"Arial\", :bold true, :italic true})
+   (create-cell-style! wb {:background :yellow, :font f, :halign :center,
+                           :wrap true, :borders :thin})
+   II.
+   (create-cell-style! wb {:background :yellow, :halign :center,
+                           :font {:name \"Arial\" :bold true :italic true},
+                           :wrap true, :borders :thin})
   "
   ([^Workbook workbook] (create-cell-style! workbook {}))
 
   ([^Workbook workbook styles]
      (assert-type workbook Workbook)
      (let [cs (.createCellStyle workbook)
-           {background :background, font-style :font} styles
-           font (create-font! workbook font-style)]
-       (do
-         (.setFont cs font)
-         (when background
-           (let [bg-idx (.getIndex (IndexedColors/valueOf
-                                    (.toUpperCase (name background))))]
-             (.setFillForegroundColor cs bg-idx)
-             (.setFillPattern cs CellStyle/SOLID_FOREGROUND)))
-         cs))))
+           {:keys [background font halign valign wrap
+                   border-left border-right border-top
+                   border-bottom borders]} styles]
+       (whens
+        font   (set-font font cs workbook)
+        background (do (.setFillForegroundColor cs (color-index background))
+                       (.setFillPattern cs CellStyle/SOLID_FOREGROUND))
+        halign (.setAlignment cs (horiz-align halign))
+        valign (.setVerticalAlignment cs (vert-align valign))
+        wrap   (.setWrapText cs true)
+        border-left (.setBorderLeft cs (border border-left))
+        border-right (.setBorderRight cs (border border-right))
+        border-top (.setBorderTop cs (border border-top))
+        border-bottom (.setBorderBottom cs (border border-bottom)))      
+       cs))) 
 
 (defn set-cell-style!
   "Apply a style to a cell.
@@ -277,13 +395,50 @@
   (.setCellStyle cell style)
   cell)
 
+(defn set-cell-comment!
+  "Creates a cell comment-box that displays a comment string
+   when the cell is hovered over. Returns the cell. 
+
+   Options:
+
+   :font   (font | fontmap - font applied to the comment string)
+   :width  (int - width of comment-box in columns; default 1 cols)
+   :height (int - height of comment-box in rows; default 2 rows)
+
+   Example:
+  
+   (set-cell-comment! acell \"This comment should\nspan two lines.\"
+                     :width 2 :font {:bold true :size 12 :color blue})
+   "
+  [^Cell cell comment-str & {:keys [font width height]
+                             :or {width 1, height 2}}]
+  (let [sheet (.getSheet cell)
+        wb (.getWorkbook sheet)
+        drawing (.createDrawingPatriarch sheet)
+        helper (.getCreationHelper wb)
+        anchor (.createClientAnchor helper)
+        c1 (.getColumnIndex cell)
+        c2 (+ c1 width)
+        r1 (.getRowIndex cell)
+        r2 (+ r1 height)]
+    (doto anchor
+      (.setCol1 c1) (.setCol2 c2) (.setRow1 r1) (.setRow2 r2))
+    (let [comment (.createCellComment drawing anchor)
+          rts (.createRichTextString helper comment-str)]
+      (when font
+        (let [^Font f (as-font font wb)] (.applyFont rts f)))
+      (.setString comment rts)
+      (.setCellComment cell comment))
+    cell))
+
 (defn set-row-style!
   "Apply a style to all the cells in a row.
    Returns the row."
   [^Row row ^CellStyle style]
   (assert-type row Row)
   (assert-type style CellStyle)
-  (dorun (map #(.setCellStyle ^Cell % style) (cell-seq row)))
+  (doseq [^Cell c (cell-seq row)]
+    (.setCellStyle c style))
   row)
 
 (defn get-row-styles
@@ -294,7 +449,7 @@
 (defn set-row-styles!
   "Apply a seq of styles to the cells in a row."
   [^Row row styles]
-  (let [pairs (partition 2 (interleave (cell-seq row) styles))]
+  (let [pairs (map list (cell-seq row) styles)]
     (doseq [[^Cell c s] pairs]
       (.setCellStyle c s))))
 
@@ -341,11 +496,11 @@
     (-> sheet (.getRow row) (.getCell col))))
 
 (defn select-name
-  "Given a workbook and name (string or keyword) of a named range, select-name returns a seq of cells or nil if the name could not be found."
+  "Given a workbook and name (string or keyword) of a named range, select-name
+   returns a seq of cells or nil if the name could not be found."
   [^Workbook workbook n]
-  (if-let [^AreaReference aref (named-area-ref workbook n)]
-    (map (partial cell-from-ref workbook) (.getAllReferencedCells aref))
-    nil))
+  (when-let [^AreaReference aref (named-area-ref workbook n)]
+    (map (partial cell-from-ref workbook) (.getAllReferencedCells aref))))
 
 (defn add-name! [^Workbook workbook n string-ref]
   (let [the-name (.createName workbook)]
