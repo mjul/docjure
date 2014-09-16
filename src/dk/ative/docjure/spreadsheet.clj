@@ -96,8 +96,7 @@
   "Return a lazy sequence of the rows in a sheet."
   [^Sheet sheet]
   (assert-type sheet Sheet)
-  (iterator-seq (.iterator sheet))
-  )
+  (iterator-seq (.iterator sheet)))
 
 (defn- cell-seq-dispatch [x]
   (cond
@@ -207,7 +206,7 @@
   (.createSheet workbook name))
 
 (defn create-workbook
-  "Create a new xlsx workbook with a single sheet and the data
+  "Create a new XLSX workbook with a single sheet and the data
    specified. The data is given a vector of vectors, representing
    the rows and the cells of the rows.
 
@@ -225,7 +224,7 @@
     workbook))
 
 (defn create-xls-workbook
-  "Create a new xls workbook with a single sheet and the data specified."
+  "Create a new XLS workbook with a single sheet and the data specified."
   [sheet-name data]
   (let [workbook (HSSFWorkbook.)
         sheet    (add-sheet! workbook sheet-name)]
@@ -317,7 +316,7 @@
 (defprotocol IFontable
   "A protocol that allows:
    1. interchangeable use of fonts and maps of font options
-   2. getting fonts from either xls or xlsx cell styles, which
+   2. getting fonts from either XLS or XLSX cell styles, which
       normally requires distinct syntax."
   (set-font [this style workbook])
   (get-font [this workbook])
