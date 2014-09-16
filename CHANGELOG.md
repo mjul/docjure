@@ -3,6 +3,7 @@
 ## Version 1.7.0
 * select-sheet can now select sheets by regex and predicate functions in addition to exact sheet name (contributed by jonneale).
 * upgraded Clojure version to 1.5.1
+* added font and cell styling options (contributed by naipmoro):
 * added option work on the legacy Excel 'XLS' file format (`create-xls-workbook`)
 * added font styling options to `create-font!`:
 
