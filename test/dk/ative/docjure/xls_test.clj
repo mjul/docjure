@@ -2,7 +2,7 @@
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
-	   (org.apache.poi.hssf.usermodel HSSFWorkbook)
+	   (org.apache.poi.hssf.usermodel HSSFWorkbook HSSFFont)
 	   (java.util Date)))
 
 (def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xls"
@@ -273,10 +273,10 @@
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb)]
 	(is (= CellStyle/NO_FILL (.getFillPattern cs)))
-        (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight (.getFont cs wb))))
-        (is (= Font/U_NONE (.getUnderline (.getFont cs wb))))
-        (is (= Font/COLOR_NORMAL (.getColor (.getFont cs wb))))
-        (is (not (.getItalic (.getFont cs wb))))
+        (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight (get-font cs wb))))
+        (is (= Font/U_NONE (.getUnderline (get-font cs wb))))
+        (is (= Font/COLOR_NORMAL (.getColor (get-font cs wb))))
+        (is (not (.getItalic (get-font cs wb))))
         (is (not (.getWrapText cs)))
         (is (= CellStyle/ALIGN_GENERAL (.getAlignment cs)))
         (is (= CellStyle/BORDER_NONE (.getBorderLeft cs)))
@@ -322,48 +322,48 @@
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (.getFont cs wb))))
-        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (.getFont cs2 wb))))))
+	(is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs wb))))
+        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs2 wb))))))
     (testing ":font :color"
       (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:color :light_green}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (.getFont cs wb))))
-        (is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (.getFont cs2 wb))))))
+	(is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (get-font cs wb))))
+        (is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (get-font cs2 wb))))))
     (testing ":font :name"
       (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:name "Verdana"}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= "Verdana" (.getFontName (.getFont cs wb))))
-        (is (= "Verdana" (.getFontName (.getFont cs2 wb))))))
+	(is (= "Verdana" (.getFontName (get-font cs wb))))
+        (is (= "Verdana" (.getFontName (get-font cs2 wb))))))
     (testing ":font :size"
       (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:size 8}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= 8 (.getFontHeightInPoints (.getFont cs wb))))
-        (is (= 8 (.getFontHeightInPoints (.getFont cs2 wb))))))
+	(is (= 8 (.getFontHeightInPoints (get-font cs wb))))
+        (is (= 8 (.getFontHeightInPoints (get-font cs2 wb))))))
     (testing ":font :italic"
       (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:italic true}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (.getItalic (.getFont cs wb)))
-        (is (.getItalic (.getFont cs2 wb)))))
+	(is (.getItalic (get-font cs wb)))
+        (is (.getItalic (get-font cs2 wb)))))
     (testing ":font :underline"
       (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:underline true}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= Font/U_SINGLE (.getUnderline (.getFont cs wb))))
-        (is (= Font/U_SINGLE (.getUnderline (.getFont cs2 wb))))))))
+	(is (= Font/U_SINGLE (.getUnderline (get-font cs wb))))
+        (is (= Font/U_SINGLE (.getUnderline (get-font cs2 wb))))))))
 
 (deftest create-font!-test
     (let [wb (create-xls-workbook "Dummy" [["foo"]])]
@@ -387,6 +387,121 @@
 	  cell (-> (sheet-seq wb) first cell-seq first)]
       (is (= cell (set-cell-style! cell cs)))
       (is (= (.getCellStyle cell) cs)))))
+
+(deftest set-cell-comment!-test
+  (testing "Should set cell comment based on supplied options"
+    (testing "comment string"
+      (let [wb (create-xls-workbook "Dummy"
+                                    [["foo00" "foo01" "foo02" "foo03"]
+                                     ["foo04" "foo05" "foo06" "foo07"]
+                                     ["foo08" "foo09" "foo10" "foo11"]
+                                     ["foo12" "foo13" "bar14" "foo15"]
+                                     ["foo16" "foo17" "bar18" "foo19"]])
+            cellsq (-> (sheet-seq wb) first cell-seq)
+            ;cells
+	    cell00 (nth cellsq 0)
+            cell01 (nth cellsq 1)
+            cell02 (nth cellsq 2)
+            cell03 (nth cellsq 3)
+            cell04 (nth cellsq 4)
+            cell05 (nth cellsq 5)
+            cell06 (nth cellsq 6)
+            cell07 (nth cellsq 7)
+            cell08 (nth cellsq 8)
+            cell09 (nth cellsq 9)
+            cell10 (nth cellsq 10)
+            cell11 (nth cellsq 11)
+            cell12 (nth cellsq 12)
+            cell13 (nth cellsq 13)
+            cell14 (nth cellsq 14)
+            cell15 (nth cellsq 15)
+            cell16 (nth cellsq 16)
+            comment-str "Short\ncomment."
+            empty-str ""
+            blank-str " "
+            font-bold (create-font! wb {:bold true})
+            font-bold-idx (.getIndex font-bold)
+            font-italic (create-font! wb {:italic true})
+            font-italic-idx (.getIndex font-italic)
+            font-underline (create-font! wb {:underline true})
+            font-underline-idx (.getIndex font-underline)
+            font-name (create-font! wb {:name "Verdana"})
+            font-name-idx (.getIndex font-name)
+            font-color (create-font! wb {:color :blue})
+            font-color-idx (.getIndex font-color)
+            font-size (create-font! wb {:size 8})
+            font-size-idx (.getIndex font-size)
+            ;cell comments
+            _ (set-cell-comment! cell00 comment-str)
+            _ (set-cell-comment! cell01 empty-str)
+            _ (set-cell-comment! cell02 blank-str)
+            _ (set-cell-comment! cell03 comment-str :font {:bold true})
+            _ (set-cell-comment! cell04 comment-str :font font-bold)
+            _ (set-cell-comment! cell05 comment-str :font {:italic true})
+            _ (set-cell-comment! cell06 comment-str :font font-italic)
+            _ (set-cell-comment! cell07 comment-str :font {:underline true})
+            _ (set-cell-comment! cell08 comment-str :font font-underline)
+            _ (set-cell-comment! cell09 comment-str :font {:name "Verdana"})
+            _ (set-cell-comment! cell10 comment-str :font font-name)
+            _ (set-cell-comment! cell11 comment-str :font {:color :blue})
+            _ (set-cell-comment! cell12 comment-str :font font-color)
+            _ (set-cell-comment! cell13 comment-str :font {:size 8})
+            _ (set-cell-comment! cell14 comment-str :font font-size)
+            _ (set-cell-comment! cell15 comment-str :width 5)
+            _ (set-cell-comment! cell16 comment-str :height 6)
+            ;RichTextString instances
+            rts00 (.. cell00 getCellComment getString)
+            rts01 (.. cell01 getCellComment getString)
+            rts02 (.. cell02 getCellComment getString)
+            rts03 (.. cell03 getCellComment getString)
+            rts04 (.. cell04 getCellComment getString)
+            rts05 (.. cell05 getCellComment getString)
+            rts06 (.. cell06 getCellComment getString)
+            rts07 (.. cell07 getCellComment getString)
+            rts08 (.. cell08 getCellComment getString)
+            rts09 (.. cell09 getCellComment getString)
+            rts10 (.. cell10 getCellComment getString)
+            rts11 (.. cell11 getCellComment getString)
+            rts12 (.. cell12 getCellComment getString)
+            rts13 (.. cell13 getCellComment getString)
+            rts14 (.. cell14 getCellComment getString)
+            rts15 (.. cell15 getCellComment getString)
+            rts16 (.. cell16 getCellComment getString)
+            ;extracted cell fonts
+            font00 (.getFontAt wb (.getFontAtIndex rts00 0))
+            font01 (.getFontAt wb (.getFontAtIndex rts01 0))
+            font02 (.getFontAt wb (.getFontAtIndex rts02 0))
+            font03 (.getFontAt wb (.getFontAtIndex rts03 0))
+            font04 (.getFontAt wb (.getFontAtIndex rts04 0))
+            font05 (.getFontAt wb (.getFontAtIndex rts05 0))
+            font06 (.getFontAt wb (.getFontAtIndex rts06 0))
+            font07 (.getFontAt wb (.getFontAtIndex rts07 0))
+            font08 (.getFontAt wb (.getFontAtIndex rts08 0))
+            font09 (.getFontAt wb (.getFontAtIndex rts09 0))
+            font10 (.getFontAt wb (.getFontAtIndex rts10 0))
+            font11 (.getFontAt wb (.getFontAtIndex rts11 0))
+            font12 (.getFontAt wb (.getFontAtIndex rts12 0))
+            font13 (.getFontAt wb (.getFontAtIndex rts13 0))
+            font14 (.getFontAt wb (.getFontAtIndex rts14 0))
+            font15 (.getFontAt wb (.getFontAtIndex rts15 0))
+            font16 (.getFontAt wb (.getFontAtIndex rts16 0))]
+        (is (= comment-str (.getString rts00)))
+        (is (= empty-str (.getString rts01)))
+        (is (= blank-str (.getString rts02)))
+        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight font03)))
+        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight font04)))
+        (is (.getItalic font05))
+        (is (.getItalic font06))
+        (is (= Font/U_SINGLE (.getUnderline font07)))
+        (is (= Font/U_SINGLE (.getUnderline font08)))
+        (is (= "Verdana" (.getFontName font09)))
+        (is (= "Verdana" (.getFontName font10)))
+        (is (= (.getIndex IndexedColors/BLUE) (.getColor font11)))
+        (is (= (.getIndex IndexedColors/BLUE) (.getColor font12)))
+        (is (= 8 (.getFontHeightInPoints font13)))
+        (is (= 8 (.getFontHeightInPoints font14)))
+        ;TODO: test :width and :height options
+        ))))
 
 (deftest set-row-style!-test
   (testing "Should apply style to all cells in row."

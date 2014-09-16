@@ -315,20 +315,26 @@
     f))
 
 (defprotocol IFontable
+  "A protocol that allows:
+   1. interchangeable use of fonts and maps of font options
+   2. getting fonts from either xls or xlsx cell styles, which
+      normally requires distinct syntax."
   (set-font [this style workbook])
+  (get-font [this workbook])
   (as-font [this workbook]))
 
 (extend-protocol IFontable
   clojure.lang.PersistentArrayMap
-    (set-font [this ^CellStyle style workbook]
-      (.setFont style (create-font! workbook this)))
-    (as-font [this workbook]
-      (create-font! workbook this))
+  (set-font [this ^CellStyle style workbook]
+    (.setFont style (create-font! workbook this)))
+  (as-font [this workbook] (create-font! workbook this)) 
   org.apache.poi.ss.usermodel.Font
-    (set-font [this ^CellStyle style _]
-      (.setFont style this))
-   (as-font [this _]
-     this))
+  (set-font [this ^CellStyle style _] (.setFont style this))
+  (as-font [this _] this)  
+  org.apache.poi.xssf.usermodel.XSSFCellStyle
+  (get-font [this _] (.getFont this))  
+  org.apache.poi.hssf.usermodel.HSSFCellStyle
+  (get-font [this workbook] (.getFont this workbook)))
 
 (defn create-cell-style!
   "Create a new cell-style in the workbook from options:
@@ -388,6 +394,42 @@
   (assert-type style CellStyle)
   (.setCellStyle cell style)
   cell)
+
+(defn set-cell-comment!
+  "Creates a cell comment-box that displays a comment string
+   when the cell is hovered over. Returns the cell. 
+
+   Options:
+
+   :font   (font | fontmap - font applied to the comment string)
+   :width  (int - width of comment-box in columns; default 1 cols)
+   :height (int - height of comment-box in rows; default 2 rows)
+
+   Example:
+  
+   (set-cell-comment! acell \"This comment should\nspan two lines.\"
+                     :width 2 :font {:bold true :size 12 :color blue})
+   "
+  [^Cell cell comment-str & {:keys [font width height]
+                             :or {width 1, height 2}}]
+  (let [sheet (.getSheet cell)
+        wb (.getWorkbook sheet)
+        drawing (.createDrawingPatriarch sheet)
+        helper (.getCreationHelper wb)
+        anchor (.createClientAnchor helper)
+        c1 (.getColumnIndex cell)
+        c2 (+ c1 width)
+        r1 (.getRowIndex cell)
+        r2 (+ r1 height)]
+    (doto anchor
+      (.setCol1 c1) (.setCol2 c2) (.setRow1 r1) (.setRow2 r2))
+    (let [comment (.createCellComment drawing anchor)
+          rts (.createRichTextString helper comment-str)]
+      (when font
+        (let [^Font f (as-font font wb)] (.applyFont rts f)))
+      (.setString comment rts)
+      (.setCellComment cell comment))
+    cell))
 
 (defn set-row-style!
   "Apply a style to all the cells in a row.
