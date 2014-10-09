@@ -7,7 +7,7 @@
 
 (def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"
 	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"})
-(def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific})
+(def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
 (def formulae-map {:A :formula, :B :expected})
 
 (deftest add-sheet!-test
@@ -606,7 +606,8 @@
       (is (every? date? (datatypes-data file :date-time)))
       (is (every? number? (datatypes-data file :percentage)))
       (is (every? number? (datatypes-data file :fraction)))
-      (is (every? number? (datatypes-data file :scientific))))))
+      (is (every? number? (datatypes-data file :scientific)))
+      (is (every? date? (datatypes-data file :date-formulae))))))
 
 (deftest select-columns-formula-evaluation-integration-test
   (testing "Formula evaluation"
