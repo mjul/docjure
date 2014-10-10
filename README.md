@@ -104,5 +104,6 @@ This library includes great contributions from
 * [Vijay Kiran](https://github.com/vijaykiran) (vijaykiran)
 * [Jon Neale](https://github.com/jonneale) (jonneale)
 * ["Naipmoro"](https://github.com/naipmoro)(naipmoro)
+* [Nikolay Durygin](https://github.com/nidu)(nidu)
 
 Thank you very much!
