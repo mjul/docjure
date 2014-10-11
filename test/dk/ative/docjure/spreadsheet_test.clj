@@ -6,7 +6,10 @@
 	   (java.util Date)))
 
 (def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"
-	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"})
+	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"
+             :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
+             :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"})
+
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
 (def formulae-map {:A :formula, :B :expected})
 
@@ -634,3 +637,19 @@
                     (map read-cell (select-name workbook "ten"))))
              (is (nil? (select-name workbook "bill"))))))
 
+
+(deftest date-bases-test
+  (letfn [(read-sheet [file]
+            (->> (load-workbook file)
+                 sheet-seq
+                 first
+                 (select-columns {:A :date, :B :year, :C :comment})
+                 rest))
+          (year [^java.util.Date date]
+            (+ 1900 (.getYear date)))]
+    (testing "Can read workbooks with 1900-based dates"
+      (let [actual (read-sheet (config :1900-based-file))]
+        (is (every? #(== (year (:date %)) (:year %)) actual))))
+    (testing "Can read workbooks with 1904-based dates"
+      (let [actual (read-sheet (config :1904-based-file))]
+        (is (every? #(== (year (:date %)) (:year %)) actual))))))
