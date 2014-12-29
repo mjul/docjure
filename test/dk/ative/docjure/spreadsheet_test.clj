@@ -214,8 +214,6 @@
           (.setSheetHidden workbook 3 2)
           (is (= 5 (count (sheet-seq workbook)))))))))
 
-(sheet-seq-test)
-
 (deftest row-seq-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1"] ["A2" "B2"]]
