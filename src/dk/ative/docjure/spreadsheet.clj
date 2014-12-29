@@ -82,10 +82,10 @@
 (defn hidden?
   "Returns true if the given sheet is hidden."
   [^Sheet sheet]
-  (let [wbk (.getWorkbook sheet)
-        idx (.getSheetIndex wbk sheet)]
-    (or (.isSheetHidden wbk idx)
-        (.isSheetVeryHidden wbk idx))))
+  (let [workbook (.getWorkbook sheet)
+        idx (.getSheetIndex workbook sheet)]
+    (or (.isSheetHidden workbook idx)
+        (.isSheetVeryHidden workbook idx))))
 
 (defn sheet-seq
   "Return a lazy seq of the sheets in a workbook. Excludes hidden sheets if *ignore-hidden-sheets* is true."
