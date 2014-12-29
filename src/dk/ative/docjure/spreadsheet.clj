@@ -94,7 +94,7 @@
   (let [sheets (for [idx (range (.getNumberOfSheets workbook))]
                  (.getSheetAt workbook idx))]
     (if *ignore-hidden-sheets*
-      (filter hidden? sheets)
+      (filter (comp not hidden?) sheets)
       sheets)))
 
 (defn sheet-name

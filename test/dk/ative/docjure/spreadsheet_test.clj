@@ -196,10 +196,11 @@
               workbook (create-workbook name data)
               sheet2 (.createSheet workbook "Sheet 2")
               sheet3 (.createSheet workbook "Sheet 3")
-              sheet4 (.createSheet workbook "Sheet 4")]
+              sheet4 (.createSheet workbook "Sheet 4")
+              sheet5 (.createSheet workbook "Sheet 5")]
           (.setSheetHidden workbook 1 1)
           (.setSheetHidden workbook 3 2)
-          (is (= 2 (count (sheet-seq workbook)))))))
+          (is (= 3 (count (sheet-seq workbook)))))))
     (testing "Can include hidden sheets"
       (binding [*ignore-hidden-sheets* false]
         (let [name "Sheet 1"
@@ -207,10 +208,11 @@
               workbook (create-workbook name data)
               sheet2 (.createSheet workbook "Sheet 2")
               sheet3 (.createSheet workbook "Sheet 3")
-              sheet4 (.createSheet workbook "Sheet 4")]
+              sheet4 (.createSheet workbook "Sheet 4")
+              sheet5 (.createSheet workbook "Sheet 5")]
           (.setSheetHidden workbook 1 1)
           (.setSheetHidden workbook 3 2)
-          (is (= 4 (count (sheet-seq workbook)))))))))
+          (is (= 5 (count (sheet-seq workbook)))))))))
 
 (sheet-seq-test)
 
