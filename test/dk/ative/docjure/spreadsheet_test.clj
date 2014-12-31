@@ -21,7 +21,7 @@
       (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (add-sheet! "not-a-workbook" "sheet-name"))))))
 
 (deftest create-workbook-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1" "C1"]
 		    ["A2" "B2" "C2"]]
 	workbook (create-workbook sheet-name sheet-data)]
@@ -58,7 +58,7 @@
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-rows! "not-a-sheet" [[1 2 3]])))))
 
 (deftest remove-row!-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1" "C1"]
 		    ["A2" "B2" "C2"]]
 	workbook (create-workbook sheet-name sheet-data)
@@ -68,13 +68,13 @@
       (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (remove-row! "not-a-sheet" (first (row-seq sheet)))))
       (is (thrown-with-msg? IllegalArgumentException #"row.*" (remove-row! sheet "not-a-row"))))
     (testing "Should remove row."
-      (do 
+      (do
 	(is (= sheet (remove-row! sheet first-row)))
 	(is (= 1 (.getPhysicalNumberOfRows sheet)))
 	(is (= [{:A "A2", :B "B2", :C "C2"}] (select-columns {:A :A, :B :B :C :C} sheet)))))))
 
 (deftest remove-all-row!-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1" "C1"]
 		    ["A2" "B2" "C2"]]
 	workbook (create-workbook sheet-name sheet-data)
@@ -125,7 +125,7 @@
 
 
 (deftest set-cell!-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["A1"]]
 	workbook (create-workbook sheet-name sheet-data)
         a1 (-> workbook (.getSheetAt 0) (.getRow 0) (.getCell 0))]
@@ -153,9 +153,22 @@
         (set-cell! a1 (double 1.2))
         (is (= 1.2 (.getNumericCellValue a1)))))))
 
+(deftest hidden?-test
+  (let [name "Sheet 1"
+        data [["foo" "bar"]]
+        workbook (create-workbook name data)
+        sheet2 (.createSheet workbook "Sheet 2")
+        sheet3 (.createSheet workbook "Sheet 3")
+        sheet4 (.createSheet workbook "Sheet 4")]
+    (testing "Can detect whether a sheet is hidden"
+      (.setSheetHidden workbook 1 1)
+      (.setSheetHidden workbook 3 2)
+      (is (hidden? sheet2))
+      (is (not (hidden? sheet3)))
+      (is (hidden? sheet4)))))
 
 (deftest sheet-seq-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["foo" "bar"]]]
     (testing "Empty workbook"
       (let [workbook (XSSFWorkbook.)
@@ -175,10 +188,34 @@
 	(is (= 3 (count actual)))
 	(is (= [sheet2 sheet3] (rest actual)))))
     (testing "Should fail on invalid type"
-      (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (sheet-seq "not-a-workbook"))))))
+      (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (sheet-seq "not-a-workbook"))))
+    (testing "Can exclude hidden sheets"
+      (binding [*ignore-hidden-sheets* true]
+        (let [name "Sheet 1"
+              data [["foo" "bar"]]
+              workbook (create-workbook name data)
+              sheet2 (.createSheet workbook "Sheet 2")
+              sheet3 (.createSheet workbook "Sheet 3")
+              sheet4 (.createSheet workbook "Sheet 4")
+              sheet5 (.createSheet workbook "Sheet 5")]
+          (.setSheetHidden workbook 1 1)
+          (.setSheetHidden workbook 3 2)
+          (is (= 3 (count (sheet-seq workbook)))))))
+    (testing "Can include hidden sheets"
+      (binding [*ignore-hidden-sheets* false]
+        (let [name "Sheet 1"
+              data [["foo" "bar"]]
+              workbook (create-workbook name data)
+              sheet2 (.createSheet workbook "Sheet 2")
+              sheet3 (.createSheet workbook "Sheet 3")
+              sheet4 (.createSheet workbook "Sheet 4")
+              sheet5 (.createSheet workbook "Sheet 5")]
+          (.setSheetHidden workbook 1 1)
+          (.setSheetHidden workbook 3 2)
+          (is (= 5 (count (sheet-seq workbook)))))))))
 
 (deftest row-seq-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1"] ["A2" "B2"]]
 	workbook (create-workbook sheet-name sheet-data)
 	sheet (select-sheet sheet-name workbook)]
@@ -187,7 +224,7 @@
 	(is (= 2 (count actual)))))))
 
 (deftest cell-seq-test
-  (let [sheet-name "Sheet 1" 
+  (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1"] ["A2" "B2"]]
 	workbook (create-workbook sheet-name sheet-data)
 	sheet (select-sheet sheet-name workbook)]
@@ -214,7 +251,7 @@
 
 
 (deftest sheet-name-test
-  (let [name       "Sheet 1" 
+  (let [name       "Sheet 1"
 	data       [["foo" "bar"]]
 	workbook   (create-workbook name data)
 	sheet      (first (sheet-seq workbook))]
@@ -223,7 +260,7 @@
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (sheet-name "not-a-sheet")))))
 
 (deftest select-sheet-test
-  (let [name       "Sheet 1" 
+  (let [name       "Sheet 1"
 	data       [["foo" "bar"]]
 	workbook   (create-workbook name data)
 	first-sheet (first (sheet-seq workbook))]
@@ -232,10 +269,9 @@
   (testing "Should fail on invalid parameter type"
     (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (select-sheet "name" "not-a-workbook")))))
 
-
 (deftest select-columns-test
-  (let [data     [["Name" "Quantity" "Price" "On Sale"] 
-		  ["foo" 1.0 42 true] 
+  (let [data     [["Name" "Quantity" "Price" "On Sale"]
+		  ["foo" 1.0 42 true]
 		  ["bar" 2.0 108 false]]
 	workbook (create-workbook "Sheet 1" data)
 	sheet    (first (sheet-seq workbook))]
@@ -256,7 +292,7 @@
     (testing "Should support many datatypes."
       (let [rows (select-columns {:A :string, :B :number, :D :boolean} sheet)
 	    data-rows (rest rows)]
-	(are [actual expected] (= actual (let [[a b c d] expected] 
+	(are [actual expected] (= actual (let [[a b c d] expected]
 					   {:string a, :number b, :boolean d}))
 	     (first data-rows) (data 1)
 	     (second data-rows) (data 2))))
@@ -301,14 +337,14 @@
 	  (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight f-bold)))))
       (is (thrown-with-msg? IllegalArgumentException #"^workbook.*"
 	    (create-font! "not-a-workbook" {})))))
-	    
+
 
 (deftest set-cell-style!-test
   (testing "Should apply style to cell."
     (let [wb (create-workbook "Dummy" [["foo"]])
 	  cs (create-cell-style! wb {:background :yellow})
 	  cell (-> (sheet-seq wb) first cell-seq first)]
-      (do 
+      (do
 	(is (= cell (set-cell-style! cell cs)))
 	(is (= (.getCellStyle cell) cs))))))
 
@@ -370,7 +406,7 @@
 
 
 (defn- datatypes-rows [file]
-  (->> (load-workbook file) 
+  (->> (load-workbook file)
        sheet-seq
        first
        (select-columns datatypes-map)))
@@ -381,7 +417,7 @@
        (map column)
        (remove nil?)))
 
-(defn- date? [date] 
+(defn- date? [date]
   (isa? (class date) Date))
 
 (deftest select-columns-integration-test
@@ -421,4 +457,3 @@
              (is (= (reduce concat (map (fn [[_ a b]] [a b]) data))
                     (map read-cell (select-name workbook "ten"))))
              (is (nil? (select-name workbook "bill"))))))
-

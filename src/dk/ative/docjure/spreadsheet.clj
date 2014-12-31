@@ -16,6 +16,9 @@
 (def ^:dynamic *ignore-formulas*
   false)
 
+(def ^:dynamic *ignore-hidden-sheets*
+  false)
+
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
      (throw (IllegalArgumentException.
@@ -76,12 +79,23 @@
   (with-open [file-out (FileOutputStream. filename)]
     (.write workbook file-out)))
 
+(defn hidden?
+  "Returns true if the given sheet is hidden."
+  [^Sheet sheet]
+  (let [workbook (.getWorkbook sheet)
+        idx (.getSheetIndex workbook sheet)]
+    (or (.isSheetHidden workbook idx)
+        (.isSheetVeryHidden workbook idx))))
+
 (defn sheet-seq
-  "Return a lazy seq of the sheets in a workbook."
+  "Return a lazy seq of the sheets in a workbook. Excludes hidden sheets if *ignore-hidden-sheets* is true."
   [^Workbook workbook]
   (assert-type workbook Workbook)
-  (for [idx (range (.getNumberOfSheets workbook))]
-    (.getSheetAt workbook idx)))
+  (let [sheets (for [idx (range (.getNumberOfSheets workbook))]
+                 (.getSheetAt workbook idx))]
+    (if *ignore-hidden-sheets*
+      (filter (comp not hidden?) sheets)
+      sheets)))
 
 (defn sheet-name
   "Return the name of a sheet."
