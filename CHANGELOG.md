@@ -1,7 +1,10 @@
 # CHANGELOG for Docjure
 
 ## Version 1.8.0
-Upgraded to use Clojure 1.6 as default and the new Apache POI v3.11.
+* Upgraded to use Clojure 1.6 as default Clojure version.
+* Upgraded to Apache POI v3.11.
+* Now handles both 1900 and 1904-based dates for the Mac and Windows
+ versions of Excel [More info](http://support.microsoft.com/kb/180162).
 
 ## Version 1.7.0
 * select-sheet can now select sheets by regex and predicate functions in addition to exact sheet name (contributed by jonneale).
