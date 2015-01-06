@@ -1,5 +1,8 @@
 # CHANGELOG for Docjure
 
+## Version 1.8.0
+Upgraded to use Clojure 1.6 as default and the new Apache POI v3.11.
+
 ## Version 1.7.0
 * select-sheet can now select sheets by regex and predicate functions in addition to exact sheet name (contributed by jonneale).
 * upgraded Clojure version to 1.5.1
