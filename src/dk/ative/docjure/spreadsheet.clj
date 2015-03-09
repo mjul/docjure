@@ -12,7 +12,7 @@
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
-     (throw (IllegalArgumentException.    
+     (throw (IllegalArgumentException.
              (format "%s is invalid. Expected %s. Actual type %s, value: %s"
                      (str '~value) ~expected-type (class ~value) ~value)))))
 
@@ -32,11 +32,12 @@
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
-  (if (DateUtil/isCellDateFormatted cell)
-    (.getDateCellValue cell)
-    (let [evaluator (.. cell getSheet getWorkbook
-                        getCreationHelper createFormulaEvaluator)
-          cv (.evaluate evaluator cell)]
+  (let [evaluator (.. cell getSheet getWorkbook
+                      getCreationHelper createFormulaEvaluator)
+        cv (.evaluate evaluator cell)]
+    (if (and (= Cell/CELL_TYPE_NUMERIC (.getCellType cv))
+             (DateUtil/isCellDateFormatted cell))
+      (.getDateCellValue cell)
       (read-cell-value cv false))))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
@@ -49,7 +50,7 @@
   [^String filename]
   (with-open [stream (FileInputStream. filename)]
     (WorkbookFactory/create stream)))
- 
+
 (defn save-workbook!
   "Save the workbook into a file."
   [^String filename ^Workbook workbook]
@@ -134,9 +135,9 @@
       {new-key (read-cell cell)})))
 
 (defn select-columns [column-map ^Sheet sheet]
-  "Takes two arguments: column hashmap and a sheet. The column hashmap 
+  "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
-   its keys are the spreadsheet column names and the values represent 
+   its keys are the spreadsheet column names and the values represent
    the names they are mapped to in the result.
 
    For example, to select columns A and C as :first and :third from the sheet
@@ -234,7 +235,7 @@
     workbook))
 
 ;******************************************************
-;       helpers for font and style creation     
+;       helpers for font and style creation
 
 
 (defn color-index
@@ -328,12 +329,12 @@
   clojure.lang.PersistentArrayMap
   (set-font [this ^CellStyle style workbook]
     (.setFont style (create-font! workbook this)))
-  (as-font [this workbook] (create-font! workbook this)) 
+  (as-font [this workbook] (create-font! workbook this))
   org.apache.poi.ss.usermodel.Font
   (set-font [this ^CellStyle style _] (.setFont style this))
-  (as-font [this _] this)  
+  (as-font [this _] this)
   org.apache.poi.xssf.usermodel.XSSFCellStyle
-  (get-font [this _] (.getFont this))  
+  (get-font [this _] (.getFont this))
   org.apache.poi.hssf.usermodel.HSSFCellStyle
   (get-font [this workbook] (.getFont this workbook)))
 
@@ -383,8 +384,8 @@
         border-left (.setBorderLeft cs (border border-left))
         border-right (.setBorderRight cs (border border-right))
         border-top (.setBorderTop cs (border border-top))
-        border-bottom (.setBorderBottom cs (border border-bottom)))      
-       cs))) 
+        border-bottom (.setBorderBottom cs (border border-bottom)))
+       cs)))
 
 (defn set-cell-style!
   "Apply a style to a cell.
@@ -398,7 +399,7 @@
 
 (defn set-cell-comment!
   "Creates a cell comment-box that displays a comment string
-   when the cell is hovered over. Returns the cell. 
+   when the cell is hovered over. Returns the cell.
 
    Options:
 
@@ -407,7 +408,7 @@
    :height (int - height of comment-box in rows; default 2 rows)
 
    Example:
-  
+
    (set-cell-comment! acell \"This comment should\nspan two lines.\"
                      :width 2 :font {:bold true :size 12 :color blue})
    "
