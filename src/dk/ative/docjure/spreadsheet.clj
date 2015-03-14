@@ -5,6 +5,7 @@
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
+                                FormulaError
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
                                 CellValue Drawing CreationHelper)
@@ -27,6 +28,8 @@
   (if date-format?
     (DateUtil/getJavaDate (.getNumberValue cv))
     (.getNumberValue cv)))
+(defmethod read-cell-value Cell/CELL_TYPE_ERROR    [^CellValue cv _]
+  (keyword (.name (FormulaError/forInt (.getErrorValue cv)))))
 
 (defmulti read-cell #(.getCellType ^Cell %))
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
@@ -43,6 +46,8 @@
   (if (DateUtil/isCellDateFormatted cell)
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
+(defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell]
+  (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
 (defn load-workbook
   "Load an Excel .xls or .xlsx workbook from a file."
