@@ -35,11 +35,12 @@
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
-  (if (DateUtil/isCellDateFormatted cell)
-    (.getDateCellValue cell)
-    (let [evaluator (.. cell getSheet getWorkbook
-                        getCreationHelper createFormulaEvaluator)
-          cv (.evaluate evaluator cell)]
+  (let [evaluator (.. cell getSheet getWorkbook
+                      getCreationHelper createFormulaEvaluator)
+        cv (.evaluate evaluator cell)]
+    (if (and (= Cell/CELL_TYPE_NUMERIC (.getCellType cv))
+             (DateUtil/isCellDateFormatted cell))
+      (.getDateCellValue cell)
       (read-cell-value cv false))))
 (defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
