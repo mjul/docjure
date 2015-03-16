@@ -36,6 +36,44 @@ to the top header row, then save the spreadsheet.
         (save-workbook! "spreadsheet.xlsx" wb)))
 
 
+### Example: Handling Error Cells
+
+Given a list of cells in a spreadsheet that may result in errors.
+
+	(use 'dk.ative.docjure.spreadsheet)
+
+	(def sample-cells (->> (load-workbook "spreadsheet.xlsx")
+                           (sheet-seq)
+                           (mapcat cell-seq)))
+
+    sample-cells
+
+    ;=> (#<XSSFCell 15.0> #<XSSFCell NA()> #<XSSFCell 35.0> #<XSSFCell 13/0> #<XSSFCell 33.0> #<XSSFCell 96.0>)
+
+Reading error cells, or cells that evaluate to an error (e.g. divide by
+zero) returns a keyword representing the type of error from
+`read-cell`.
+
+	(->> sample-cells
+         (map read-cell))
+
+	;=> (15.0 :NA 35.0 :DIV0 33.0 96.0)
+
+How you handle errors will depend on your application. You may want to
+replace specific errors with a defualt value and remove others for
+example:
+
+	(->> sample-cells
+         (map read-cell)
+         (map #(get {:DIV0 0.0} % %))
+         (remove keyword?))
+
+	;=> (15.0 35.0 0.0 33.0 96.0)
+
+The following is a list of all possible [error values](https://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/FormulaError.html#enum_constant_summary):
+
+    #{:VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA}
+
 ### Automatically get the Docjure jar from Clojars
 
 The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure).
@@ -56,7 +94,6 @@ Remember to issue the 'lein deps' command to download it.
 
 
 ## Installation
-
 You need to install the Leiningen build tool to build the library.
 You can get it here: [Leiningen](http://github.com/technomancy/leiningen)
 
