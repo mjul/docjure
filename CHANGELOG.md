@@ -1,5 +1,15 @@
 # CHANGELOG for Docjure
 
+## Version 1.9.0
+
+* `read-cell` now works on error cells and non-numeric formula cells without throwing an exception. (All cell types now handled safely).
+
+Error cells return keyword of the error type:
+
+```
+:VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA
+```
+
 ## Version 1.8.0
 * Upgraded to use Clojure 1.6 as default Clojure version.
 * Upgraded to Apache POI v3.11.
