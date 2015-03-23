@@ -144,8 +144,8 @@ This library includes great contributions from
 * [Ragnar Dahlén](https://github.com/ragnard) (ragnard)
 * [Vijay Kiran](https://github.com/vijaykiran) (vijaykiran)
 * [Jon Neale](https://github.com/jonneale) (jonneale)
-* ["Naipmoro"](https://github.com/naipmoro)(naipmoro)
-* [Nikolay Durygin](https://github.com/nidu)(nidu)
-* [Oliver Holworthy](https://github.com/oholworthy)(oholworthy)
+* ["Naipmoro"](https://github.com/naipmoro) (naipmoro)
+* [Nikolay Durygin](https://github.com/nidu) (nidu)
+* [Oliver Holworthy](https://github.com/oholworthy) (oholworthy)
 
 Thank you very much!
