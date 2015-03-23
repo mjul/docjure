@@ -142,5 +142,6 @@ This library includes great contributions from
 * [Jon Neale](https://github.com/jonneale) (jonneale)
 * ["Naipmoro"](https://github.com/naipmoro)(naipmoro)
 * [Nikolay Durygin](https://github.com/nidu)(nidu)
+* [Oliver Holworthy](https://github.com/oholworthy)(oholworthy)
 
 Thank you very much!
