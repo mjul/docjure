@@ -1,5 +1,15 @@
 # CHANGELOG for Docjure
 
+## Version 1.9.0
+
+* `read-cell` now works on error cells and non-numeric formula cells without throwing an exception. (All cell types now handled safely).
+
+Error cells return keyword of the error type:
+
+```
+:VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA
+```
+
 ## Version 1.8.0
 * Upgraded to use Clojure 1.6 as default Clojure version.
 * Upgraded to Apache POI v3.11.
@@ -48,20 +58,17 @@
 * Added named ranges functions add-name! and select-name (contributed by cbaatz).
 * Added row style functions set-row-style! and get-row-styles for styling rows (contributed by cbaatz).
 
-## Version 1.4 
+## Version 1.4
 * Introduces cell styling (font control, background colour).
 * A more flexible cell-seq (supports sheet, row or collections of these).
 
 ## Version 1.3
 * Updated semantics for reading blank cells: now they are read as nil (formerly read as empty strings).
 
-## Version 1.2 
+## Version 1.2
 
 First public release.
 
 ## Earlier versions
 
 Earlier versions used internally for projects in Ative in 2009 and 2010.
-
-
-

@@ -6,9 +6,9 @@ Docjure makes reading and writing Office documents in Clojure easy.
 
 ### Example: Read a Price List spreadsheet
 
-    (use 'dk.ative.docjure.spreadsheet)       
+    (use 'dk.ative.docjure.spreadsheet)
 
-    ;; Load a spreadsheet and read the first two columns from the 
+    ;; Load a spreadsheet and read the first two columns from the
     ;; price list sheet:
     (->> (load-workbook "spreadsheet.xlsx")
          (select-sheet "Price List")
@@ -16,13 +16,13 @@ Docjure makes reading and writing Office documents in Clojure easy.
 
     ;=> [{:name "Foo Widget", :price 100}, {:name "Bar Widget", :price 200}]
 
-### Example: Create a spreadsheet 
+### Example: Create a spreadsheet
 This example creates a spreadsheet with a single sheet named "Price List".
 It has three rows. We apply a style of yellow background colour and bold font
 to the top header row, then save the spreadsheet.
 
-    (use 'dk.ative.docjure.spreadsheet)       
-    
+    (use 'dk.ative.docjure.spreadsheet)
+
     ;; Create a spreadsheet and save it
     (let [wb (create-workbook "Price List"
                               [["Name" "Price"]
@@ -34,16 +34,54 @@ to the top header row, then save the spreadsheet.
         (set-row-style! header-row (create-cell-style! wb {:background :yellow,
                                                            :font {:bold true}}))
         (save-workbook! "spreadsheet.xlsx" wb)))
-    
+
+
+### Example: Handling Error Cells
+
+Given a list of cells in a spreadsheet that may result in errors.
+
+	(use 'dk.ative.docjure.spreadsheet)
+
+	(def sample-cells (->> (load-workbook "spreadsheet.xlsx")
+                           (sheet-seq)
+                           (mapcat cell-seq)))
+
+    sample-cells
+
+    ;=> (#<XSSFCell 15.0> #<XSSFCell NA()> #<XSSFCell 35.0> #<XSSFCell 13/0> #<XSSFCell 33.0> #<XSSFCell 96.0>)
+
+Reading error cells, or cells that evaluate to an error (e.g. divide by
+zero) returns a keyword representing the type of error from
+`read-cell`.
+
+	(->> sample-cells
+         (map read-cell))
+
+	;=> (15.0 :NA 35.0 :DIV0 33.0 96.0)
+
+How you handle errors will depend on your application. You may want to
+replace specific errors with a defualt value and remove others for
+example:
+
+	(->> sample-cells
+         (map read-cell)
+         (map #(get {:DIV0 0.0} % %))
+         (remove keyword?))
+
+	;=> (15.0 35.0 0.0 33.0 96.0)
+
+The following is a list of all possible [error values](https://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/FormulaError.html#enum_constant_summary):
+
+    #{:VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA}
 
 ### Automatically get the Docjure jar from Clojars
 
-The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure). 
+The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure).
 
 If you are using the Leiningen build tool just add this line to the
 :dependencies list in project.clj to use it:
 
-    [dk.ative/docjure "1.8.0"]	
+    [dk.ative/docjure "1.8.0"]
 
 Remember to issue the 'lein deps' command to download it.
 
@@ -56,7 +94,6 @@ Remember to issue the 'lein deps' command to download it.
 
 
 ## Installation
-
 You need to install the Leiningen build tool to build the library.
 You can get it here: [Leiningen](http://github.com/technomancy/leiningen)
 
@@ -92,7 +129,7 @@ Martin Jul
 
 * Email: martin@.....com
 * Twitter: mjul
-* GitHub: [mjul](https://github.com/mjul) 
+* GitHub: [mjul](https://github.com/mjul)
 
 
 ## Contributors
