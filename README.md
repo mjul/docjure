@@ -147,5 +147,6 @@ This library includes great contributions from
 * ["Naipmoro"](https://github.com/naipmoro) (naipmoro)
 * [Nikolay Durygin](https://github.com/nidu) (nidu)
 * [Oliver Holworthy](https://github.com/oholworthy) (oholworthy)
+* ["rakhra"](https://github.com/rakhra) (rakhra)
 
 Thank you very much!
