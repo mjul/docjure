@@ -38,7 +38,11 @@ to the top header row, then save the spreadsheet.
 
 ### Example: Handling Error Cells
 
-Given a list of cells in a spreadsheet that may result in errors.
+If the spreadsheet being read contains cells with errors the default
+behaviour of the library is to return a keyword representing the
+error as the cell value.
+
+For example, given a spreadsheet with errors:
 
 	(use 'dk.ative.docjure.spreadsheet)
 
@@ -60,7 +64,7 @@ zero) returns a keyword representing the type of error from
 	;=> (15.0 :NA 35.0 :DIV0 33.0 96.0)
 
 How you handle errors will depend on your application. You may want to
-replace specific errors with a defualt value and remove others for
+replace specific errors with a default value and remove others for
 example:
 
 	(->> sample-cells
