@@ -56,6 +56,15 @@
   (with-open [stream (FileInputStream. filename)]
     (WorkbookFactory/create stream)))
 
+(defn load-workbook-as-resource
+  "Load an Excel workbook from a named resource.
+  Used when reading from a resource on a classpath
+  as in case of application servers."
+  [^String resource]
+  (let [url (clojure.java.io/resource resource)]
+    (with-open [stream (.openStream url)]
+      (WorkbookFactory/create stream))))
+
 (defn save-workbook!
   "Save the workbook into a file."
   [^String filename ^Workbook workbook]
