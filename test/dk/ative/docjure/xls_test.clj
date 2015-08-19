@@ -553,7 +553,7 @@
 ;; ----------------------------------------------------------------
 
 (defn- datatypes-rows [file]
-  (->> (load-workbook file)
+  (->> (load-workbook-as-file file)
        sheet-seq
        first
        (select-columns datatypes-map)))
@@ -583,7 +583,7 @@
 (deftest select-columns-formula-evaluation-integration-test
   (testing "Formula evaluation"
     (let [file (config :formulae-file)
-	  formula-expected-pairs (->> (load-workbook file)
+	  formula-expected-pairs (->> (load-workbook-as-file file)
 				      sheet-seq
 				      first
 				      (select-columns formulae-map)
