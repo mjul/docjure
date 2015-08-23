@@ -509,6 +509,32 @@
   (when-let [^AreaReference aref (named-area-ref workbook n)]
     (map (partial cell-from-ref workbook) (.getAllReferencedCells aref))))
 
+(defn select-cell
+  "Given a Sheet and a cell reference (A1), select-cell returns the cell
+  or nil if the cell could not be found"
+  [n ^Sheet sheet]
+  (let [cellref (CellReference. n)
+        row (.getRow cellref)
+        col (.getCol cellref)]
+    (try (.getCell (.getRow sheet row) col) (catch Exception e nil))))
+
+(select-cell "BB" (first (sheet-seq
+  (load-workbook "test/dk/ative/docjure/testdata/simple.xlsx"))))
+
+(read-cell (select-cell "B2" (first (sheet-seq
+  (load-workbook "test/dk/ative/docjure/testdata/simple.xlsx")))))
+
+(def workbook (load-workbook "test/dk/ative/docjure/testdata/simple.xlsx"))
+
+
+(do
+  (set-cell! (select-cell "B1" (first (sheet-seq
+    workbook))) 2.0)
+  (read-cell (select-cell "B2" (first (sheet-seq
+    workbook)))))
+
+
+
 (defn add-name! [^Workbook workbook n string-ref]
   (let [the-name (.createName workbook)]
     (.setNameName the-name (name n))
