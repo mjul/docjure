@@ -528,9 +528,9 @@
 
 
 (do
-  (set-cell! (select-cell "B1" (first (sheet-seq
-    workbook))) 2.0)
-  (read-cell (select-cell "B2" (first (sheet-seq
+  (set-cell! (select-cell "A2" (first (sheet-seq
+    workbook))) 25.0)
+  (read-cell (select-cell "B3" (first (sheet-seq
     workbook)))))
 
 
