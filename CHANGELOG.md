@@ -10,6 +10,10 @@ Error cells return keyword of the error type:
 :VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA
 ```
 
+* Added functions to load workbooks from streams and resources in
+  addition to files: `load-workbook-from-stream`,
+  `load-workbook-from-resource` and `load-workbook-from-file`.
+
 ## Version 1.8.0
 * Upgraded to use Clojure 1.6 as default Clojure version.
 * Upgraded to Apache POI v3.11.
