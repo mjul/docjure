@@ -148,5 +148,6 @@ This library includes great contributions from
 * [Nikolay Durygin](https://github.com/nidu) (nidu)
 * [Oliver Holworthy](https://github.com/oholworthy) (oholworthy)
 * ["rakhra"](https://github.com/rakhra) (rakhra)
+* [Igor Tovstopyat-Nelip](https://github.com/igortn)(igort)
 
 Thank you very much!
