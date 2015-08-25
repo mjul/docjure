@@ -1,12 +1,14 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
+  (require [cemerick.pomegranate :as pomegranate])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
-	   (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
-	   (java.util Date)))
+           (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
+           (java.util Date)
+           (java.io FileInputStream)))
 
-(def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xlsx"
-	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xlsx"
+(def config {:datatypes-file  "test/dk/ative/docjure/testdata/datatypes.xlsx"
+             :formulae-file   "test/dk/ative/docjure/testdata/formulae.xlsx"
              :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
              :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"})
 
@@ -576,15 +578,34 @@
 ;; Integration tests
 ;; ----------------------------------------------------------------
 
-(deftest load-workbook-integration-test
-  (let [file (config :datatypes-file)
-	loaded (load-workbook file)]
-    (is (not (nil? loaded))
-    (is (isa? (class loaded) Workbook)))))
+(defn- test-loaded-workbook [loaded]
+  (is (isa? (class loaded) Workbook)))
 
+(deftest load-workbook-as-stream-integration-test
+  (with-open [stream (FileInputStream. (config :datatypes-file))]
+    (let [loaded (load-workbook-as-stream stream)]
+      (test-loaded-workbook loaded))))
+
+(deftest load-workbook-as-file-integration-test
+  (let [file (config :datatypes-file)
+        loaded (load-workbook-as-file file)]
+    (test-loaded-workbook loaded)))
+
+(defn- path->dir-and-file
+  [^String path]
+  (let [i (.lastIndexOf path "/")
+        dir (.substring path 0 i)
+        file (.substring path (inc i))]
+    [dir file]))
+
+(deftest load-workbook-as-resource-integration-test
+  (let [[dir file] (path->dir-and-file (config :datatypes-file))
+        _ (pomegranate/add-classpath dir)
+        loaded (load-workbook-as-resource file)]
+    (test-loaded-workbook loaded)))
 
 (defn- datatypes-rows [file]
-  (->> (load-workbook file)
+  (->> (load-workbook-as-file file)
        sheet-seq
        first
        (select-columns datatypes-map)))
@@ -615,7 +636,7 @@
 (deftest select-columns-formula-evaluation-integration-test
   (testing "Formula evaluation"
     (let [file (config :formulae-file)
-	  formula-expected-pairs (->> (load-workbook file)
+	  formula-expected-pairs (->> (load-workbook-as-file file)
 				      sheet-seq
 				      first
 				      (select-columns formulae-map)
@@ -640,7 +661,7 @@
 
 (deftest date-bases-test
   (letfn [(read-sheet [file]
-            (->> (load-workbook file)
+            (->> (load-workbook-as-file file)
                  sheet-seq
                  first
                  (select-columns {:A :date, :B :year, :C :comment})
