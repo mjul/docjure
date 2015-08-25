@@ -1,5 +1,8 @@
 # CHANGELOG for Docjure
 
+## Version 1.10.0
+* Upgraded to Apache POI v3.12.
+
 ## Version 1.9.0
 
 * `read-cell` now works on error cells and non-numeric formula cells without throwing an exception. (All cell types now handled safely).
