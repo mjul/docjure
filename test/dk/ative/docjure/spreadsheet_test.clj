@@ -586,11 +586,6 @@
     (let [loaded (load-workbook-from-stream stream)]
       (test-loaded-workbook loaded))))
 
-(deftest load-workbook-integration-test
-  (let [file (config :datatypes-file)
-        loaded (load-workbook file)]
-    (test-loaded-workbook loaded)))
-
 (deftest load-workbook-from-file-integration-test
   (let [file (config :datatypes-file)
         loaded (load-workbook-from-file file)]
@@ -602,6 +597,16 @@
         dir (.substring path 0 i)
         file (.substring path (inc i))]
     [dir file]))
+
+(deftest load-workbook-integration-test
+  (testing "should accept file name as string"
+    (let [file (config :datatypes-file)
+          loaded (load-workbook file)]
+      (test-loaded-workbook loaded)))
+  (testing "should accept InputStream"
+    (with-open [stream (FileInputStream. (config :datatypes-file))]
+      (let [loaded (load-workbook stream)]
+        (test-loaded-workbook loaded)))))
 
 (deftest load-workbook-from-resource-integration-test
   (let [[dir file] (path->dir-and-file (config :datatypes-file))

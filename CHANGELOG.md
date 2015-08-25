@@ -13,6 +13,8 @@ Error cells return keyword of the error type:
 * Added functions to load workbooks from streams and resources in
   addition to files: `load-workbook-from-stream`,
   `load-workbook-from-resource` and `load-workbook-from-file`.
+* Make `load-workbook` a multi-method accepting a string (filename) or a
+  stream.  
 
 ## Version 1.8.0
 * Upgraded to use Clojure 1.6 as default Clojure version.

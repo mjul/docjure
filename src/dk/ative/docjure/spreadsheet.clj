@@ -50,6 +50,7 @@
 (defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell]
   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
+
 (defn load-workbook-from-stream
   "Load an Excel workbook from a stream.
   A caller is required to close the stream after loading is complete."
@@ -71,11 +72,16 @@
     (with-open [stream (.openStream url)]
       (load-workbook-from-stream stream))))
 
-(defn load-workbook
-  "Load an Excel .xls or .xlsx workbook from a file.
-  Same as (load-workbook-from-file filename)."
-  [^String filename]
+(defmulti load-workbook "Load an Excel .xls or .xlsx workbook from an InputStream." class)
+
+(defmethod load-workbook String
+  [filename]
   (load-workbook-from-file filename))
+
+(defmethod load-workbook InputStream
+  [stream]
+  (load-workbook-from-stream stream))
+
 
 (defn save-workbook!
   "Save the workbook into a file."
