@@ -1,6 +1,6 @@
 (ns dk.ative.docjure.spreadsheet
   (:import
-    (java.io FileOutputStream FileInputStream InputStream)
+   (java.io FileOutputStream FileInputStream InputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
@@ -50,34 +50,32 @@
 (defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell]
   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
-(defn load-workbook-as-stream
+(defn load-workbook-from-stream
   "Load an Excel workbook from a stream.
   A caller is required to close the stream after loading is complete."
   [^InputStream stream]
   (WorkbookFactory/create stream))
 
-(defn load-workbook-as-file
+(defn load-workbook-from-file
   "Load an Excel .xls or .xlsx workbook from a file."
   [^String filename]
   (with-open [stream (FileInputStream. filename)]
-    (load-workbook-as-stream stream)))
+    (load-workbook-from-stream stream)))
 
-(defn load-workbook-as-resource
+(defn load-workbook-from-resource
   "Load an Excel workbook from a named resource.
   Used when reading from a resource on a classpath
   as in the case of running on an application server."
   [^String resource]
   (let [url (clojure.java.io/resource resource)]
     (with-open [stream (.openStream url)]
-      (load-workbook-as-stream stream))))
+      (load-workbook-from-stream stream))))
 
 (defn load-workbook
-  "DEPRECATED: Use 'load-workbook-as-file'.
-  Load an Excel .xls or .xlsx workbook from a file."
-  {:deprecated "1.9"}
+  "Load an Excel .xls or .xlsx workbook from a file.
+  Same as (load-workbook-from-file filename)."
   [^String filename]
-  (println "WARNING: 'load-workbook' is deprecated. Use 'load-workbook-as-file'.")
-  (load-workbook-as-file filename))
+  (load-workbook-from-file filename))
 
 (defn save-workbook!
   "Save the workbook into a file."

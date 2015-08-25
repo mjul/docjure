@@ -581,14 +581,19 @@
 (defn- test-loaded-workbook [loaded]
   (is (isa? (class loaded) Workbook)))
 
-(deftest load-workbook-as-stream-integration-test
+(deftest load-workbook-from-stream-integration-test
   (with-open [stream (FileInputStream. (config :datatypes-file))]
-    (let [loaded (load-workbook-as-stream stream)]
+    (let [loaded (load-workbook-from-stream stream)]
       (test-loaded-workbook loaded))))
 
-(deftest load-workbook-as-file-integration-test
+(deftest load-workbook-integration-test
   (let [file (config :datatypes-file)
-        loaded (load-workbook-as-file file)]
+        loaded (load-workbook file)]
+    (test-loaded-workbook loaded)))
+
+(deftest load-workbook-from-file-integration-test
+  (let [file (config :datatypes-file)
+        loaded (load-workbook-from-file file)]
     (test-loaded-workbook loaded)))
 
 (defn- path->dir-and-file
@@ -598,14 +603,14 @@
         file (.substring path (inc i))]
     [dir file]))
 
-(deftest load-workbook-as-resource-integration-test
+(deftest load-workbook-from-resource-integration-test
   (let [[dir file] (path->dir-and-file (config :datatypes-file))
         _ (pomegranate/add-classpath dir)
-        loaded (load-workbook-as-resource file)]
+        loaded (load-workbook-from-resource file)]
     (test-loaded-workbook loaded)))
 
 (defn- datatypes-rows [file]
-  (->> (load-workbook-as-file file)
+  (->> (load-workbook-from-file file)
        sheet-seq
        first
        (select-columns datatypes-map)))
@@ -636,7 +641,7 @@
 (deftest select-columns-formula-evaluation-integration-test
   (testing "Formula evaluation"
     (let [file (config :formulae-file)
-	  formula-expected-pairs (->> (load-workbook-as-file file)
+	  formula-expected-pairs (->> (load-workbook file)
 				      sheet-seq
 				      first
 				      (select-columns formulae-map)
@@ -661,7 +666,7 @@
 
 (deftest date-bases-test
   (letfn [(read-sheet [file]
-            (->> (load-workbook-as-file file)
+            (->> (load-workbook file)
                  sheet-seq
                  first
                  (select-columns {:A :date, :B :year, :C :comment})
