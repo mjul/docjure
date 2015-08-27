@@ -36,6 +36,22 @@ to the top header row, then save the spreadsheet.
         (save-workbook! "spreadsheet.xlsx" wb)))
 
 
+### Example: Use Excel Formulas in Clojure
+
+Docjure allows you not only to evaluate a formula cell in a speadsheet, it also
+provides a way of exposing a formla in a cell as a Clojure function using the
+`cell-fn` function.
+
+    (use 'dk.active.docjure.spreadsheet)
+    ;; Load a speadsheet and take the first sheet, construct a function from cell A2, taking
+    ;; A1 as input.
+    (def formula-from-a2 (cell-fn "A2"
+                                      (first (sheet-seq (load-workbook "spreadsheet.xslx")))
+                                      "A1"))
+
+    ;; Returns value of cell A2, as if value in cell A1 were 1.0
+    (formula-from-a2 1.0)
+
 ### Example: Handling Error Cells
 
 If the spreadsheet being read contains cells with errors the default
