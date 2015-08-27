@@ -585,10 +585,15 @@
       (is (= (list cs1 cs2) (get-row-styles header-row)))
       )))
 
-((let [file (config :simple)
-        loaded (load-workbook file)
-        worksheet (first (sheet-seq loaded))]
-  (cell-fn "B3" worksheet "A2")) 4.0)
+(deftest cell-fn-test
+  (testing "Creating a function from a formula cell"
+    (let [file (config :simple)
+           loaded (load-workbook file)
+           worksheet (first (sheet-seq loaded))
+           cell-function (cell-fn "B3" worksheet "A2")]
+       (is (= (cell-function 2.0) 5.0))
+       (is (= (cell-function 3.0) 7.0))
+       )))
 
 ;; ----------------------------------------------------------------
 ;; Integration tests
