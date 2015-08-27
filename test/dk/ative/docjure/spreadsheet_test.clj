@@ -716,3 +716,15 @@
         (is (= 2.0      (read-cell (select-cell "A2" worksheet))))
         (is (= 3.0      (read-cell (select-cell "B2" worksheet))))
         (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))
+
+(deftest select-cell-overwrite-formula-read-updated-formula-test
+  (let [file (config :simple)
+        loaded (load-workbook file)
+        worksheet (first (sheet-seq loaded))]
+    (testing "selecting-cell"
+      (is (= 2.0      (read-cell (select-cell "B2" worksheet))))
+      (testing "updating cell-value"
+        (set-cell! (select-cell "B2" worksheet) 4.0)
+        (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
+        (is (= 4.0      (read-cell (select-cell "B2" worksheet))))
+        (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))
