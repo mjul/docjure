@@ -583,6 +583,11 @@
       (is (= (list cs1 cs2) (get-row-styles header-row)))
       )))
 
+((let [file (config :simple)
+        loaded (load-workbook file)
+        worksheet (first (sheet-seq loaded))]
+  (cell-fn "B3" worksheet "A2")) 4.0)
+
 ;; ----------------------------------------------------------------
 ;; Integration tests
 ;; ----------------------------------------------------------------
@@ -647,7 +652,6 @@
              (is (= (reduce concat (map (fn [[_ a b]] [a b]) data))
                     (map read-cell (select-name workbook "ten"))))
              (is (nil? (select-name workbook "bill"))))))
-
 
 (deftest date-bases-test
   (letfn [(read-sheet [file]

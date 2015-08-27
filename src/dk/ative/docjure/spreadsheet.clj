@@ -522,3 +522,16 @@
   (let [the-name (.createName workbook)]
     (.setNameName the-name (name n))
     (.setRefersToFormula the-name string-ref)))
+
+(defn cell-fn
+  "Turn a cell (ideally containing a formula) into a function. The returned function
+  will take a variable number of parameters, updating each of the inputcells in the
+  sheet with the supplied values and return the value of the cell outputcell.
+  Cell names are specified using Excel syntax, i.e. A2 or B12."
+  [outputcell ^Sheet sheet & inputcells]
+  (fn [& input] (do
+                  (doseq [pair (seq (apply hash-map (interleave inputcells input)))]
+                    (set-cell! (select-cell (first pair) sheet) (last pair)))
+                  (read-cell (select-cell outputcell sheet))
+                  ;;(seq (apply hash-map (interleave inputcells input)))
+                  )))
