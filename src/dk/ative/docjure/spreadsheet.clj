@@ -559,6 +559,4 @@
   (fn [& input] (do
                   (doseq [pair (seq (apply hash-map (interleave inputcells input)))]
                     (set-cell! (select-cell (first pair) sheet) (last pair)))
-                  (read-cell (select-cell outputcell sheet))
-                  ;;(seq (apply hash-map (interleave inputcells input)))
-                  )))
+                  (read-cell (select-cell outputcell sheet)))))
