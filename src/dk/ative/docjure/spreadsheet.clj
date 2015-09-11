@@ -1,6 +1,6 @@
 (ns dk.ative.docjure.spreadsheet
   (:import
-   (java.io FileOutputStream FileInputStream InputStream)
+    (java.io FileOutputStream FileInputStream InputStream OutputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
@@ -53,7 +53,7 @@
 
 (defn load-workbook-from-stream
   "Load an Excel workbook from a stream.
-  A caller is required to close the stream after loading is complete."
+  The caller is required to close the stream after loading is completed."
   [^InputStream stream]
   (WorkbookFactory/create stream))
 
@@ -82,13 +82,33 @@
   [stream]
   (load-workbook-from-stream stream))
 
+(defn save-workbook-into-stream!
+  "Save the workbook into a stream.
+  The caller is required to close the stream after saving is completed."
+  [^OutputStream stream ^Workbook workbook]
+  (assert-type workbook Workbook)
+  (.write workbook stream))
 
-(defn save-workbook!
+(defn save-workbook-into-file!
   "Save the workbook into a file."
   [^String filename ^Workbook workbook]
   (assert-type workbook Workbook)
   (with-open [file-out (FileOutputStream. filename)]
     (.write workbook file-out)))
+
+(defmulti save-workbook!
+          "Save the workbook into a stream or a file.
+          In the case of saving into a stream, the caller is required
+          to close the stream after saving is completed."
+          (fn [x _] (class x)))
+
+(defmethod save-workbook! OutputStream
+  [stream workbook]
+  (save-workbook-into-stream! stream workbook))
+
+(defmethod save-workbook! String
+  [filename workbook]
+  (save-workbook-into-file! filename workbook))
 
 (defn sheet-seq
   "Return a lazy seq of the sheets in a workbook."
