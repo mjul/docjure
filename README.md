@@ -125,7 +125,7 @@ Then build the library:
 
 ## License
 
-Copyright (c) 2009-2015 Martin Jul
+Copyright (c) 2009-2016 Martin Jul
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
