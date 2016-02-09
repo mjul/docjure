@@ -39,7 +39,7 @@ as the parameter. After a minor modification, the same example will look like:
          (select-sheet "Price List")
          (select-columns {:A :name, :B :price}))
 
-### Example. Load a Workbook from a Stream
+### Example: Load a Workbook from a Stream
 The function 'load-workbook' is a multimethod, and the first example takes
 a file name as a parameter. The overloaded version of 'load-workbook'
 takes an InputStream. This may be useful when uploading a workbook to the server
