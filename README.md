@@ -121,16 +121,16 @@ The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure)
 If you are using the Leiningen build tool just add this line to the
 :dependencies list in project.clj to use it:
 
-    [dk.ative/docjure "1.9.0"]
+    [dk.ative/docjure "1.10.0"]
 
 Remember to issue the 'lein deps' command to download it.
 
-#### Example project.clj for using Docjure 1.9.0
+#### Example project.clj for using Docjure 1.10.0
 
     (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
-      :dependencies [[org.clojure/clojure "1.6.0"]
-                     [dk.ative/docjure "1.9.0"]])
+      :dependencies [[org.clojure/clojure "1.8.0"]
+                     [dk.ative/docjure "1.10.0"]])
 
 
 ## Installation
