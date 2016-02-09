@@ -146,6 +146,10 @@ Then build the library:
      lein compile
      lein test
 
+To run the tests on all supported Clojure versions use:
+
+    lein all test
+
 
 ## License
 
