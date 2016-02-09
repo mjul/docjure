@@ -1,7 +1,8 @@
 # CHANGELOG for Docjure
 
 ## Version 1.10.0
-* Upgraded to Apache POI v3.12.
+* Upgraded to Apache POI v3.13.
+* Add `select-cell` function to easily read a single cell value.
 
 ## Version 1.9.0
 

@@ -1,7 +1,8 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (require [cemerick.pomegranate :as pomegranate])
+  (require [cemerick.pomegranate :as pomegranate]
+           [clojure.java.io :as io])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
            (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
            (java.util Date)
@@ -11,7 +12,8 @@
              :formulae-file   "test/dk/ative/docjure/testdata/formulae.xlsx"
              :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
              :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"
-             :simple "test/dk/ative/docjure/testdata/simple.xlsx"})
+             :simple "test/dk/ative/docjure/testdata/simple.xlsx"
+             :save-workbook-location "test/dk/ative/docjure/testdata/saved.xlsx"})
 
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
 (def formulae-map {:A :formula, :B :expected})
@@ -301,10 +303,6 @@
 (deftest row-seq-test
   (testing "Should fail on invalid parameter types."
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (row-seq "not-a-sheet")))))
-
-(deftest save-workbook!-test
-  (testing "Should fail on invalid parameter types."
-    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (save-workbook! "filename.xlsx" "not-a-workbook")))))
 
 ;; ----------------------------------------------------------------
 ;; Styling
@@ -624,6 +622,25 @@
         _ (pomegranate/add-classpath dir)
         loaded (load-workbook-from-resource file)]
     (test-loaded-workbook loaded)))
+
+(deftest save-workbook!-test
+  (testing "Should fail on invalid parameter types."
+    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (save-workbook! "filename.xlsx" "not-a-workbook"))))
+  (testing "Saving workbook into a file"
+    (let [file (config :save-workbook-location)
+          workbook (create-workbook "Sheet 1" [["A1" "B1" "C1"]])
+          _ (save-workbook! file workbook)
+          loaded (load-workbook file)
+          _ (io/delete-file file)]
+      (test-loaded-workbook loaded)))
+  (testing "Saving workbook into a stream"
+    (let [file (config :save-workbook-location)
+          stream (io/output-stream file)
+          workbook (create-workbook "Sheet 1" [["A1" "B1" "C1"]])
+          _ (save-workbook! stream workbook)
+          loaded (load-workbook file)
+          _ (io/delete-file file)]
+      (test-loaded-workbook loaded))))
 
 (defn- datatypes-rows [file]
   (->> (load-workbook-from-file file)
