@@ -149,5 +149,6 @@ This library includes great contributions from
 * [Oliver Holworthy](https://github.com/oholworthy) (oholworthy)
 * ["rakhra"](https://github.com/rakhra) (rakhra)
 * [Igor Tovstopyat-Nelip](https://github.com/igortn)(igort)
+* [Dino Kovač](https://github.com/reisub)(reisub)
 
 Thank you very much!
