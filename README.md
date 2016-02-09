@@ -16,6 +16,18 @@ Docjure makes reading and writing Office documents in Clojure easy.
 
     ;=> [{:name "Foo Widget", :price 100}, {:name "Bar Widget", :price 200}]
 
+### Example: Read a single cell
+
+If you want to read a single cell value, you can use the `select-cell` function which
+takes an Excel-style cell reference (A2) and returns the cell. In order to get the
+actual value, use `read-cell`
+
+    (use 'dk.active.docjure.spreadsheet)
+    (read-cell
+      (->> (load-workbook "spreadsheet.xslx")
+            (select-sheet "Price List")
+            (select-cell "A1")))
+
 ### Example: Create a spreadsheet
 This example creates a spreadsheet with a single sheet named "Price List".
 It has three rows. We apply a style of yellow background colour and bold font
@@ -148,7 +160,7 @@ This library includes great contributions from
 * [Nikolay Durygin](https://github.com/nidu) (nidu)
 * [Oliver Holworthy](https://github.com/oholworthy) (oholworthy)
 * ["rakhra"](https://github.com/rakhra) (rakhra)
-* [Igor Tovstopyat-Nelip](https://github.com/igortn) (igort)
 * [Dino Kovač](https://github.com/reisub) (reisub)
+* [Lars Trieloff](https://github.com/trieloff) (trieloff)
 
 Thank you very much!

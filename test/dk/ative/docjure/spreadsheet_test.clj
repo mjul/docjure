@@ -10,7 +10,8 @@
 (def config {:datatypes-file  "test/dk/ative/docjure/testdata/datatypes.xlsx"
              :formulae-file   "test/dk/ative/docjure/testdata/formulae.xlsx"
              :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
-             :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"})
+             :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"
+             :simple "test/dk/ative/docjure/testdata/simple.xlsx"})
 
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
 (def formulae-map {:A :formula, :B :expected})
@@ -127,6 +128,16 @@
         (is (= (july 1) (read-cell date-cell)))
         (is (= 42.0 (read-cell number-cell))))))
 
+(deftest select-cell-test
+  (let [file (config :simple)
+        loaded (load-workbook file)
+        worksheet (first (sheet-seq loaded))]
+    (testing "select-cell"
+      (is (= "Empty" (read-cell (select-cell "A1" worksheet))))
+      (is (= "Empty" (read-cell (select-cell "B1" worksheet))))
+      (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
+      (is (= 2.0      (read-cell (select-cell "B2" worksheet))))
+      (is (= 3.0      (read-cell (select-cell "B3" worksheet)))))))
 
 (deftest set-cell!-test
   (let [sheet-name "Sheet 1"
@@ -684,3 +695,15 @@
     (testing "Can read workbooks with 1904-based dates"
       (let [actual (read-sheet (config :1904-based-file))]
         (is (every? #(== (year (:date %)) (:year %)) actual))))))
+
+(deftest select-cell-update-value-read-updated-formula-test
+  (let [file (config :simple)
+        loaded (load-workbook file)
+        worksheet (first (sheet-seq loaded))]
+    (testing "selecting-cell"
+      (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
+      (testing "updating cell-value"
+        (set-cell! (select-cell "A2" worksheet) 2.0)
+        (is (= 2.0      (read-cell (select-cell "A2" worksheet))))
+        (is (= 3.0      (read-cell (select-cell "B2" worksheet))))
+        (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))

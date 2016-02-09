@@ -4,3 +4,4 @@ target
 
 test/docjure/testdata/~$*.xlsx
 /.lein-failures
+~$*.xlsx
