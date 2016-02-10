@@ -191,5 +191,6 @@ This library includes great contributions from
 * [Igor Tovstopyat-Nelip](https://github.com/igortn) (igortn)
 * [Dino Kovač](https://github.com/reisub) (reisub)
 * [Lars Trieloff](https://github.com/trieloff) (trieloff)
+* [Jens Bendisposto](https://github.com/bendisposto) (bendisposto)
 
 Thank you very much!
