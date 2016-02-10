@@ -1,7 +1,9 @@
 # CHANGELOG for Docjure
 
 ## Version 1.10.0
-* Upgraded to Apache POI v3.12.
+* Upgraded to Apache POI v3.13.
+* Add `select-cell` function to easily read a single cell value.
+* Upgraded to use Clojure 1.8 (test suite runs on Clojure 1.3 through 1.8)
 
 ## Version 1.9.0
 
@@ -26,7 +28,7 @@ Error cells return keyword of the error type:
  versions of Excel [More info](http://support.microsoft.com/kb/180162).
 
 ## Version 1.7.0
-* select-sheet can now select sheets by regex and predicate functions in addition to exact sheet name (contributed by jonneale).
+* `select-sheet` can now select sheets by regex and predicate functions in addition to exact sheet name (contributed by jonneale).
 * upgraded Clojure version to 1.5.1
 * added font and cell styling options (contributed by naipmoro):
 * added option work on the legacy Excel 'XLS' file format (`create-xls-workbook`)

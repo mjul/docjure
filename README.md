@@ -28,6 +28,30 @@ actual value, use `read-cell`
             (select-sheet "Price List")
             (select-cell "A1")))
 
+### Example: Load a Workbook from a Resource
+This example loads a workbook from a named file. In the case of running
+in the application server, the file typically resides in the resources directory,
+and it's not on the caller's path. To cover this scenario, we provide
+the function 'load-workbook-from-resource' that takes a named resource
+as the parameter. After a minor modification, the same example will look like:
+
+    (->> (load-workbook-from-resource "spreadsheet.xlsx")
+         (select-sheet "Price List")
+         (select-columns {:A :name, :B :price}))
+
+### Example: Load a Workbook from a Stream
+The function 'load-workbook' is a multimethod, and the first example takes
+a file name as a parameter. The overloaded version of 'load-workbook'
+takes an InputStream. This may be useful when uploading a workbook to the server
+over HTTP connection as multipart form data. In this case, the web framework
+passes a byte buffer, and the example should be modified as (note that you have
+to use 'with-open' to ensure that the stream will be closed):
+
+    (with-open [stream (clojure.java.io/input-stream bytes)]
+      (->> (load-workbook stream)
+           (select-sheet "Price List")
+           (select-columns {:A :name, :B :price})))
+
 ### Example: Create a spreadsheet
 This example creates a spreadsheet with a single sheet named "Price List".
 It has three rows. We apply a style of yellow background colour and bold font
@@ -113,16 +137,16 @@ The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure)
 If you are using the Leiningen build tool just add this line to the
 :dependencies list in project.clj to use it:
 
-    [dk.ative/docjure "1.9.0"]
+    [dk.ative/docjure "1.10.0"]
 
 Remember to issue the 'lein deps' command to download it.
 
-#### Example project.clj for using Docjure 1.9.0
+#### Example project.clj for using Docjure 1.10.0
 
     (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
-      :dependencies [[org.clojure/clojure "1.6.0"]
-                     [dk.ative/docjure "1.9.0"]])
+      :dependencies [[org.clojure/clojure "1.8.0"]
+                     [dk.ative/docjure "1.10.0"]])
 
 
 ## Installation
@@ -138,10 +162,14 @@ Then build the library:
      lein compile
      lein test
 
+To run the tests on all supported Clojure versions use:
+
+    lein all test
+
 
 ## License
 
-Copyright (c) 2009-2015 Martin Jul
+Copyright (c) 2009-2016 Martin Jul
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
@@ -176,7 +204,9 @@ This library includes great contributions from
 * [Nikolay Durygin](https://github.com/nidu) (nidu)
 * [Oliver Holworthy](https://github.com/oholworthy) (oholworthy)
 * ["rakhra"](https://github.com/rakhra) (rakhra)
-* [Igor Tovstopyat-Nelip](https://github.com/igortn)(igort)
+* [Igor Tovstopyat-Nelip](https://github.com/igortn) (igortn)
+* [Dino Kovač](https://github.com/reisub) (reisub)
 * [Lars Trieloff](https://github.com/trieloff) (trieloff)
+* [Jens Bendisposto](https://github.com/bendisposto) (bendisposto)
 
 Thank you very much!
