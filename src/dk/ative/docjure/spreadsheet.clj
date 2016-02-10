@@ -186,7 +186,7 @@
     (when new-key
       {new-key (read-cell cell)})))
 
-(defn select-columns [column-map ^Sheet sheet]
+(defn select-columns 
   "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
    its keys are the spreadsheet column names and the values represent
@@ -196,6 +196,7 @@
 
    (select-columns {:A :first, :C :third} sheet)
    => [{:first \"Value in cell A1\", :third \"Value in cell C1\"} ...] "
+  [column-map ^Sheet sheet]
   (assert-type sheet Sheet)
   (vec
    (for [row (into-seq sheet)]
