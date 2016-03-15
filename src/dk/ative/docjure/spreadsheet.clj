@@ -221,21 +221,31 @@
 (defmulti set-cell! (fn [^Cell cell val] (type val)))
 
 (defmethod set-cell! String [^Cell cell val]
-  (.setCellValue cell ^String val))
+  (do
+    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
+    (.setCellValue cell ^String val)))
 
 (defmethod set-cell! Number [^Cell cell val]
-  (.setCellValue cell (double val)))
+  (do
+    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+    (.setCellValue cell (double val))))
 
 (defmethod set-cell! Boolean [^Cell cell val]
-  (.setCellValue cell ^Boolean val))
+  (do
+    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BOOLEAN))
+    (.setCellValue cell ^Boolean val)))
 
 (defmethod set-cell! Date [^Cell cell val]
-  (do (.setCellValue cell ^Date val)
-      (apply-date-format! cell "m/d/yy")))
+  (do
+    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+    (.setCellValue cell ^Date val)
+    (apply-date-format! cell "m/d/yy")))
 
 (defmethod set-cell! nil [^Cell cell val]
   (let [^String null nil]
-      (.setCellValue cell null)))
+    (do
+      (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BLANK))
+      (.setCellValue cell null))))
 
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
@@ -570,3 +580,14 @@
   (let [the-name (.createName workbook)]
     (.setNameName the-name (name n))
     (.setRefersToFormula the-name string-ref)))
+
+(defn cell-fn
+  "Turn a cell (ideally containing a formula) into a function. The returned function
+  will take a variable number of parameters, updating each of the inputcells in the
+  sheet with the supplied values and return the value of the cell outputcell.
+  Cell names are specified using Excel syntax, i.e. A2 or B12."
+  [outputcell ^Sheet sheet & inputcells]
+  (fn [& input] (do
+                  (doseq [pair (seq (apply hash-map (interleave inputcells input)))]
+                    (set-cell! (select-cell (first pair) sheet) (last pair)))
+                  (read-cell (select-cell outputcell sheet)))))
