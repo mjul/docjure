@@ -3,6 +3,7 @@
     (java.io FileOutputStream FileInputStream InputStream OutputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
+   (org.apache.poi.xssf.streaming SXSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 FormulaError
@@ -288,6 +289,38 @@
         sheet    (add-sheet! workbook sheet-name)]
     (add-rows! sheet data)
     workbook))
+
+(defmacro with-streaming-workbook!
+  "Creates new XLSX workbook.
+  Use function append-row! to append new row to the worksheet.
+  Works in streaming mode with constant memory requirements.
+  Needs enough memory to fit in the biggest row.
+
+  Example:
+  (with-streaming-workbook! \"Test.xlsx\" \"SHEETNAME\"
+    (doseq [i (range 2000)]
+      (append-row! (range i))))"
+  [file-name sheet-name & body]
+  `(let [wb# (SXSSFWorkbook. 1)
+         ^Sheet sh# (add-sheet! wb# ~sheet-name)
+         row-num# (atom 0)
+         ~'append-row!
+         (fn [row-data#]
+           (let [r# (.createRow sh# @row-num#)]
+             (swap! row-num# inc)
+             (doseq [[j# value#] (map-indexed #(list %1 %2) row-data#)]
+               (set-cell! (.createCell r# j#) value#))))]
+     (try
+       (do ~@body)
+       (save-workbook-into-file! ~file-name wb#)
+       (finally
+         (.dispose wb#)))))
+
+(defn save-data-to-xlsx!
+  "Create new XLSX workbook and stream data into the sheet."
+  [file-name sheet-name data]
+  (with-streaming-workbook! file-name sheet-name
+    (doseq [row data] (append-row! row))))
 
 (defn create-xls-workbook
   "Create a new XLS workbook with a single sheet and the data specified."
