@@ -187,7 +187,7 @@
     (when new-key
       {new-key (read-cell cell)})))
 
-(defn select-columns 
+(defn select-columns
   "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
    its keys are the spreadsheet column names and the values represent
