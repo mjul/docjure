@@ -272,22 +272,32 @@
   (.createSheet workbook name))
 
 (defn create-workbook
-  "Create a new XLSX workbook with a single sheet and the data
-   specified. The data is given a vector of vectors, representing
+  "Create a new XLSX workbook. Data is a vector of vectors, representing
    the rows and the cells of the rows.
+  
+  Single sheet example: first argument is the sheet name, the second
+  argument is the sheet data.
 
-   For example, to create a workbook with a sheet with
-   two rows of each three columns:
+  (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]])
 
-   (create-workbook \"Sheet 1\"
-                    [[\"Name\" \"Quantity\" \"Price\"]
-                     [\"Foo Widget\" 2 42]])
-   "
-  [sheet-name data]
-  (let [workbook (XSSFWorkbook.)
-        sheet    (add-sheet! workbook sheet-name)]
-    (add-rows! sheet data)
-    workbook))
+  Multiple sheets example: one argument, a vector of alternating sheetnames and
+  associated sheetdata [SheetName1, SheetData1, SheetName2, SheetData2, ...]
+
+  (create-workbook [\"SheetName1\" [[\"FirstSheet A1\"][\"FirstSheet A2\"]]
+                    \"SheetName2\" [[\"SecondSheet A1\"][\"SecondSheet A2\"]]])"
+  ([sheet-name data]
+   (let [workbook (XSSFWorkbook.)
+         sheet    (add-sheet! workbook sheet-name)]
+     (add-rows! sheet data)
+     workbook))
+  
+  ([sheet-vec]
+   (let [workbook (XSSFWorkbook.)
+        sheet-groups (partition 2 2 sheet-vec)
+        sheets (map #(conj [] (add-sheet! workbook (first %)) (second %)) sheet-groups)]
+    (doseq [sheet sheets]
+      (add-rows! (first sheet) (second sheet)))
+    workbook)))
 
 (defn create-xls-workbook
   "Create a new XLS workbook with a single sheet and the data specified."

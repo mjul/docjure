@@ -82,6 +82,28 @@ to the top header row, then save the spreadsheet.
     (save-workbook! "spreadsheet.xlsx" wb)))
 ```
 
+### Example: Create a workbook with multiple sheets
+This example creates a spreadsheet with multiple sheets. Instead of just passing a
+sheet name and a dataset, we pass a vector of the form [SheetName1, SheetData1,
+SheetName2, SheetData2, ...].
+
+```clj
+(use 'dk.ative.docjure.spreadsheet)
+
+;; Create a spreadsheet and save it
+(let [wb (create-workbook ["Squares"
+                           [["N" "N^2"]
+                            [1 1]
+                            [2 4]
+                            [3 9]]
+                           "Cubes"
+                           [["N" "N^3"]
+                            [1 1]
+                            [2 8]
+                            [3 27]]])]
+   (save-workbook! "exponents.xlsx" wb)))
+```
+
 ### Example: Use Excel Formulas in Clojure
 
 Docjure allows you not only to evaluate a formula cell in a speadsheet, it also
