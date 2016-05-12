@@ -48,6 +48,46 @@
 	     (.getCell (second rows) 0) (first (second sheet-data))
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
 
+(deftest create-workbook-with-multiple-sheets-test
+  (let [sheet-vec ["Sheet 1" [["A1" "B1" "C1"]
+                              ["A2" "B2" "C2"]]
+                   "Sheet 2" [["A1" "B1" "C1"]
+                              ["A2" "B2" "C2"]]]
+        workbook (create-workbook sheet-vec)]
+    (testing "Multiple sheet creation"
+      (is (= 2 (.getNumberOfSheets workbook)) "Expected 2 sheets to be added.")
+      (is (= (nth sheet-vec 0) (.. workbook (getSheetAt 0) (getSheetName)))
+          "Expected sheet 1 to have correct name.")
+      (is (= (nth sheet-vec 2) (.. workbook (getSheetAt 1) (getSheetName)))
+          "Expected sheet 2 to have correct name."))
+    (testing "Sheet data"
+      (let [sheet1 (.getSheetAt workbook 0)
+            sheet1-rows (vec (iterator-seq (.iterator sheet1)))
+            sheet1-data (nth sheet-vec 1)
+            sheet2 (.getSheetAt workbook 1)
+            sheet2-rows (vec (iterator-seq (.iterator sheet2)))
+            sheet2-data (nth sheet-vec 3)]
+        (is (= (count (nth sheet-vec 1)) (.getPhysicalNumberOfRows sheet1))
+            "Expected correct number of rows for sheet 1.")
+        (is (= (count (nth sheet-vec 3)) (.getPhysicalNumberOfRows sheet2))
+            "Expected correct number of rows for sheet 2.")
+        (is (= 0 (.getRowNum (first sheet1-rows)) "Expected correct row number for sheet 1."))
+        (is (= 0 (.getRowNum (first sheet2-rows)) "Expected correct row number for sheet 2."))
+        (is (= (count (first (nth sheet-vec 1))) (.getLastCellNum (first sheet1-rows)))
+            "Expected correct number of columns for sheet 1.")
+        (is (= (count (first (nth sheet-vec 3))) (.getLastCellNum (first sheet2-rows)))
+            "Expected correct number of columns for sheet 2.")
+        (are [actual-cell expected-value] (= (expected-value (.getStringCellValue actual-cell)))
+              (.getCell (first sheet1-rows) 0) (ffirst sheet1-data)
+              (.getCell (first sheet1-rows) 1) (second (first sheet1-data))
+              (.getCell (second sheet1-rows) 0) (first (second sheet1-data))
+              (.getCell (second sheet1-rows) 1) (second (second sheet1-data))
+              
+              (.getCell (first sheet2-rows) 0) (ffirst sheet2-data)
+              (.getCell (first sheet2-rows) 1) (second (first sheet2-data))
+              (.getCell (second sheet2-rows) 0) (first (second sheet2-data))
+              (.getCell (second sheet2-rows) 1) (second (second sheet2-data)))))))
+
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."
     (is (= ["foo" "bar"] (row-vec [:foo :bar] {:foo "foo", :bar "bar"}))

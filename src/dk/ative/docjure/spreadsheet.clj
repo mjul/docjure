@@ -293,7 +293,7 @@
   
   ([sheet-vec]
    (let [workbook (XSSFWorkbook.)
-        sheet-groups (partition 2 2 sheet-vec)
+        sheet-groups (partition 2 2 [nil] sheet-vec)
         sheets (map #(conj [] (add-sheet! workbook (first %)) (second %)) sheet-groups)]
     (doseq [sheet sheets]
       (add-rows! (first sheet) (second sheet)))
