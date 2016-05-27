@@ -296,7 +296,7 @@
         sheet-groups (partition 2 2 [nil] sheet-vec)
         sheets (map #(conj [] (add-sheet! workbook (first %)) (second %)) sheet-groups)]
     (doseq [sheet sheets]
-      (add-rows! (first sheet) (second sheet)))
+      (apply add-rows! sheet))
     workbook)))
 
 (defn create-xls-workbook
