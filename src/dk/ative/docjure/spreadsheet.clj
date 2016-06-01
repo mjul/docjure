@@ -272,31 +272,28 @@
   (.createSheet workbook name))
 
 (defn create-workbook
-  "Create a new XLSX workbook. Data is a vector of vectors, representing
-   the rows and the cells of the rows.
-  
-  Single sheet example: first argument is the sheet name, the second
-  argument is the sheet data.
+  "Create a new XLSX workbook.  Sheet-name is a string name for the sheet. Data 
+  is a vector of vectors, representing the rows and the cells of the rows. 
+  Alternate sheet names and data to create multiple sheets.
 
-  (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]])
-
-  Multiple sheets example: one argument, a vector of alternating sheetnames and
-  associated sheetdata [SheetName1, SheetData1, SheetName2, SheetData2, ...]
-
-  (create-workbook [\"SheetName1\" [[\"FirstSheet A1\"][\"FirstSheet A2\"]]
-                    \"SheetName2\" [[\"SecondSheet A1\"][\"SecondSheet A2\"]]])"
-  ([sheet-name data]
+  (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]]
+                   \"SheetName2\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]] "
+ ([sheet-name data]
    (let [workbook (XSSFWorkbook.)
          sheet    (add-sheet! workbook sheet-name)]
      (add-rows! sheet data)
      workbook))
-  
-  ([sheet-vec]
-   (let [workbook (XSSFWorkbook.)
-        sheet-groups (partition 2 2 [nil] sheet-vec)
-        sheets (map #(conj [] (add-sheet! workbook (first %)) (second %)) sheet-groups)]
-    (doseq [sheet sheets]
-      (apply add-rows! sheet))
+ 
+ ([sheet-name data & name-data-pairs]
+  ;; incomplete pairs should not be allowed
+  {:pre [(even? (count name-data-pairs))]}
+  ;; call single arity version to create workbook
+   (let [workbook (create-workbook sheet-name data)]
+     ;; iterate through pairs adding sheets and rows
+    (doseq [[s-name data] (partition 2 name-data-pairs)]
+      (-> workbook
+          (add-sheet! s-name)
+          (add-rows!  data)))
     workbook)))
 
 (defn create-xls-workbook
