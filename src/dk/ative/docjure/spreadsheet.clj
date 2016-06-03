@@ -1,15 +1,16 @@
 (ns dk.ative.docjure.spreadsheet
   (:import
-    (java.io FileOutputStream FileInputStream InputStream OutputStream)
+   (java.io FileOutputStream FileInputStream InputStream OutputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
-   (org.apache.poi.hssf.usermodel HSSFWorkbook)
+   (org.apache.poi.hssf.usermodel HSSFWorkbook DVConstraint HSSFDataValidation)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 FormulaError
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
                                 CellValue Drawing CreationHelper)
-   (org.apache.poi.ss.util CellReference AreaReference)))
+   (org.apache.poi.ss.util CellReference AreaReference)
+   (org.apache.poi.hssf.util CellRangeAddressList)))
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
@@ -186,7 +187,7 @@
     (when new-key
       {new-key (read-cell cell)})))
 
-(defn select-columns 
+(defn select-columns
   "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
    its keys are the spreadsheet column names and the values represent
@@ -271,6 +272,27 @@
   (assert-type workbook Workbook)
   (.createSheet workbook name))
 
+(defn add-validation!
+  ;; {:formula ["100" "200"...]
+  ;;  :apply-range [start-row-idx start-cell-idx end-row-idx end-cell-idx]
+  ;;  :allow-empty? true
+  ;;  :show-prompt? true
+  ;;  :suppress-dropdown? true}
+  [^Sheet sheet
+    {:keys [formula allow-empty? show-prompt? suppress-dropdown?]
+    [y x dy dx] :apply-range
+    :or {allow-empty? true show-prompt? true suppress-dropdown? true}}]
+  ((comp
+    #(.addValidationData sheet %)
+    #(doto %
+       (.setEmptyCellAllowed allow-empty?)
+       (.setShowPromptBox show-prompt?)
+       (.setSuppressDropDownArrow suppress-dropdown?))
+    #(HSSFDataValidation. (.addCellRangeAddress (CellRangeAddressList.) y x dy dx) %)
+    #(DVConstraint/createExplicitListConstraint %)
+    (partial into-array String)) formula))
+
+
 (defn create-workbook
   "Create a new XLSX workbook with a single sheet and the data
    specified. The data is given a vector of vectors, representing
@@ -283,11 +305,15 @@
                     [[\"Name\" \"Quantity\" \"Price\"]
                      [\"Foo Widget\" 2 42]])
    "
-  [sheet-name data]
-  (let [workbook (XSSFWorkbook.)
-        sheet    (add-sheet! workbook sheet-name)]
-    (add-rows! sheet data)
-    workbook))
+  ([sheet-name data]
+   (create-workbook sheet-name nil data))
+  ([sheet-name opts data]
+   (let [workbook (HSSFWorkbook.)                    ;(XSSFWorkbook.)
+         sheet (add-sheet! workbook sheet-name)]
+     (cond-> sheet
+       ((complement nil?) opts) (add-validation! opts)
+       true (add-rows! data))
+     workbook)))
 
 (defn create-xls-workbook
   "Create a new XLS workbook with a single sheet and the data specified."
