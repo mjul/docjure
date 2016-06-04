@@ -2,7 +2,7 @@
   (:import
    (java.io FileOutputStream FileInputStream InputStream OutputStream)
    (java.util Date Calendar)
-   (org.apache.poi.xssf.usermodel XSSFWorkbook)
+   (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFDataValidationConstraint XSSFDataValidation XSSFDataValidationHelper)
    (org.apache.poi.hssf.usermodel HSSFWorkbook DVConstraint HSSFDataValidation)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
                                 FormulaError
@@ -272,26 +272,61 @@
   (assert-type workbook Workbook)
   (.createSheet workbook name))
 
-(defn add-validation!
-  ;; {:formula ["100" "200"...]
-  ;;  :apply-range [start-row-idx start-cell-idx end-row-idx end-cell-idx]
-  ;;  :allow-empty? true
-  ;;  :show-prompt? true
-  ;;  :suppress-dropdown? true}
+(defmulti add-validation! (fn [^Sheet sheet _] (type (.getWorkbook sheet))))
+(comment
+  (let [data [["group" "name" "phone" "mobile"]
+              ["100" "test1" "test" "asdf"]
+              ["200" "test2" nil nil]]
+        start-row 1
+        start-cell 0
+        end-row (count data)
+        end-cell start-cell]
+    (with-open [os (io/output-stream "/tmp/test.xlsx")]
+      (.write
+       (create-workbook
+        "test"
+        {:formula ["100" "200"]
+         :apply-range [start-row start-cell end-row end-cell]
+         :allow-empty? true
+         :show-prompt? true
+         :show-errorbox? true
+         :suppress-dropdown? true}
+        data)
+       os))))
+(defmethod add-validation! HSSFWorkbook
   [^Sheet sheet
-    {:keys [formula allow-empty? show-prompt? suppress-dropdown?]
+   {:keys [formula allow-empty? show-prompt? show-errorbox? suppress-dropdown?]
     [y x dy dx] :apply-range
-    :or {allow-empty? true show-prompt? true suppress-dropdown? true}}]
+    :or {allow-empty? true show-prompt? true show-errorbox? true suppress-dropdown? true}}]
   ((comp
+    (constantly sheet)
     #(.addValidationData sheet %)
     #(doto %
        (.setEmptyCellAllowed allow-empty?)
        (.setShowPromptBox show-prompt?)
+       (.setShowErrorBox show-errorbox?)
        (.setSuppressDropDownArrow suppress-dropdown?))
-    #(HSSFDataValidation. (.addCellRangeAddress (CellRangeAddressList.) y x dy dx) %)
+    #(HSSFDataValidation. (CellRangeAddressList. y dy x dx) %)
     #(DVConstraint/createExplicitListConstraint %)
     (partial into-array String)) formula))
 
+(defmethod add-validation! XSSFWorkbook
+  [^Sheet sheet
+   {:keys [formula allow-empty? show-prompt? show-errorbox? suppress-dropdown?]
+    [y x dy dx] :apply-range
+    :or {allow-empty? true show-prompt? true show-errorbox? true suppress-dropdown? true}}]
+  (let [helper (XSSFDataValidationHelper. sheet)]
+    (-> helper
+        (.createexplicitlistconstraint (into-array String formula))
+        (as-> constraint
+              (.createValidation helper constraint (CellRangeAddressList. y dy x dx)))
+        (doto
+            (.setEmptyCellAllowed allow-empty?)
+          (.setShowPromptBox show-prompt?)
+          (.setShowErrorBox show-errorbox?)
+          (.setSuppressDropDownArrow suppress-dropdown?))
+        ((fn [v] (.addValidationData sheet v))))
+    sheet))
 
 (defn create-workbook
   "Create a new XLSX workbook with a single sheet and the data
@@ -308,20 +343,24 @@
   ([sheet-name data]
    (create-workbook sheet-name nil data))
   ([sheet-name opts data]
-   (let [workbook (HSSFWorkbook.)                    ;(XSSFWorkbook.)
+   (let [workbook (XSSFWorkbook.)
          sheet (add-sheet! workbook sheet-name)]
      (cond-> sheet
-       ((complement nil?) opts) (add-validation! opts)
-       true (add-rows! data))
+             ((complement nil?) opts) (add-validation! opts)
+             true (add-rows! data))
      workbook)))
 
 (defn create-xls-workbook
   "Create a new XLS workbook with a single sheet and the data specified."
-  [sheet-name data]
-  (let [workbook (HSSFWorkbook.)
-        sheet    (add-sheet! workbook sheet-name)]
-    (add-rows! sheet data)
-    workbook))
+  ([sheet-name data]
+   (create-xls-workbook sheet-name nil data))
+  ([sheet-name opts data]
+   (let [workbook (HSSFWorkbook.)
+         sheet    (add-sheet! workbook sheet-name)]
+     (cond-> sheet
+             ((complement nil?) opts) (add-validation! opts)
+             true (add-rows! data))
+     workbook)))
 
 ;******************************************************
 ;       helpers for font and style creation
