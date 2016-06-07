@@ -1,7 +1,7 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:require #_[cemerick.pomegranate :as pomegranate]
+  (:require [cemerick.pomegranate :as pomegranate]
            [clojure.java.io :as io])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
            (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
@@ -667,7 +667,7 @@
       (let [loaded (load-workbook stream)]
         (test-loaded-workbook loaded)))))
 
-#_(deftest load-workbook-from-resource-integration-test
+(deftest load-workbook-from-resource-integration-test
   (let [[dir file] (path->dir-and-file (config :datatypes-file))
         _ (pomegranate/add-classpath dir)
         loaded (load-workbook-from-resource file)]
