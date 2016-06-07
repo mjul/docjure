@@ -273,26 +273,6 @@
   (.createSheet workbook name))
 
 (defmulti add-validation! (fn [^Sheet sheet _] (type (.getWorkbook sheet))))
-(comment
-  (let [data [["group" "name" "phone" "mobile"]
-              ["100" "test1" "test" "asdf"]
-              ["200" "test2" nil nil]]
-        start-row 1
-        start-cell 0
-        end-row (count data)
-        end-cell start-cell]
-    (with-open [os (io/output-stream "/tmp/test.xlsx")]
-      (.write
-       (create-workbook
-        "test"
-        {:formula ["100" "200"]
-         :apply-range [start-row start-cell end-row end-cell]
-         :allow-empty? true
-         :show-prompt? true
-         :show-errorbox? true
-         :suppress-dropdown? true}
-        data)
-       os))))
 (defmethod add-validation! HSSFWorkbook
   [^Sheet sheet
    {:keys [formula allow-empty? show-prompt? show-errorbox? suppress-dropdown?]
@@ -317,9 +297,9 @@
     :or {allow-empty? true show-prompt? true show-errorbox? true suppress-dropdown? true}}]
   (let [helper (XSSFDataValidationHelper. sheet)]
     (-> helper
-        (.createexplicitlistconstraint (into-array String formula))
+        (.createExplicitListConstraint (into-array String formula))
         (as-> constraint
-              (.createValidation helper constraint (CellRangeAddressList. y dy x dx)))
+            (.createValidation helper constraint (CellRangeAddressList. y dy x dx)))
         (doto
             (.setEmptyCellAllowed allow-empty?)
           (.setShowPromptBox show-prompt?)
