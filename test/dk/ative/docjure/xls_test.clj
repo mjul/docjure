@@ -2,7 +2,8 @@
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
-	   (org.apache.poi.hssf.usermodel HSSFWorkbook HSSFFont)
+	   (org.apache.poi.hssf.usermodel HSSFWorkbook HSSFFont HSSFDataValidation)
+           (org.apache.poi.ss.util CellRangeAddress)
 	   (java.util Date)))
 
 (def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xls"
@@ -68,6 +69,74 @@
 	(is (= 0 (.getPhysicalNumberOfRows sheet)))))
     (testing "Should fail on invalid parameter types."
       (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (remove-all-rows! "not-a-sheet"))))))
+
+(deftest add-validation!-test
+  (let [sheet-name "Sheet 1"
+        sheet-data [["A1" "B1" "C1"]
+                    ["100" "B2" "C2"]
+                    ["200" "B3" "C3"]]
+        start-row 1
+        start-cell 0
+        end-row (count sheet-data)
+        end-cell start-cell
+        allow-empty? true
+        show-prompt? true
+        show-errorbox? true
+        suppress-dropdown? true
+        formula-vec ["100" "200"]
+        validation-map {:formula formula-vec
+                        :apply-range [start-row start-cell end-row end-cell]
+                        :allow-empty? allow-empty?
+                        :show-prompt? show-prompt?
+                        :show-errorbox? show-errorbox?
+                        :suppress-dropdown? suppress-dropdown?}
+        workbook-with (create-xls-workbook sheet-name validation-map sheet-data)
+        workbook-without (create-xls-workbook sheet-name sheet-data)]
+    (testing "With validation"
+      (testing "Sheet creation"
+        (is (= 1 (.getNumberOfSheets workbook-with)) "Expected sheet to be added.")
+        (is (= sheet-name (.. workbook-with (getSheetAt 0) (getSheetName))) "Expected sheet to have correct name."))
+      (testing "Validation creation"
+        (let [validation (.. workbook-with (getSheetAt 0) (getDataValidations) (get 0))
+              formula (into [] (.. validation (getValidationConstraint) (getExplicitListValues)))
+              cell-range (.. validation (getRegions) (getCellRangeAddresses))]
+          (is (= HSSFDataValidation (class validation)))
+          (is (= allow-empty? (.getEmptyCellAllowed validation)))
+          (is (= show-prompt? (.getShowPromptBox validation)))
+          (is (= show-errorbox? (.getShowErrorBox validation)))
+          (is (= suppress-dropdown? (.getSuppressDropDownArrow validation)))
+          (is (= formula-vec formula))
+          (doseq [^CellRangeAddress range cell-range]
+            (is (= start-row (.getFirstRow range)))
+            (is (= start-cell (.getFirstColumn range)))
+            (is (= end-row (.getLastRow range)))
+            (is (= end-cell (.getLastColumn range))))))
+      (testing "Sheet data"
+        (let [sheet (.getSheetAt workbook-with 0)
+              rows  (vec (iterator-seq (.iterator sheet)))]
+          (is (= (count sheet-data) (.getPhysicalNumberOfRows sheet)) "Expected correct number of rows.")
+          (is (= 0 (.getRowNum (first rows))) "Expected correct row number.")
+          (is (= (count (first sheet-data)) (.getLastCellNum (first rows))) "Expected correct number of columns.")
+          (are [actual-cell expected-value] (= expected-value (.getStringCellValue actual-cell))
+            (.getCell (first rows) 0) (ffirst sheet-data)
+            (.getCell (first rows) 1) (second (first sheet-data))
+            (.getCell (second rows) 0) (first (second sheet-data))
+            (.getCell (second rows) 1) (second (second sheet-data))))))
+    (testing "Without validation"
+      (testing "Sheet creation"
+        (is (= 1 (.getNumberOfSheets workbook-without)) "Expected sheet to be added.")
+        (is (= sheet-name (.. workbook-without (getSheetAt 0) (getSheetName))) "Expected sheet to have correct name."))
+      (testing "Sheet data"
+        (let [sheet (.getSheetAt workbook-without 0)
+              rows  (vec (iterator-seq (.iterator sheet)))]
+          (is (= (count sheet-data) (.getPhysicalNumberOfRows sheet)) "Expected correct number of rows.")
+          (is (= 0 (.getRowNum (first rows))) "Expected correct row number.")
+          (is (= (count (first sheet-data)) (.getLastCellNum (first rows))) "Expected correct number of columns.")
+          (are [actual-cell expected-value] (= expected-value (.getStringCellValue actual-cell))
+            (.getCell (first rows) 0) (ffirst sheet-data)
+            (.getCell (first rows) 1) (second (first sheet-data))
+            (.getCell (second rows) 0) (first (second sheet-data))
+            (.getCell (second rows) 1) (second (second sheet-data))))))))
 
 (defn date [year month day]
   (Date. (- year 1900) (dec month) day))
