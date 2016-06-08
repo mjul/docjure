@@ -252,5 +252,6 @@ This library includes great contributions from
 * [Lars Trieloff](https://github.com/trieloff) (trieloff)
 * [Jens Bendisposto](https://github.com/bendisposto) (bendisposto)
 * [Stuart Hinson](https://github.com/stuarth) (stuarth)
+* [Dan Petranek](https://github.com/dpetranek) (dpetranek)
 
 Thank you very much!
