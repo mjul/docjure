@@ -9,7 +9,7 @@
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
                                 CellValue Drawing CreationHelper)
-   (org.apache.poi.ss.util CellReference AreaReference)
+   (org.apache.poi.ss.util CellReference AreaReference WorkbookUtil)
    (org.apache.poi.hssf.util CellRangeAddressList)))
 
 (defmacro assert-type [value expected-type]
@@ -270,7 +270,7 @@
   "Add a new sheet to the workbook."
   [^Workbook workbook name]
   (assert-type workbook Workbook)
-  (.createSheet workbook name))
+  (.createSheet workbook (WorkbookUtil/createSafeSheetName name)))
 
 (defmulti add-validation! (fn [^Sheet sheet _] (type (.getWorkbook sheet))))
 (defmethod add-validation! HSSFWorkbook
