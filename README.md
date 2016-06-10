@@ -253,5 +253,6 @@ This library includes great contributions from
 * [Jens Bendisposto](https://github.com/bendisposto) (bendisposto)
 * [Stuart Hinson](https://github.com/stuarth) (stuarth)
 * [Dan Petranek](https://github.com/dpetranek) (dpetranek)
+* [Aleksander Madland Stapnes](https://github.com/madstap) (madstap)
 
 Thank you very much!
