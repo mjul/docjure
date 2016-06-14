@@ -1,7 +1,7 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (require [cemerick.pomegranate :as pomegranate]
+  (:require [cemerick.pomegranate :as pomegranate]
            [clojure.java.io :as io])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
            (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
@@ -47,6 +47,46 @@
 	     (.getCell (first rows) 1) (second (first sheet-data))
 	     (.getCell (second rows) 0) (first (second sheet-data))
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
+
+(deftest create-workbook-with-multiple-sheets-test
+  (let [sheet-1-name "Sheet 1"
+        sheet-1-data [["A1" "B1" "C1"]
+                      ["A2" "B2" "C2"]]
+        sheet-2-name "Sheet 2"
+        sheet-2-data [["A1" "B1" "C1"]
+                      ["A2" "B2" "C2"]]
+        workbook (create-workbook sheet-1-name sheet-1-data sheet-2-name sheet-2-data)]
+    (testing "Multiple sheet creation"
+      (is (= 2 (.getNumberOfSheets workbook)) "Expected 2 sheets to be added.")
+      (is (= sheet-1-name (.. workbook (getSheetAt 0) (getSheetName)))
+          "Expected sheet 1 to have correct name.")
+      (is (= sheet-2-name (.. workbook (getSheetAt 1) (getSheetName)))
+          "Expected sheet 2 to have correct name."))
+    (testing "Sheet data"
+      (let [sheet-1 (.getSheetAt workbook 0)
+            sheet-1-rows (vec (iterator-seq (.iterator sheet-1)))
+            sheet-2 (.getSheetAt workbook 1)
+            sheet-2-rows (vec (iterator-seq (.iterator sheet-2)))]
+        (is (= (count sheet-1-data) (.getPhysicalNumberOfRows sheet-1))
+            "Expected correct number of rows for sheet 1.")
+        (is (= (count sheet-2-data) (.getPhysicalNumberOfRows sheet-2))
+            "Expected correct number of rows for sheet 2.")
+        (is (= 0 (.getRowNum (first sheet-1-rows))) "Expected correct row number for sheet 1.")
+        (is (= 0 (.getRowNum (first sheet-2-rows))) "Expected correct row number for sheet 2.")
+        (is (= (count (first sheet-1-data)) (.getLastCellNum (first sheet-1-rows)))
+            "Expected correct number of columns for sheet 1.")
+        (is (= (count (first sheet-2-data)) (.getLastCellNum (first sheet-2-rows)))
+            "Expected correct number of columns for sheet 2.")
+        (are [actual-cell expected-value] (= expected-value (.getStringCellValue actual-cell))
+              (.getCell (first sheet-1-rows) 0) (ffirst sheet-1-data)
+              (.getCell (first sheet-1-rows) 1) (second (first sheet-1-data))
+              (.getCell (second sheet-1-rows) 0) (first (second sheet-1-data))
+              (.getCell (second sheet-1-rows) 1) (second (second sheet-1-data))
+              
+              (.getCell (first sheet-2-rows) 0) (ffirst sheet-2-data)
+              (.getCell (first sheet-2-rows) 1) (second (first sheet-2-data))
+              (.getCell (second sheet-2-rows) 0) (first (second sheet-2-data))
+              (.getCell (second sheet-2-rows) 1) (second (second sheet-2-data)))))))
 
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."

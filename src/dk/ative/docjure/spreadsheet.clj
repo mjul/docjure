@@ -272,22 +272,29 @@
   (.createSheet workbook name))
 
 (defn create-workbook
-  "Create a new XLSX workbook with a single sheet and the data
-   specified. The data is given a vector of vectors, representing
-   the rows and the cells of the rows.
+  "Create a new XLSX workbook.  Sheet-name is a string name for the sheet. Data 
+  is a vector of vectors, representing the rows and the cells of the rows. 
+  Alternate sheet names and data to create multiple sheets.
 
-   For example, to create a workbook with a sheet with
-   two rows of each three columns:
-
-   (create-workbook \"Sheet 1\"
-                    [[\"Name\" \"Quantity\" \"Price\"]
-                     [\"Foo Widget\" 2 42]])
-   "
-  [sheet-name data]
-  (let [workbook (XSSFWorkbook.)
-        sheet    (add-sheet! workbook sheet-name)]
-    (add-rows! sheet data)
-    workbook))
+  (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]]
+                   \"SheetName2\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]] "
+ ([sheet-name data]
+   (let [workbook (XSSFWorkbook.)
+         sheet    (add-sheet! workbook sheet-name)]
+     (add-rows! sheet data)
+     workbook))
+ 
+ ([sheet-name data & name-data-pairs]
+  ;; incomplete pairs should not be allowed
+  {:pre [(even? (count name-data-pairs))]}
+  ;; call single arity version to create workbook
+   (let [workbook (create-workbook sheet-name data)]
+     ;; iterate through pairs adding sheets and rows
+    (doseq [[s-name data] (partition 2 name-data-pairs)]
+      (-> workbook
+          (add-sheet! s-name)
+          (add-rows!  data)))
+    workbook)))
 
 (defn create-xls-workbook
   "Create a new XLS workbook with a single sheet and the data specified."

@@ -82,6 +82,28 @@ to the top header row, then save the spreadsheet.
     (save-workbook! "spreadsheet.xlsx" wb)))
 ```
 
+### Example: Create a workbook with multiple sheets
+This example creates a spreadsheet with multiple sheets. Simply add more
+sheet-name and data pairs. To create a sheet with no data, pass `nil` as
+the data argument.
+
+```clj
+(use 'dk.ative.docjure.spreadsheet)
+
+;; Create a spreadsheet and save it
+(let [wb (create-workbook "Squares"
+                          [["N" "N^2"]
+                           [1 1]
+                           [2 4]
+                           [3 9]]
+                          "Cubes"
+                          [["N" "N^3"]
+                           [1 1]
+                           [2 8]
+                           [3 27]])]
+   (save-workbook! "exponents.xlsx" wb)))
+```
+
 ### Example: Use Excel Formulas in Clojure
 
 Docjure allows you not only to evaluate a formula cell in a speadsheet, it also
@@ -230,5 +252,7 @@ This library includes great contributions from
 * [Lars Trieloff](https://github.com/trieloff) (trieloff)
 * [Jens Bendisposto](https://github.com/bendisposto) (bendisposto)
 * [Stuart Hinson](https://github.com/stuarth) (stuarth)
+* [Dan Petranek](https://github.com/dpetranek) (dpetranek)
+* [Aleksander Madland Stapnes](https://github.com/madstap) (madstap)
 
 Thank you very much!
