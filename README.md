@@ -172,7 +172,9 @@ The following is a list of all possible [error values](https://poi.apache.org/ap
 
 ### Automatically get the Docjure jar from Clojars
 
-The Docjure jar is distributed on [Clojars](http://clojars.org/dk.ative/docjure).
+The Docjure jar is distributed on
+[Clojars](http://clojars.org/dk.ative/docjure). Here you can find both
+release builds and snapshot builds of pre-release versions.
 
 If you are using the Leiningen build tool just add this line to the
 :dependencies list in project.clj to use it:
@@ -182,6 +184,8 @@ If you are using the Leiningen build tool just add this line to the
 ```
 
 Remember to issue the 'lein deps' command to download it.
+
+
 
 #### Example project.clj for using Docjure 1.10.0
 

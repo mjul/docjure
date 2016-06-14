@@ -1,5 +1,9 @@
 # CHANGELOG for Docjure
 
+## Version 1.11-SNAPSHOT
+* Add support for multi-sheet workbooks.
+* Add support for fomulae.
+
 ## Version 1.10.0
 * Upgraded to Apache POI v3.13.
 * Add `select-cell` function to easily read a single cell value.
