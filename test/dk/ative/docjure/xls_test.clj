@@ -1,26 +1,17 @@
-(ns dk.ative.docjure.spreadsheet-test
+(ns dk.ative.docjure.xls-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:require [cemerick.pomegranate :as pomegranate]
-           [clojure.java.io :as io])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
-           (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
-           (java.util Date)
-           (java.io FileInputStream)))
+	   (org.apache.poi.hssf.usermodel HSSFWorkbook HSSFFont)
+	   (java.util Date)))
 
-(def config {:datatypes-file  "test/dk/ative/docjure/testdata/datatypes.xlsx"
-             :formulae-file   "test/dk/ative/docjure/testdata/formulae.xlsx"
-             :blanks-file "test/dk/ative/docjure/testdata/blanks.xlsx"
-             :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
-             :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"
-             :simple "test/dk/ative/docjure/testdata/simple.xlsx"
-             :save-workbook-location "test/dk/ative/docjure/testdata/saved.xlsx"})
-
-(def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
+(def config {:datatypes-file "test/dk/ative/docjure/testdata/datatypes.xls"
+	     :formulae-file "test/dk/ative/docjure/testdata/formulae.xls"})
+(def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific})
 (def formulae-map {:A :formula, :B :expected})
 
 (deftest add-sheet!-test
-  (let [workbook (XSSFWorkbook.)
+  (let [workbook (HSSFWorkbook.)
 	sheet-name "Sheet 1"
 	actual   (add-sheet! workbook sheet-name)]
     (testing "Sheet creation"
@@ -29,11 +20,11 @@
     (testing "Should fail on non-Workbook"
       (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (add-sheet! "not-a-workbook" "sheet-name"))))))
 
-(deftest create-workbook-test
+(deftest create-xls-workbook-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1" "C1"]
 		    ["A2" "B2" "C2"]]
-	workbook (create-workbook sheet-name sheet-data)]
+	workbook (create-xls-workbook sheet-name sheet-data)]
     (testing "Sheet creation"
       (is (= 1 (.getNumberOfSheets workbook)) "Expected sheet to be added.")
       (is (= sheet-name (.. workbook (getSheetAt 0) (getSheetName))) "Expected sheet to have correct name."))
@@ -49,68 +40,11 @@
 	     (.getCell (second rows) 0) (first (second sheet-data))
 	     (.getCell (second rows) 1) (second (second sheet-data)))))))
 
-(deftest create-workbook-with-multiple-sheets-test
-  (let [sheet-1-name "Sheet 1"
-        sheet-1-data [["A1" "B1" "C1"]
-                      ["A2" "B2" "C2"]]
-        sheet-2-name "Sheet 2"
-        sheet-2-data [["A1" "B1" "C1"]
-                      ["A2" "B2" "C2"]]
-        workbook (create-workbook sheet-1-name sheet-1-data sheet-2-name sheet-2-data)]
-    (testing "Multiple sheet creation"
-      (is (= 2 (.getNumberOfSheets workbook)) "Expected 2 sheets to be added.")
-      (is (= sheet-1-name (.. workbook (getSheetAt 0) (getSheetName)))
-          "Expected sheet 1 to have correct name.")
-      (is (= sheet-2-name (.. workbook (getSheetAt 1) (getSheetName)))
-          "Expected sheet 2 to have correct name."))
-    (testing "Sheet data"
-      (let [sheet-1 (.getSheetAt workbook 0)
-            sheet-1-rows (vec (iterator-seq (.iterator sheet-1)))
-            sheet-2 (.getSheetAt workbook 1)
-            sheet-2-rows (vec (iterator-seq (.iterator sheet-2)))]
-        (is (= (count sheet-1-data) (.getPhysicalNumberOfRows sheet-1))
-            "Expected correct number of rows for sheet 1.")
-        (is (= (count sheet-2-data) (.getPhysicalNumberOfRows sheet-2))
-            "Expected correct number of rows for sheet 2.")
-        (is (= 0 (.getRowNum (first sheet-1-rows))) "Expected correct row number for sheet 1.")
-        (is (= 0 (.getRowNum (first sheet-2-rows))) "Expected correct row number for sheet 2.")
-        (is (= (count (first sheet-1-data)) (.getLastCellNum (first sheet-1-rows)))
-            "Expected correct number of columns for sheet 1.")
-        (is (= (count (first sheet-2-data)) (.getLastCellNum (first sheet-2-rows)))
-            "Expected correct number of columns for sheet 2.")
-        (are [actual-cell expected-value] (= expected-value (.getStringCellValue actual-cell))
-              (.getCell (first sheet-1-rows) 0) (ffirst sheet-1-data)
-              (.getCell (first sheet-1-rows) 1) (second (first sheet-1-data))
-              (.getCell (second sheet-1-rows) 0) (first (second sheet-1-data))
-              (.getCell (second sheet-1-rows) 1) (second (second sheet-1-data))
-
-              (.getCell (first sheet-2-rows) 0) (ffirst sheet-2-data)
-              (.getCell (first sheet-2-rows) 1) (second (first sheet-2-data))
-              (.getCell (second sheet-2-rows) 0) (first (second sheet-2-data))
-              (.getCell (second sheet-2-rows) 1) (second (second sheet-2-data)))))))
-
-(deftest row-vec-test
-  (testing "Should transform row struct to row vector."
-    (is (= ["foo" "bar"] (row-vec [:foo :bar] {:foo "foo", :bar "bar"}))
-	"Should map all columns.")
-    (is (= ["bar" "foo"] (row-vec [:bar :foo] {:foo "foo", :bar "bar"}))
-	"Should respect column order.")
-    (is (= [nil nil] (row-vec [:foo :bar] {})) "Should generate all columns.")
-    (is (= [] (row-vec [] {:foo "foo", :bar "bar"})) "Should accept empty column-order.")))
-
-(deftest add-row!-test
-  (testing "Should fail on invalid parameter types."
-    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-row! "not-a-sheet" [1 2 3])))))
-
-(deftest add-rows!-test
-  (testing "Should fail on invalid parameter types."
-    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (add-rows! "not-a-sheet" [[1 2 3]])))))
-
 (deftest remove-row!-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1" "C1"]
 		    ["A2" "B2" "C2"]]
-	workbook (create-workbook sheet-name sheet-data)
+	workbook (create-xls-workbook sheet-name sheet-data)
 	sheet (select-sheet sheet-name workbook)
 	first-row (first (row-seq sheet))]
     (testing "Should fail on invalid parameter types."
@@ -120,14 +54,13 @@
       (do
 	(is (= sheet (remove-row! sheet first-row)))
 	(is (= 1 (.getPhysicalNumberOfRows sheet)))
-	(is (= [{:A "A2", :B "B2", :C "C2"}] (select-columns {:A :A, :B :B :C :C} sheet)))
-  (is (= [{} {:A "A2", :B "B2", :C "C2"}] (dense-select-columns {:A :A, :B :B :C :C} sheet)))))))
+	(is (= [{:A "A2", :B "B2", :C "C2"}] (select-columns {:A :A, :B :B :C :C} sheet)))))))
 
 (deftest remove-all-row!-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1" "C1"]
 		    ["A2" "B2" "C2"]]
-	workbook (create-workbook sheet-name sheet-data)
+	workbook (create-xls-workbook sheet-name sheet-data)
 	sheet (first (sheet-seq workbook))]
     (testing "Should remove all rows."
       (do
@@ -144,7 +77,7 @@
 
 (deftest read-cell-value-test
     (let [date (july 1)
-          workbook (create-workbook "Just a date" [[date]])
+          workbook (create-xls-workbook "Just a date" [[date]])
           sheet (.getSheetAt workbook 0)
           rows  (vec (iterator-seq (.iterator sheet)))
           data-row (vec (iterator-seq (.cellIterator (first rows))))
@@ -160,7 +93,7 @@
 (deftest read-cell-test
     (let [sheet-data [["Nil" "Blank" "Date" "String" "Number"]
                       [nil "" (july 1) "foo" 42.0]]
-          workbook (create-workbook "Sheet 1" sheet-data)
+          workbook (create-xls-workbook "Sheet 1" sheet-data)
           sheet (.getSheetAt workbook 0)
           rows  (vec (iterator-seq (.iterator sheet)))
           data-row (vec (iterator-seq (.cellIterator (second rows))))
@@ -172,21 +105,10 @@
         (is (= (july 1) (read-cell date-cell)))
         (is (= 42.0 (read-cell number-cell))))))
 
-(deftest select-cell-test
-  (let [file (config :simple)
-        loaded (load-workbook file)
-        worksheet (first (sheet-seq loaded))]
-    (testing "select-cell"
-      (is (= "Empty" (read-cell (select-cell "A1" worksheet))))
-      (is (= "Empty" (read-cell (select-cell "B1" worksheet))))
-      (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
-      (is (= 2.0      (read-cell (select-cell "B2" worksheet))))
-      (is (= 3.0      (read-cell (select-cell "B3" worksheet)))))))
-
 (deftest set-cell!-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1"]]
-	workbook (create-workbook sheet-name sheet-data)
+	workbook (create-xls-workbook sheet-name sheet-data)
         a1 (-> workbook (.getSheetAt 0) (.getRow 0) (.getCell 0))]
     (testing "set-cell! for Date"
       (testing "should set value"
@@ -217,17 +139,17 @@
   (let [sheet-name "Sheet 1"
 	sheet-data [["foo" "bar"]]]
     (testing "Empty workbook"
-      (let [workbook (XSSFWorkbook.)
+      (let [workbook (HSSFWorkbook.)
 	    actual (sheet-seq workbook)]
 	(is (not (nil? actual)))
 	(is (empty? actual))))
     (testing "Single sheet."
-      (let [workbook (create-workbook sheet-name sheet-data)
+      (let [workbook (create-xls-workbook sheet-name sheet-data)
 	    actual   (sheet-seq workbook)]
 	(is (= 1 (count actual)))
 	(is (= sheet-name (.getSheetName (first actual))))))
     (testing "Multiple sheets."
-      (let [workbook (create-workbook sheet-name sheet-data)
+      (let [workbook (create-xls-workbook sheet-name sheet-data)
 	    sheet2 (.createSheet workbook "Sheet 2")
 	    sheet3 (.createSheet workbook "Sheet 3")
 	    actual (sheet-seq workbook)]
@@ -239,7 +161,7 @@
 (deftest row-seq-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1"] ["A2" "B2"]]
-	workbook (create-workbook sheet-name sheet-data)
+	workbook (create-xls-workbook sheet-name sheet-data)
 	sheet (select-sheet sheet-name workbook)]
     (testing "Sheet"
       (let [actual (row-seq sheet)]
@@ -248,7 +170,7 @@
 (deftest cell-seq-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1"] ["A2" "B2"]]
-	workbook (create-workbook sheet-name sheet-data)
+	workbook (create-xls-workbook sheet-name sheet-data)
 	sheet (select-sheet sheet-name workbook)]
     (testing "for sheet"
       (let [actual (cell-seq sheet)]
@@ -275,17 +197,16 @@
 (deftest sheet-name-test
   (let [name       "Sheet 1"
 	data       [["foo" "bar"]]
-	workbook   (create-workbook name data)
+	workbook   (create-xls-workbook name data)
 	sheet      (first (sheet-seq workbook))]
     (is (= name (sheet-name sheet)) "Expected correct sheet name."))
   (testing "Should fail on invalid parameter type"
     (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (sheet-name "not-a-sheet")))))
 
-
 (deftest select-sheet-using-string-test
   (let [name       "Sheet 1"
 	data       [["foo" "bar"]]
-	workbook   (create-workbook name data)
+	workbook   (create-xls-workbook name data)
 	sheet      (first (sheet-seq workbook))]
     (is (= sheet (select-sheet "Sheet 1" workbook)) "Expected to find the sheet.")
     (is (nil? (select-sheet "unknown name" workbook)) "Expected to get nil for no match."))
@@ -295,7 +216,7 @@
 (deftest select-sheet-using-regex-test
   (let [name       "Sheet 1"
 	data       [["foo" "bar"]]
-	workbook   (create-workbook name data)
+	workbook   (create-xls-workbook name data)
 	first-sheet (first (sheet-seq workbook))]
     (is (= first-sheet (select-sheet #"(?i)sheet.*" workbook)) "Expected to find the sheet.")
     (is (nil? (select-sheet #"unknown name" workbook)) "Expected to get nil for no match."))
@@ -305,7 +226,7 @@
 (deftest select-sheet-using-fn-test
   (let [name       "Sheet 1"
 	data       [["foo"] ["bar"]]
-	workbook   (create-workbook name data)
+	workbook   (create-xls-workbook name data)
 	first-sheet (first (sheet-seq workbook))]
     (is (= first-sheet (select-sheet (fn [sheet] (= 2 (count (row-seq sheet)))) workbook)) "Expected to find sheet")
     (is (nil? (select-sheet (constantly false) workbook)) "Expected to get nil for no match."))
@@ -316,7 +237,7 @@
   (let [data     [["Name" "Quantity" "Price" "On Sale"]
 		  ["foo" 1.0 42 true]
 		  ["bar" 2.0 108 false]]
-	workbook (create-workbook "Sheet 1" data)
+	workbook (create-xls-workbook "Sheet 1" data)
 	sheet    (first (sheet-seq workbook))]
     (testing "Find existing columns should create map."
       (let [rows (select-columns {:A :name, :B :quantity} sheet)]
@@ -342,10 +263,6 @@
     (testing "Should fail on invalid parameter types."
       (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (select-columns {:A :first, :B :second} "not-a-worksheet"))))))
 
-(deftest row-seq-test
-  (testing "Should fail on invalid parameter types."
-    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (row-seq "not-a-sheet")))))
-
 ;; ----------------------------------------------------------------
 ;; Styling
 ;; ----------------------------------------------------------------
@@ -353,13 +270,12 @@
 (deftest create-cell-style!-test
   (testing "Should create a cell style based on the options"
     (testing "no style"
-      (let [wb (create-workbook "Dummy" [["foo"]])
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb)]
 	(is (= CellStyle/NO_FILL (.getFillPattern cs)))
         (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight (get-font cs wb))))
         (is (= Font/U_NONE (.getUnderline (get-font cs wb))))
-        ;Font/COLOR_NORMAL doesn't work right in xssf
-        (is (= XSSFFont/DEFAULT_FONT_COLOR (.getColor (get-font cs wb))))
+        (is (= Font/COLOR_NORMAL (.getColor (get-font cs wb))))
         (is (not (.getItalic (get-font cs wb))))
         (is (not (.getWrapText cs)))
         (is (= CellStyle/ALIGN_GENERAL (.getAlignment cs)))
@@ -368,12 +284,12 @@
         (is (= CellStyle/BORDER_NONE (.getBorderTop cs)))
         (is (= CellStyle/BORDER_NONE (.getBorderBottom cs)))))
     (testing ":background"
-      (let [wb (create-workbook "Dummy" [["foo"]])
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:background :yellow})]
 	(is (= CellStyle/SOLID_FOREGROUND (.getFillPattern cs)))
         (is (= (.getIndex IndexedColors/YELLOW) (.getFillForegroundColor cs)))))
     (testing ":halign"
-      (let [wb (create-workbook "Dummy" [["foo"]])
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
             csl (create-cell-style! wb {:halign :left})
             csr (create-cell-style! wb {:halign :right})
             csc (create-cell-style! wb {:halign :center})]
@@ -381,7 +297,7 @@
         (is (= CellStyle/ALIGN_RIGHT (.getAlignment csr)))
         (is (= CellStyle/ALIGN_CENTER (.getAlignment csc)))))
     (testing ":valign"
-      (let [wb (create-workbook "Dummy" [["foo"]])
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cst (create-cell-style! wb {:valign :top})
             csb (create-cell-style! wb {:valign :bottom})
             csc (create-cell-style! wb {:valign :center})]
@@ -389,7 +305,7 @@
         (is (= CellStyle/VERTICAL_BOTTOM (.getVerticalAlignment csb)))
         (is (= CellStyle/VERTICAL_CENTER (.getVerticalAlignment csc)))))
     (testing "borders"
-      (let [wb (create-workbook "Dummy" [["foo"]])
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin :border-right :medium
                                        :border-top :thick :border-bottom :thin})]
 	(is (= CellStyle/BORDER_THIN (.getBorderLeft cs)))
@@ -397,11 +313,11 @@
         (is (= CellStyle/BORDER_THICK (.getBorderTop cs)))
         (is (= CellStyle/BORDER_THIN (.getBorderBottom cs)))))
     (testing ":wrap"
-      (let [wb (create-workbook "Dummy" [["foo"]])
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:wrap :true})]
-	(is (.getWrapText cs))))
+        (is (.getWrapText cs))))
     (testing ":font :bold"
-      (let [wb (create-workbook "Dummy" [["fonts"]])
+      (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:bold true}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
@@ -409,7 +325,7 @@
 	(is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs wb))))
         (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs2 wb))))))
     (testing ":font :color"
-      (let [wb (create-workbook "Dummy" [["fonts"]])
+      (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:color :light_green}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
@@ -417,7 +333,7 @@
 	(is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (get-font cs wb))))
         (is (= (.getIndex IndexedColors/LIGHT_GREEN) (.getColor (get-font cs2 wb))))))
     (testing ":font :name"
-      (let [wb (create-workbook "Dummy" [["fonts"]])
+      (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:name "Verdana"}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
@@ -425,7 +341,7 @@
 	(is (= "Verdana" (.getFontName (get-font cs wb))))
         (is (= "Verdana" (.getFontName (get-font cs2 wb))))))
     (testing ":font :size"
-      (let [wb (create-workbook "Dummy" [["fonts"]])
+      (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:size 8}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
@@ -433,15 +349,15 @@
 	(is (= 8 (.getFontHeightInPoints (get-font cs wb))))
         (is (= 8 (.getFontHeightInPoints (get-font cs2 wb))))))
     (testing ":font :italic"
-      (let [wb (create-workbook "Dummy" [["fonts"]])
+      (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:italic true}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (.. cs getFont getItalic))
-        (is (.. cs2 getFont getItalic))))
+	(is (.getItalic (get-font cs wb)))
+        (is (.getItalic (get-font cs2 wb)))))
     (testing ":font :underline"
-      (let [wb (create-workbook "Dummy" [["fonts"]])
+      (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:underline true}
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
@@ -450,7 +366,7 @@
         (is (= Font/U_SINGLE (.getUnderline (get-font cs2 wb))))))))
 
 (deftest create-font!-test
-    (let [wb (create-workbook "Dummy" [["foo"]])]
+    (let [wb (create-xls-workbook "Dummy" [["foo"]])]
       (testing "Should create font based on options."
 	(let [f-default (create-font! wb {})
 	      f-not-bold (create-font! wb {:bold false})
@@ -464,7 +380,7 @@
 
 (deftest set-cell-style!-test
   (testing "Should apply style to cell."
-    (let [wb (create-workbook "Dummy" [["foo"]])
+    (let [wb (create-xls-workbook "Dummy" [["foo"]])
           stylemap {:background :yellow :font {:size 8 :italic true}
                     :wrap true :border-top :medium :valign :center}
 	  cs (create-cell-style! wb stylemap)
@@ -475,11 +391,12 @@
 (deftest set-cell-comment!-test
   (testing "Should set cell comment based on supplied options"
     (testing "comment string"
-      (let [wb (create-workbook "Dummy" [["foo00" "foo01" "foo02" "foo03"]
-                                         ["foo04" "foo05" "foo06" "foo07"]
-                                         ["foo08" "foo09" "foo10" "foo11"]
-                                         ["foo12" "foo13" "bar14" "foo15"]
-                                         ["foo16" "foo17" "bar18" "foo19"]])
+      (let [wb (create-xls-workbook "Dummy"
+                                    [["foo00" "foo01" "foo02" "foo03"]
+                                     ["foo04" "foo05" "foo06" "foo07"]
+                                     ["foo08" "foo09" "foo10" "foo11"]
+                                     ["foo12" "foo13" "bar14" "foo15"]
+                                     ["foo16" "foo17" "bar18" "foo19"]])
             cellsq (-> (sheet-seq wb) first cell-seq)
             ;cells
 	    cell00 (nth cellsq 0)
@@ -503,11 +420,17 @@
             empty-str ""
             blank-str " "
             font-bold (create-font! wb {:bold true})
+            font-bold-idx (.getIndex font-bold)
             font-italic (create-font! wb {:italic true})
+            font-italic-idx (.getIndex font-italic)
             font-underline (create-font! wb {:underline true})
+            font-underline-idx (.getIndex font-underline)
             font-name (create-font! wb {:name "Verdana"})
+            font-name-idx (.getIndex font-name)
             font-color (create-font! wb {:color :blue})
+            font-color-idx (.getIndex font-color)
             font-size (create-font! wb {:size 8})
+            font-size-idx (.getIndex font-size)
             ;cell comments
             _ (set-cell-comment! cell00 comment-str)
             _ (set-cell-comment! cell01 empty-str)
@@ -545,23 +468,23 @@
             rts15 (.. cell15 getCellComment getString)
             rts16 (.. cell16 getCellComment getString)
             ;extracted cell fonts
-            font00 (.getFontAtIndex rts00 0)
-            font01 (.getFontAtIndex rts01 0)
-            font02 (.getFontAtIndex rts02 0)
-            font03 (.getFontAtIndex rts03 0)
-            font04 (.getFontAtIndex rts04 0)
-            font05 (.getFontAtIndex rts05 0)
-            font06 (.getFontAtIndex rts06 0)
-            font07 (.getFontAtIndex rts07 0)
-            font08 (.getFontAtIndex rts08 0)
-            font09 (.getFontAtIndex rts09 0)
-            font10 (.getFontAtIndex rts10 0)
-            font11 (.getFontAtIndex rts11 0)
-            font12 (.getFontAtIndex rts12 0)
-            font13 (.getFontAtIndex rts13 0)
-            font14 (.getFontAtIndex rts14 0)
-            font15 (.getFontAtIndex rts15 0)
-            font16 (.getFontAtIndex rts16 0)]
+            font00 (.getFontAt wb (.getFontAtIndex rts00 0))
+            font01 (.getFontAt wb (.getFontAtIndex rts01 0))
+            font02 (.getFontAt wb (.getFontAtIndex rts02 0))
+            font03 (.getFontAt wb (.getFontAtIndex rts03 0))
+            font04 (.getFontAt wb (.getFontAtIndex rts04 0))
+            font05 (.getFontAt wb (.getFontAtIndex rts05 0))
+            font06 (.getFontAt wb (.getFontAtIndex rts06 0))
+            font07 (.getFontAt wb (.getFontAtIndex rts07 0))
+            font08 (.getFontAt wb (.getFontAtIndex rts08 0))
+            font09 (.getFontAt wb (.getFontAtIndex rts09 0))
+            font10 (.getFontAt wb (.getFontAtIndex rts10 0))
+            font11 (.getFontAt wb (.getFontAtIndex rts11 0))
+            font12 (.getFontAt wb (.getFontAtIndex rts12 0))
+            font13 (.getFontAt wb (.getFontAtIndex rts13 0))
+            font14 (.getFontAt wb (.getFontAtIndex rts14 0))
+            font15 (.getFontAt wb (.getFontAtIndex rts15 0))
+            font16 (.getFontAt wb (.getFontAtIndex rts16 0))]
         (is (= comment-str (.getString rts00)))
         (is (= empty-str (.getString rts01)))
         (is (= blank-str (.getString rts02)))
@@ -582,13 +505,13 @@
 
 (deftest set-row-style!-test
   (testing "Should apply style to all cells in row."
-    (let [wb (create-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
+    (let [wb (create-xls-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
 	  cs (create-cell-style! wb {:background :yellow})
 	  rs (row-seq (select-sheet "Dummy" wb))
 	  [header-row, data-row] rs
 	  [a1, b1] (cell-seq header-row)
 	  [a2, b2] (cell-seq data-row)]
-      (set-row-style! header-row cs)
+      (do (set-row-style! header-row cs))
       (is (= (.getIndex IndexedColors/YELLOW) (.. a1 getCellStyle getFillForegroundColor)))
       (is (= (.getIndex IndexedColors/YELLOW) (.. b1 getCellStyle getFillForegroundColor)))
       (is (not= (.getIndex IndexedColors/YELLOW) (.. a2 getCellStyle getFillForegroundColor)))
@@ -597,7 +520,7 @@
 
 (deftest set-row-styles!-test
   (testing "Should apply the given styles to the row's cells in order."
-    (let [wb (create-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
+    (let [wb (create-xls-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
 	  cs1 (create-cell-style! wb {:background :yellow})
 	  cs2 (create-cell-style! wb {:background :red})
 	  rs (row-seq (select-sheet "Dummy" wb))
@@ -613,7 +536,7 @@
 
 (deftest get-row-styles-test
   (testing "Should get a seq of the row's CellStyles."
-    (let [wb (create-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
+    (let [wb (create-xls-workbook "Dummy" [["foo" "bar"] ["data b" "data b"]])
 	  cs1 (create-cell-style! wb {:background :yellow})
 	  cs2 (create-cell-style! wb {:background :red})
 	  rs (row-seq (select-sheet "Dummy" wb))
@@ -625,77 +548,12 @@
       (is (= (list cs1 cs2) (get-row-styles header-row)))
       )))
 
-(deftest cell-fn-test
-  (testing "Creating a function from a formula cell"
-    (let [file (config :simple)
-           loaded (load-workbook file)
-           worksheet (first (sheet-seq loaded))
-           cell-function (cell-fn "B3" worksheet "A2")]
-       (is (= (cell-function 2.0) 5.0))
-       (is (= (cell-function 3.0) 7.0))
-       )))
-
 ;; ----------------------------------------------------------------
 ;; Integration tests
 ;; ----------------------------------------------------------------
 
-(defn- test-loaded-workbook [loaded]
-  (is (isa? (class loaded) Workbook)))
-
-(deftest load-workbook-from-stream-integration-test
-  (with-open [stream (FileInputStream. (config :datatypes-file))]
-    (let [loaded (load-workbook-from-stream stream)]
-      (test-loaded-workbook loaded))))
-
-(deftest load-workbook-from-file-integration-test
-  (let [file (config :datatypes-file)
-        loaded (load-workbook-from-file file)]
-    (test-loaded-workbook loaded)))
-
-(defn- path->dir-and-file
-  [^String path]
-  (let [i (.lastIndexOf path "/")
-        dir (.substring path 0 i)
-        file (.substring path (inc i))]
-    [dir file]))
-
-(deftest load-workbook-integration-test
-  (testing "should accept file name as string"
-    (let [file (config :datatypes-file)
-          loaded (load-workbook file)]
-      (test-loaded-workbook loaded)))
-  (testing "should accept InputStream"
-    (with-open [stream (FileInputStream. (config :datatypes-file))]
-      (let [loaded (load-workbook stream)]
-        (test-loaded-workbook loaded)))))
-
-(deftest load-workbook-from-resource-integration-test
-  (let [[dir file] (path->dir-and-file (config :datatypes-file))
-        _ (pomegranate/add-classpath dir)
-        loaded (load-workbook-from-resource file)]
-    (test-loaded-workbook loaded)))
-
-(deftest save-workbook!-test
-  (testing "Should fail on invalid parameter types."
-    (is (thrown-with-msg? IllegalArgumentException #"workbook.*" (save-workbook! "filename.xlsx" "not-a-workbook"))))
-  (testing "Saving workbook into a file"
-    (let [file (config :save-workbook-location)
-          workbook (create-workbook "Sheet 1" [["A1" "B1" "C1"]])
-          _ (save-workbook! file workbook)
-          loaded (load-workbook file)
-          _ (io/delete-file file)]
-      (test-loaded-workbook loaded)))
-  (testing "Saving workbook into a stream"
-    (let [file (config :save-workbook-location)
-          stream (io/output-stream file)
-          workbook (create-workbook "Sheet 1" [["A1" "B1" "C1"]])
-          _ (save-workbook! stream workbook)
-          loaded (load-workbook file)
-          _ (io/delete-file file)]
-      (test-loaded-workbook loaded))))
-
 (defn- datatypes-rows [file]
-  (->> (load-workbook-from-file file)
+  (->> (load-workbook file)
        sheet-seq
        first
        (select-columns datatypes-map)))
@@ -720,8 +578,7 @@
       (is (every? date? (datatypes-data file :date-time)))
       (is (every? number? (datatypes-data file :percentage)))
       (is (every? number? (datatypes-data file :fraction)))
-      (is (every? number? (datatypes-data file :scientific)))
-      (is (every? date? (datatypes-data file :date-formulae))))))
+      (is (every? number? (datatypes-data file :scientific))))))
 
 (deftest select-columns-formula-evaluation-integration-test
   (testing "Formula evaluation"
@@ -733,41 +590,13 @@
 				      rest)]
       (is (every? #(= (:formula %) (:expected %)) formula-expected-pairs)))))
 
-(deftest select-blanks-integration-test
-  ; note hard to unit test as we can't easily make blank rows using docjure!
-  (let [file (config :blanks-file)
-        workbook (load-workbook file)
-        sheet (select-sheet "test_data" workbook)]
-    (testing "reading rows"
-      (let [actual (dense-row-seq sheet)]
-        (is (= 5 (count actual)))
-        (is (nil? (second actual)))))
-    (testing "reading cells"
-      (let [row (.getRow sheet 2)
-            actual (dense-cell-seq row)]
-        (is (= 5 (count actual)))
-        (is (= ["mid left" nil "middle" nil "mid right"] (map read-cell actual)))))
-    (testing "selecting columns"
-      (let [sparse (select-columns {:A :A :B :B :C :C :D :D :E :E} sheet)
-            dense (dense-select-columns {:A :A :B :B :C :C :D :D :E :E} sheet)]
-        (is (= [{:A "top left"}
-                {:E "mid right", :D nil, :C "middle", :B nil, :A "mid left"}
-                {:E "bottom right"}]
-               sparse))
-        (is (= [{:A "top left"}
-                {}
-                {:E "mid right", :D nil, :C "middle", :B nil, :A "mid left"}
-                {}
-                {:E "bottom right"}]
-               dense))))))
-
 (deftest name-test
   (let [data [["Test1"  "First"    "Second"]
               ["Test2"  "Third"    "Fourth"]
               [nil      "Fifth"    "Sixth"]
               [nil      "Seventh"  "Eight"]
               [nil      "Ninth"    "Tenth"]]
-	workbook (create-workbook "Sheet 1" data)]
+	workbook (create-xls-workbook "Sheet 1" data)]
     (testing "Set named range and retrieve cells from it."
              (add-name! workbook "test1" "'Sheet 1'!$A$1")
              (add-name! workbook "ten" "'Sheet 1'!$B$1:$C$5")
@@ -775,43 +604,3 @@
              (is (= (reduce concat (map (fn [[_ a b]] [a b]) data))
                     (map read-cell (select-name workbook "ten"))))
              (is (nil? (select-name workbook "bill"))))))
-
-(deftest date-bases-test
-  (letfn [(read-sheet [file]
-            (->> (load-workbook file)
-                 sheet-seq
-                 first
-                 (select-columns {:A :date, :B :year, :C :comment})
-                 rest))
-          (year [^java.util.Date date]
-            (+ 1900 (.getYear date)))]
-    (testing "Can read workbooks with 1900-based dates"
-      (let [actual (read-sheet (config :1900-based-file))]
-        (is (every? #(== (year (:date %)) (:year %)) actual))))
-    (testing "Can read workbooks with 1904-based dates"
-      (let [actual (read-sheet (config :1904-based-file))]
-        (is (every? #(== (year (:date %)) (:year %)) actual))))))
-
-(deftest select-cell-update-value-read-updated-formula-test
-  (let [file (config :simple)
-        loaded (load-workbook file)
-        worksheet (first (sheet-seq loaded))]
-    (testing "selecting-cell"
-      (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
-      (testing "updating cell-value"
-        (set-cell! (select-cell "A2" worksheet) 2.0)
-        (is (= 2.0      (read-cell (select-cell "A2" worksheet))))
-        (is (= 3.0      (read-cell (select-cell "B2" worksheet))))
-        (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))
-
-(deftest select-cell-overwrite-formula-read-updated-formula-test
-  (let [file (config :simple)
-        loaded (load-workbook file)
-        worksheet (first (sheet-seq loaded))]
-    (testing "selecting-cell"
-      (is (= 2.0      (read-cell (select-cell "B2" worksheet))))
-      (testing "updating cell-value"
-        (set-cell! (select-cell "B2" worksheet) 4.0)
-        (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
-        (is (= 4.0      (read-cell (select-cell "B2" worksheet))))
-        (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))
