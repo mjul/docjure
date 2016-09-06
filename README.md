@@ -170,6 +170,67 @@ The following is a list of all possible [error values](https://poi.apache.org/ap
 #{:VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA}
 ```
 
+### Example: iterating over spreadsheet data
+
+#### A note on sparse data
+
+It's worth understanding a bit about the underlying structure of a spreadsheet before you
+start iterating over the contents.
+
+Spreadsheets are designed to be sparse - not all rows in the spreadsheet must physically exist,
+and not all cells in a row must physically exist.  This is how you can create data at ZZ:65535 without
+using huge amounts of storage.
+
+Thus each cell can be in 3 states - with data, blank, or nonexistent (null).  There's a special type [CellType.BLANK](https://poi.apache.org/apidocs/org/apache/poi/ss/usermodel/CellType.html#BLANK) for blank cells, but missing cells are just returned as nil.
+
+Similarly rows can exist with cells, or exist but be empty, or they can not exist at all.
+
+Prior to docjure 1.11 the iteration functions wrapped the underlying Apache POI iterators, which skipped over missing data - this could cause surprising behaviour, especially when there were missing cells inside tabular data.
+
+Since docjure 1.11 iteration now returns `nil` values for missing rows and cells - this is a *breaking change* - any code that calls `row-seq` or `cell-seq` now needs to deal with possible nil values.
+
+#### Iterating over rows
+
+You can iterate over all the rows in a worksheet with `row-seq`:
+
+```clj
+(->> (load-workbook "test.xls")
+     (select-sheet "first")
+     row-seq)
+```
+
+This will return a sequence of `org.apache.poi.usermodel.Row` objects, or `nil` for any missing rows.  You can use `(remove nil? (row-seq ...) )` if you are happy to ignore missing rows, but then be aware the nth result in the sequence might not match the nth row in the spreadsheet.
+
+
+#### Iterating over cells
+
+You can iterate over all the cells in a row with `cell-seq` - this returns a sequence of `org.apache.poi.usermodel.Cell` objects, or `nil` for missing cells.  Note that `(read-cell nil)` returns `nil` so it's safe to apply `read-cell` to the results of `cell-seq`
+
+```clj
+(->> (load-workbook "test.xls")
+     (select-sheet "first")
+     row-seq
+     (remove nil?)
+     (map cell-seq)
+     (map #(map read-cell %)))
+```
+
+For example, if you run the above snippet on a sparse spreadsheet like:
+
+| First Name | Middle Name | Last Name |
+|---
+| Edger | Allen | Poe |
+| `(missing row)` |
+| John | `(missing)` | Smith |
+
+Then it will return:
+
+```clj
+(("First Name" "Middle Name" "Last Name")
+ ("Edger" "Allen" "Poe")
+ ("John" nil "Smith"))
+```
+
 ### Automatically get the Docjure jar from Clojars
 
 The Docjure jar is distributed on
