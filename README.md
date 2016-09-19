@@ -25,7 +25,7 @@ takes an Excel-style cell reference (A2) and returns the cell. In order to get t
 actual value, use `read-cell`
 
 ```clj
-(use 'dk.active.docjure.spreadsheet)
+(use 'dk.ative.docjure.spreadsheet)
 (read-cell
  (->> (load-workbook "spreadsheet.xslx")
       (select-sheet "Price List")
@@ -110,7 +110,7 @@ Docjure allows you not only to evaluate a formula cell in a speadsheet, it also
 provides a way of exposing a formla in a cell as a Clojure function using the
 `cell-fn` function.
 
-    (use 'dk.active.docjure.spreadsheet)
+    (use 'dk.ative.docjure.spreadsheet)
     ;; Load a speadsheet and take the first sheet, construct a function from cell A2, taking
     ;; A1 as input.
     (def formula-from-a2 (cell-fn "A2"
