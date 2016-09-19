@@ -262,10 +262,11 @@
       (set-cell! (.createCell row column-index) value))
     row))
 
-(defn add-rows! [^Sheet sheet rows]
+(defn add-rows!
   "Add rows to the sheet. The rows is a sequence of row-data, where
    each row-data is a sequence of values for the columns in increasing
    order on that row."
+  [^Sheet sheet rows]
   (assert-type sheet Sheet)
   (doseq [row rows]
     (add-row! sheet row)))
