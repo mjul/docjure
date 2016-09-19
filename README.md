@@ -170,7 +170,7 @@ The following is a list of all possible [error values](https://poi.apache.org/ap
 #{:VALUE :DIV0 :CIRCULAR_REF :REF :NUM :NULL :FUNCTION_NOT_IMPLEMENTED :NAME :NA}
 ```
 
-### Example: iterating over spreadsheet data
+### Example: Iterating over spreadsheet data
 
 #### A note on sparse data
 
@@ -185,9 +185,9 @@ Thus each cell can be in 3 states - with data, blank, or nonexistent (null).  Th
 
 Similarly rows can exist with cells, or exist but be empty, or they can not exist at all.
 
-Prior to docjure 1.11 the iteration functions wrapped the underlying Apache POI iterators, which skipped over missing data - this could cause surprising behaviour, especially when there were missing cells inside tabular data.
+Prior to Docjure 1.11 the iteration functions wrapped the underlying Apache POI iterators, which skipped over missing data - this could cause surprising behaviour, especially when there were missing cells inside tabular data.
 
-Since docjure 1.11 iteration now returns `nil` values for missing rows and cells - this is a *breaking change* - any code that calls `row-seq` or `cell-seq` now needs to deal with possible nil values.
+Since Docjure 1.11 iteration now returns `nil` values for missing rows and cells - this is a *breaking change* - any code that calls `row-seq` or `cell-seq` now needs to deal with possible nil values.
 
 #### Iterating over rows
 
@@ -319,5 +319,6 @@ This library includes great contributions from
 * [Stuart Hinson](https://github.com/stuarth) (stuarth)
 * [Dan Petranek](https://github.com/dpetranek) (dpetranek)
 * [Aleksander Madland Stapnes](https://github.com/madstap) (madstap)
+* [Korny Sietsma](https://github.com/kornysietsma) (kornysietsma)
 
 Thank you very much!
