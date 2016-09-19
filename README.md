@@ -320,5 +320,6 @@ This library includes great contributions from
 * [Dan Petranek](https://github.com/dpetranek) (dpetranek)
 * [Aleksander Madland Stapnes](https://github.com/madstap) (madstap)
 * [Korny Sietsma](https://github.com/kornysietsma) (kornysietsma)
+* [Antti Virtanen](https://github.com/lokori) (lokori)
 
 Thank you very much!
