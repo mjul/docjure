@@ -1,6 +1,9 @@
 # CHANGELOG for Docjure
 
-## Version 1.11
+## Version 1.12.0-SNAPSHOT
+* Improved documentation.
+
+## Version 1.11.0
 * Upgraded to Apache POI v3.14.
 * Added support for sparse data in seq functions. Previously the reader
 would skip blank row, now they will be return as `nil`. We consider
@@ -30,7 +33,7 @@ Error cells return keyword of the error type:
   addition to files: `load-workbook-from-stream`,
   `load-workbook-from-resource` and `load-workbook-from-file`.
 * Make `load-workbook` a multi-method accepting a string (filename) or a
-  stream.  
+  stream.
 
 ## Version 1.8.0
 * Upgraded to use Clojure 1.6 as default Clojure version.
