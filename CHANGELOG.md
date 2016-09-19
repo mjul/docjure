@@ -1,11 +1,15 @@
 # CHANGELOG for Docjure
 
-## Version 1.11.1-SNAPSHOT
-* Add support for sparse data in seq functions.  Note this is a potentially *breaking change* if you use row-seq or cell-seq or related functions, and you have missing rows/cells in your spreadsheets
-
-## Version 1.11.0-SNAPSHOT
-* Add support for multi-sheet workbooks.
-* Add support for fomulae.
+## Version 1.11
+* Upgraded to Apache POI v3.14.
+* Added support for sparse data in seq functions. Previously the reader
+would skip blank row, now they will be return as `nil`. We consider
+this a bug-fix, so there is no major version update for this. However,
+note that this is potentially a *breaking change* if you use `row-seq` or `cell-seq` or
+related functions, and you relay on blank missing rows/cells in your
+spreadsheets to be ignored.
+* Added support for multi-sheet workbooks.
+* Added support for fomulae.
 
 ## Version 1.10.0
 * Upgraded to Apache POI v3.13.
