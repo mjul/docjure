@@ -31,8 +31,9 @@
 (defmethod read-cell-value Cell/CELL_TYPE_ERROR    [^CellValue cv _]
   (keyword (.name (FormulaError/forInt (.getErrorValue cv)))))
 
-(defmulti read-cell #(.getCellType ^Cell %))
+(defmulti read-cell #(when % (.getCellType ^Cell %)))
 (defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
+(defmethod read-cell nil [_] nil)
 (defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
 (defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
@@ -148,10 +149,12 @@
   (find-sheet matching-fn workbook))
 
 (defn row-seq
-  "Return a lazy sequence of the rows in a sheet."
+  "Return a lazy sequence of the rows in a sheet. Missing rows will be returned as nil
+  filter with e.g. (remove nil? (row-seq ...)) if missing rows are not needed"
   [^Sheet sheet]
   (assert-type sheet Sheet)
-  (iterator-seq (.iterator sheet)))
+  (map #(.getRow sheet %)
+       (range 0 (inc (.getLastRowNum sheet)))))
 
 (defn- cell-seq-dispatch [x]
   (cond
@@ -162,16 +165,18 @@
 
 (defmulti cell-seq
   "Return a seq of the cells in the input which can be a sheet, a row, or a collection
-   of one of these. The seq is ordered ordered by sheet, row and column."
+   of one of these. The seq is ordered ordered by sheet, row and column.
+   Missing cells will be returned as nil, note this is different from blank cells which have type (CellType/BLANK)"
   cell-seq-dispatch)
-(defmethod cell-seq :row  [^Row row] (iterator-seq (.iterator row)))
-(defmethod cell-seq :sheet [sheet] (for [row (row-seq sheet)
+(defmethod cell-seq :row  [^Row row] (map
+                                       #(.getCell row % Row/RETURN_NULL_AND_BLANK)
+                                       (range 0 (.getLastCellNum row))))
+(defmethod cell-seq :sheet [sheet] (for [row (remove nil? (row-seq sheet))
                                          cell (cell-seq row)]
                                      cell))
-(defmethod cell-seq :coll [coll] (for [x coll,
+(defmethod cell-seq :coll [coll] (for [x (remove nil? coll),
                                        cell (cell-seq x)]
                                    cell))
-
 
 (defn into-seq
   [^Iterable sheet-or-row]
@@ -186,7 +191,7 @@
     (when new-key
       {new-key (read-cell cell)})))
 
-(defn select-columns 
+(defn select-columns
   "Takes two arguments: column hashmap and a sheet. The column hashmap
    specifies the mapping from spreadsheet columns dictionary keys:
    its keys are the spreadsheet column names and the values represent
@@ -272,8 +277,8 @@
   (.createSheet workbook name))
 
 (defn create-workbook
-  "Create a new XLSX workbook.  Sheet-name is a string name for the sheet. Data 
-  is a vector of vectors, representing the rows and the cells of the rows. 
+  "Create a new XLSX workbook.  Sheet-name is a string name for the sheet. Data
+  is a vector of vectors, representing the rows and the cells of the rows.
   Alternate sheet names and data to create multiple sheets.
 
   (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]]
@@ -283,7 +288,7 @@
          sheet    (add-sheet! workbook sheet-name)]
      (add-rows! sheet data)
      workbook))
- 
+
  ([sheet-name data & name-data-pairs]
   ;; incomplete pairs should not be allowed
   {:pre [(even? (count name-data-pairs))]}
@@ -295,6 +300,59 @@
           (add-sheet! s-name)
           (add-rows!  data)))
     workbook)))
+
+(defn- add-row-indexed!
+  "Add row to the sheet, at a specific row index"
+  [^Sheet sheet index values]
+  (assert-type sheet Sheet)
+  (let [row (.createRow sheet index)]
+    (doseq [[column-index value] (map-indexed #(list %1 %2) values)]
+      (if value                                             ; nil values are skipped
+        (set-cell! (.createCell row column-index) value)))
+    row))
+
+(defn- add-sparse-rows!
+  "Add rows to the sheet. rows is a sequence of row-data, where
+   each row-data is a sequence of values for the columns in increasing
+   order on that row., or nil to skip a row"
+  [^Sheet sheet rows]
+  (assert-type sheet Sheet)
+  (doall
+    (map-indexed (fn [index row]
+                   (when-not (nil? row)
+                     (add-row-indexed! sheet index row)))
+                 rows)))
+
+(defn create-sparse-workbook
+  "Create a new XLSX workbook.  Sheet-name is a string name for the sheet. Data
+  is a vector of vectors, representing the rows and the cells of the rows.
+  Alternate sheet names and data to create multiple sheets.
+
+  Spreadsheet rows and cells can be nil, which will create a sparse spreadsheet with
+  non-continuous rows and cells
+
+  (This version exists mostly for generating test data, `create-workbook` will
+  normally do just fine unless you have a specific need for sparseness)
+
+  (create-sparse-workbook \"SheetName1\" [[\"A1\" \"A2\"] nil [\"C1\" nil \"C3\"]]
+                          \"SheetName2\" [[\"A1\" \"A2\"] nil [\"C1\" nil \"C3\"]] "
+  ([sheet-name data]
+   (let [workbook (XSSFWorkbook.)
+         sheet    (add-sheet! workbook sheet-name)]
+     (add-sparse-rows! sheet data)
+     workbook))
+
+  ([sheet-name data & name-data-pairs]
+    ;; incomplete pairs should not be allowed
+   {:pre [(even? (count name-data-pairs))]}
+    ;; call single arity version to create workbook
+   (let [workbook (create-sparse-workbook sheet-name data)]
+     ;; iterate through pairs adding sheets and rows
+     (doseq [[s-name data] (partition 2 name-data-pairs)]
+       (-> workbook
+           (add-sheet! s-name)
+           (add-sparse-rows!  data)))
+     workbook)))
 
 (defn create-xls-workbook
   "Create a new XLS workbook with a single sheet and the data specified."
@@ -509,21 +567,24 @@
   [^Row row ^CellStyle style]
   (assert-type row Row)
   (assert-type style CellStyle)
-  (doseq [^Cell c (cell-seq row)]
+  (doseq [^Cell c (cell-seq row)
+          :when c]
     (.setCellStyle c style))
   row)
 
 (defn get-row-styles
-  "Returns a seq of the row's CellStyles."
+  "Returns a seq of the row's CellStyles.
+  Missing cells will return a nil style"
   [^Row row]
-  (map #(.getCellStyle ^Cell %) (cell-seq row)))
+  (map #(when % (.getCellStyle ^Cell %)) (cell-seq row)))
 
 (defn set-row-styles!
-  "Apply a seq of styles to the cells in a row."
+  "Apply a seq of styles to the cells in a row.
+  Cells that are missing won't be assigned a style - if you want to style missing cells, create them first"
   [^Row row styles]
   (let [pairs (map list (cell-seq row) styles)]
     (doseq [[^Cell c s] pairs]
-      (.setCellStyle c s))))
+      (when c (.setCellStyle c s)))))
 
 (defn row-vec
   "Transform the row struct (hash-map) to a row vector according to the column order.
@@ -536,7 +597,7 @@
   (vec (map row column-order)))
 
 (defn remove-row!
-  "Remove a row from the sheet."
+  "Remove a row from the sheet. Rows are not shifted up - the removed row will display as blank"
   [^Sheet sheet ^Row row]
   (do
     (assert-type sheet Sheet)
@@ -548,7 +609,7 @@
   "Remove all the rows from the sheet."
   [sheet]
   (doall
-   (for [row (doall (row-seq sheet))]
+   (for [row (doall (remove nil? (row-seq sheet)))]
      (remove-row! sheet row)))
   sheet)
 

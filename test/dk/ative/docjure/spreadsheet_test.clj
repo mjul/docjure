@@ -3,13 +3,14 @@
   (:use [clojure.test])
   (:require [cemerick.pomegranate :as pomegranate]
            [clojure.java.io :as io])
-  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
+  (:import (org.apache.poi.ss.usermodel Workbook Row CellStyle IndexedColors Font CellValue)
            (org.apache.poi.xssf.usermodel XSSFWorkbook XSSFFont)
            (java.util Date)
            (java.io FileInputStream)))
 
 (def config {:datatypes-file  "test/dk/ative/docjure/testdata/datatypes.xlsx"
              :formulae-file   "test/dk/ative/docjure/testdata/formulae.xlsx"
+             :blanks-file "test/dk/ative/docjure/testdata/blanks.xlsx"
              :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
              :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"
              :simple "test/dk/ative/docjure/testdata/simple.xlsx"
@@ -82,11 +83,47 @@
               (.getCell (first sheet-1-rows) 1) (second (first sheet-1-data))
               (.getCell (second sheet-1-rows) 0) (first (second sheet-1-data))
               (.getCell (second sheet-1-rows) 1) (second (second sheet-1-data))
-              
+
               (.getCell (first sheet-2-rows) 0) (ffirst sheet-2-data)
               (.getCell (first sheet-2-rows) 1) (second (first sheet-2-data))
               (.getCell (second sheet-2-rows) 0) (first (second sheet-2-data))
               (.getCell (second sheet-2-rows) 1) (second (second sheet-2-data)))))))
+
+(deftest create-sparse-workbook-test
+  (let [sheet-name "Sheet 1"
+        sheet-data [nil
+                    ["A2" nil "C2" "D2"]
+                    nil
+                    nil
+                    [nil "B5" nil "D5" nil]
+                    nil]
+        workbook (create-sparse-workbook sheet-name sheet-data)]
+    (testing "Sparse Sheet creation"
+      (is (= 1 (.getNumberOfSheets workbook)) "Expected sheet to be added.")
+      (is (= sheet-name (.. workbook (getSheetAt 0) (getSheetName))) "Expected sheet to have correct name."))
+    (testing "Sparse Sheet data"
+      (let [sheet (.getSheetAt workbook 0)
+            rows  (map #(.getRow sheet %)
+                       (range 0 (inc (.getLastRowNum sheet))))
+            cellvalue (fn [r c] (as-> sheet x
+                                    (.getRow x r)
+                                    (.getCell x c)
+                                    (when x (.getStringCellValue x))))]
+        (is (= (dec (count sheet-data)) (inc (.getLastRowNum sheet))) "Expected correct number of rows")
+        (is (= (count (filter identity sheet-data)) (.getPhysicalNumberOfRows sheet)) "Expected correct number of physical rows.")
+        (is (= [true false true true false] (map nil? rows)) "Expected not all rows created")
+        (is (= 1 (.getRowNum (second rows))) "Expected correct row number.")
+
+        (is (= (count (second sheet-data)) (.getLastCellNum (second rows))) "Expected correct number of columns.")
+        (is (= 4 (.getLastCellNum (nth rows 4))) "Expected correct number of columns.")
+        (is (= "A2" (cellvalue 1 0)))
+        (is (= nil (cellvalue 1 1)))
+        (is (= "C2" (cellvalue 1 2)))
+        (is (= "D2" (cellvalue 1 3)))
+        (is (= nil (cellvalue 4 0)))
+        (is (= "B5" (cellvalue 4 1)))
+        (is (= "D5" (cellvalue 4 3)))
+        ))))
 
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."
@@ -170,6 +207,21 @@
         (is (= (july 1) (read-cell date-cell)))
         (is (= 42.0 (read-cell number-cell))))))
 
+(deftest read-sparse-cell-test
+  (let [sheet-data [[nil "temp"]]
+        workbook (create-sparse-workbook "Sheet 1" sheet-data)
+        sheet (.getSheetAt workbook 0)
+        row (.getRow sheet 0)
+        nil-cell (.getCell row 0 Row/RETURN_NULL_AND_BLANK)
+        blank-cell (.getCell row 1 Row/RETURN_NULL_AND_BLANK)
+        _ (prn blank-cell)
+        _ (set-cell! blank-cell nil)
+        blank-cell (.getCell row 1 Row/RETURN_NULL_AND_BLANK)]
+    (testing "Should read nil and blank cell types as nil"
+      (is (nil? nil-cell))
+      (is (nil? (read-cell nil-cell)))
+      (is (nil? (read-cell blank-cell))))))
+
 (deftest select-cell-test
   (let [file (config :simple)
         loaded (load-workbook file)
@@ -243,6 +295,16 @@
       (let [actual (row-seq sheet)]
 	(is (= 2 (count actual)))))))
 
+(deftest sparse-row-seq-test
+  (let [sheet-name "Sheet 1"
+        sheet-data [["A1" "B1"] nil ["A3" "B3"]]
+        workbook (create-sparse-workbook sheet-name sheet-data)
+        sheet (select-sheet sheet-name workbook)]
+    (let [actual (row-seq sheet)]
+      (is (= 3 (count actual)))
+      (is (empty? (second actual))))))
+
+
 (deftest cell-seq-test
   (let [sheet-name "Sheet 1"
 	sheet-data [["A1" "B1"] ["A2" "B2"]]
@@ -269,6 +331,22 @@
 		  "S2/A1" "S2/B1"
 		  "S2/A2" "S2/B2"] (map read-cell actual))))))))
 
+(deftest sparse-cell-seq-test
+  (let [sheet-name "Sheet 1"
+        sheet-data [["A1" nil "C1"] nil [nil "B3" nil "D3"]]
+        workbook (create-sparse-workbook sheet-name sheet-data)
+        sheet (select-sheet sheet-name workbook)]
+    (testing "for sheet"
+      (let [actual (cell-seq sheet)]
+        (is (= 7 (count actual)))))
+    (testing "for row"
+      (let [actual (cell-seq (first (row-seq sheet)))
+            vals (map #(when % (read-cell %)) actual)]
+        (is (= vals ["A1" nil "C1"]))))
+    (testing "for row collection"
+      (let [actual (cell-seq (row-seq sheet))]
+        (is (= 7 (count actual)) "Expected to get all cells.")
+        (is (= ["A1" nil "C1" nil "B3" nil "D3"] (map #(when % (read-cell %)) actual)))))))
 
 (deftest sheet-name-test
   (let [name       "Sheet 1"
@@ -339,6 +417,27 @@
 	     (second data-rows) (data 2))))
     (testing "Should fail on invalid parameter types."
       (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (select-columns {:A :first, :B :second} "not-a-worksheet"))))))
+
+(deftest sparse-select-columns-test
+  (let [data     [["Name" "Quantity" "Thing" "Price" "On Sale"]
+                  nil
+                  ["foo" 1.0 nil 42 true]
+                  ["bar" 2.0 "!" 108 false]]
+        workbook (create-workbook "Sheet 1" data)
+        sheet    (first (sheet-seq workbook))]
+    (testing "Missing rows are skipped in results"
+      (let [rows (select-columns {:A :name, :B :quantity} sheet)]
+        (is (= [false true false false] (map nil? rows)))
+        (are [actual expected] (= actual (zipmap [:name :quantity] expected))
+                               (first rows) (data 0)
+                               (nth rows 2) (data 2)
+                               (nth rows 3) (data 3))))
+    (testing "Missing columns should create nil values in map"
+      (let [rows (select-columns {:A :name, :C :thing} sheet)]
+        (is (= rows [{:name "Name" :thing "Thing"}
+                     nil
+                     {:name "foo" :thing nil}
+                     {:name "bar" :thing "!"}]))))))
 
 (deftest row-seq-test
   (testing "Should fail on invalid parameter types."
@@ -730,6 +829,25 @@
 				      (select-columns formulae-map)
 				      rest)]
       (is (every? #(= (:formula %) (:expected %)) formula-expected-pairs)))))
+
+(deftest select-blanks-integration-test
+  (let [file (config :blanks-file)
+        workbook (load-workbook file)
+        sheet (select-sheet "test_data" workbook)]
+    (testing "reading rows"
+      (let [actual (row-seq sheet)]
+        (is (= 5 (count actual)))
+        (is (nil? (second actual)))))
+    (testing "reading cells"
+      (let [row (.getRow sheet 2)
+            actual (cell-seq row)]
+        (is (= 5 (count actual)))
+        (is (= ["mid left" nil "middle" nil "mid right"] (map #(when % (read-cell %)) actual)))))
+    (testing "selecting columns"
+      (is (= [{:A "top left"}
+              {:E "mid right", :C "middle", :A "mid left"}
+              {:E "bottom right"}]
+             (select-columns {:A :A :B :B :C :C :D :D :E :E} sheet))))))
 
 (deftest name-test
   (let [data [["Test1"  "First"    "Second"]

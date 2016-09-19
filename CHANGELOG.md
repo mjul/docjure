@@ -1,6 +1,9 @@
 # CHANGELOG for Docjure
 
-## Version 1.11-SNAPSHOT
+## Version 1.11.1-SNAPSHOT
+* Add support for sparse data in seq functions.  Note this is a potentially *breaking change* if you use row-seq or cell-seq or related functions, and you have missing rows/cells in your spreadsheets
+
+## Version 1.11.0-SNAPSHOT
 * Add support for multi-sheet workbooks.
 * Add support for fomulae.
 
