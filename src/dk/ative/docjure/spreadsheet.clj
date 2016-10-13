@@ -486,7 +486,7 @@
       :indent              number from 0 to 15
       :data-format         string
 
-   Valid color keywords are the colour names defined in
+   Valid colour keywords are the colour names defined in
    org.apache.ss.usermodel.IndexedColors as lowercase keywords, eg.
 
      :black, :white, :red, :blue, :light_green, :yellow, ...
