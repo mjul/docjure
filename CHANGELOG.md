@@ -2,6 +2,7 @@
 
 ## Version 1.12.0-SNAPSHOT
 * Improved documentation.
+* Added more cell style formatting options.
 
 ## Version 1.11.0
 * Upgraded to Apache POI v3.14.
