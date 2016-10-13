@@ -282,7 +282,9 @@
         (is (= CellStyle/BORDER_NONE (.getBorderLeft cs)))
         (is (= CellStyle/BORDER_NONE (.getBorderRight cs)))
         (is (= CellStyle/BORDER_NONE (.getBorderTop cs)))
-        (is (= CellStyle/BORDER_NONE (.getBorderBottom cs)))))
+        (is (= CellStyle/BORDER_NONE (.getBorderBottom cs)))
+        (is (zero? (.getIndention cs)))
+        (is (= "General" (.getDataFormatString cs)))))
     (testing ":background"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:background :yellow})]
@@ -312,6 +314,24 @@
         (is (= CellStyle/BORDER_MEDIUM (.getBorderRight cs)))
         (is (= CellStyle/BORDER_THICK (.getBorderTop cs)))
         (is (= CellStyle/BORDER_THIN (.getBorderBottom cs)))))
+    (testing "border colors"
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
+            cs (create-cell-style! wb {:border-left :thin
+                                       :border-right :medium
+                                       :border-top :thick 
+                                       :border-bottom :thin
+                                       :left-border-color :red
+                                       :right-border-color :blue
+                                       :top-border-color :green
+                                       :bottom-border-color :yellow})]
+        (is (= CellStyle/BORDER_THIN (.getBorderLeft cs)))
+        (is (= CellStyle/BORDER_MEDIUM (.getBorderRight cs)))
+        (is (= CellStyle/BORDER_THICK (.getBorderTop cs)))
+        (is (= CellStyle/BORDER_THIN (.getBorderBottom cs)))
+        (is (= (.getIndex IndexedColors/RED) (.getLeftBorderColor cs)))
+        (is (= (.getIndex IndexedColors/BLUE) (.getRightBorderColor cs)))
+        (is (= (.getIndex IndexedColors/GREEN) (.getTopBorderColor cs)))
+        (is (= (.getIndex IndexedColors/YELLOW) (.getBottomBorderColor cs)))))
     (testing ":wrap"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:wrap :true})]
@@ -363,7 +383,19 @@
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
 	(is (= Font/U_SINGLE (.getUnderline (get-font cs wb))))
-        (is (= Font/U_SINGLE (.getUnderline (get-font cs2 wb))))))))
+        (is (= Font/U_SINGLE (.getUnderline (get-font cs2 wb))))))
+    (testing ":indent"
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
+            cs (create-cell-style! wb {:indent 1})
+            cs2 (create-cell-style! wb {:indent 2})]
+        (is (= 1 (.getIndention cs)))
+        (is (= 2 (.getIndention cs2)))))
+    (testing ":data-format"
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
+            cs (create-cell-style! wb {:data-format "#,##0"})
+            cs2 (create-cell-style! wb {:data-format "#,##0"})]
+        (is (= "#,##0" (.getDataFormatString cs)))
+        (is (= (.getDataFormat cs) (.getDataFormat cs2)))))))
 
 (deftest create-font!-test
     (let [wb (create-xls-workbook "Dummy" [["foo"]])]

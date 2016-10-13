@@ -470,15 +470,21 @@
 (defn create-cell-style!
   "Create a new cell-style in the workbook from options:
 
-      :background    background colour (as keyword)
-      :font          font | fontmap (of font options)
-      :halign        :left | :right | :center
-      :valign        :top | :bottom | :center
-      :wrap          true | false - controls text wrapping
-      :border-left   :thin | :medium | :thick
-      :border-right  :thin | :medium | :thick
-      :border-top    :thin | :medium | :thick
-      :border-bottom :thin | :medium | :thick
+      :background          background colour (as keyword)
+      :font                font | fontmap (of font options)
+      :halign              :left | :right | :center
+      :valign              :top | :bottom | :center
+      :wrap                true | false - controls text wrapping
+      :border-left         :thin | :medium | :thick
+      :border-right        :thin | :medium | :thick
+      :border-top          :thin | :medium | :thick
+      :border-bottom       :thin | :medium | :thick
+      :left-border-color   colour keyword
+      :right-border-color  colour keyword
+      :top-border-color    colour keyword
+      :bottom-border-color colour keyword
+      :indent              number from 0 to 15
+      :data-format         string
 
    Valid color keywords are the colour names defined in
    org.apache.ss.usermodel.IndexedColors as lowercase keywords, eg.
@@ -489,11 +495,11 @@
    I.
    (def f (create-font! wb {:name \"Arial\", :bold true, :italic true})
    (create-cell-style! wb {:background :yellow, :font f, :halign :center,
-                           :wrap true, :borders :thin})
+                           :wrap true, :border-bottom :thin})
    II.
    (create-cell-style! wb {:background :yellow, :halign :center,
                            :font {:name \"Arial\" :bold true :italic true},
-                           :wrap true, :borders :thin})
+                           :wrap true, :border-bottom :thin})
   "
   ([^Workbook workbook] (create-cell-style! workbook {}))
 
@@ -501,8 +507,10 @@
      (assert-type workbook Workbook)
      (let [cs (.createCellStyle workbook)
            {:keys [background font halign valign wrap
-                   border-left border-right border-top
-                   border-bottom borders]} styles]
+                   border-left border-right border-top border-bottom
+                   left-border-color right-border-color
+                   top-border-color bottom-border-color
+                   borders indent data-format]} styles]
        (whens
         font   (set-font font cs workbook)
         background (do (.setFillForegroundColor cs (color-index background))
@@ -513,7 +521,18 @@
         border-left (.setBorderLeft cs (border border-left))
         border-right (.setBorderRight cs (border border-right))
         border-top (.setBorderTop cs (border border-top))
-        border-bottom (.setBorderBottom cs (border border-bottom)))
+        border-bottom (.setBorderBottom cs (border border-bottom))
+        left-border-color (.setLeftBorderColor
+                            cs (color-index left-border-color))
+        right-border-color (.setRightBorderColor
+                             cs (color-index right-border-color))
+        top-border-color (.setTopBorderColor
+                           cs (color-index top-border-color))
+        bottom-border-color (.setBottomBorderColor
+                              cs (color-index bottom-border-color))
+        indent (.setIndention cs (short indent))
+        data-format (let [df (.createDataFormat workbook)]
+                      (.setDataFormat cs (.getFormat df data-format))))
        cs)))
 
 (defn set-cell-style!
