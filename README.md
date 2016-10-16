@@ -158,7 +158,7 @@ example:
 ```clj
 (->> sample-cells
      (map read-cell)
-     (map #(get {:DIV0 0.0} % %))
+     (replace {:DIV0 0.0})
      (remove keyword?))
 
 ;=> (15.0 35.0 0.0 33.0 96.0)
