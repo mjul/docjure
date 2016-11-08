@@ -14,7 +14,8 @@
              :1900-based-file "test/dk/ative/docjure/testdata/1900-based-dates.xlsx"
              :1904-based-file "test/dk/ative/docjure/testdata/1904-based-dates.xlsx"
              :simple "test/dk/ative/docjure/testdata/simple.xlsx"
-             :save-workbook-location "test/dk/ative/docjure/testdata/saved.xlsx"})
+             :save-workbook-location "test/dk/ative/docjure/testdata/saved.xlsx"
+             :missing-workbook "test/dk/ative/docjure/testdata/missing-workbook.xlsx"})
 
 (def datatypes-map {:A :text, :B :integer, :C :decimal, :D :date, :E :time, :F :date-time, :G :percentage, :H :fraction, :I :scientific, :J :date-formulae})
 (def formulae-map {:A :formula, :B :expected})
@@ -935,3 +936,14 @@
         (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
         (is (= 4.0      (read-cell (select-cell "B2" worksheet))))
         (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))
+
+(deftest can-ignore-missing-workbooks-test
+  (let [file (config :missing-workbook)
+        loaded (load-workbook file)
+        worksheet (first (sheet-seq loaded))]
+    (testing "throws an exception by default"
+      (is (thrown? java.lang.RuntimeException
+                   (read-cell (select-cell "A1" worksheet)))))
+    (testing "retrieves cached value when ignoring missing workbooks"
+      (binding [*ignore-missing-workbooks* true]
+        (is (= 6.0 (read-cell (select-cell "A1" worksheet))))))))
