@@ -499,7 +499,7 @@
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin
                                        :border-right :medium
-                                       :border-top :thick 
+                                       :border-top :thick
                                        :border-bottom :thin
                                        :left-border-color :red
                                        :right-border-color :blue
