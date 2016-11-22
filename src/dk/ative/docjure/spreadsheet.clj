@@ -31,24 +31,34 @@
 (defmethod read-cell-value Cell/CELL_TYPE_ERROR    [^CellValue cv _]
   (keyword (.name (FormulaError/forInt (.getErrorValue cv)))))
 
-(defmulti read-cell #(when % (.getCellType ^Cell %)))
-(defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
-(defmethod read-cell nil [_] nil)
-(defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
-  (let [evaluator (.. cell getSheet getWorkbook
-                      getCreationHelper createFormulaEvaluator)
+(defmulti configure-evaluator (fn [_ k _] k))
+(defmethod configure-evaluator :ignore-missing-workbooks? [evaluator _ value]
+  (.setIgnoreMissingWorkbooks evaluator value)
+  evaluator)
+(defmethod configure-evaluator :default [evaluator _ _]
+  ;; probably should log or error so people know they've got a typo or something
+  evaluator)
+
+(defmulti read-cell (fn [cell _] (when cell (.getCellType ^Cell cell))))
+(defmethod read-cell Cell/CELL_TYPE_BLANK     [_ _]     nil)
+(defmethod read-cell nil [_ _] nil)
+(defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell _]  (.getStringCellValue cell))
+(defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell options]
+  (let [evaluator (reduce (fn [evaluator [k v]] (configure-evaluator evaluator k v))
+                          (.. cell getSheet getWorkbook
+                              getCreationHelper createFormulaEvaluator)
+                          (:evaluator options))
         cv (.evaluate evaluator cell)]
     (if (and (= Cell/CELL_TYPE_NUMERIC (.getCellType cv))
              (DateUtil/isCellDateFormatted cell))
       (.getDateCellValue cell)
       (read-cell-value cv false))))
-(defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
+(defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell _]  (.getBooleanCellValue cell))
+(defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell _]
   (if (DateUtil/isCellDateFormatted cell)
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
-(defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell]
+(defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell _]
   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
 
