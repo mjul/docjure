@@ -226,9 +226,13 @@
 (defmulti set-cell! (fn [^Cell cell val] (type val)))
 
 (defmethod set-cell! String [^Cell cell val]
-  (do
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
-    (.setCellValue cell ^String val)))
+    (if (clojure.string/starts-with? val "=")
+      (do
+        (.setCellType cell Cell/CELL_TYPE_FORMULA)
+        (.setCellFormula cell ^String (subs val 1)))
+      (do
+        (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
+        (.setCellValue cell ^String val))))
 
 (defmethod set-cell! Number [^Cell cell val]
   (do
@@ -285,22 +289,22 @@
   (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]]
                    \"SheetName2\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]] "
  ([sheet-name data]
-   (let [workbook (XSSFWorkbook.)
-         sheet    (add-sheet! workbook sheet-name)]
-     (add-rows! sheet data)
-     workbook))
+  (let [workbook (XSSFWorkbook.)
+        sheet    (add-sheet! workbook sheet-name)]
+    (add-rows! sheet data)
+    workbook))
 
  ([sheet-name data & name-data-pairs]
   ;; incomplete pairs should not be allowed
   {:pre [(even? (count name-data-pairs))]}
   ;; call single arity version to create workbook
-   (let [workbook (create-workbook sheet-name data)]
+  (let [workbook (create-workbook sheet-name data)]
      ;; iterate through pairs adding sheets and rows
-    (doseq [[s-name data] (partition 2 name-data-pairs)]
-      (-> workbook
-          (add-sheet! s-name)
-          (add-rows!  data)))
-    workbook)))
+   (doseq [[s-name data] (partition 2 name-data-pairs)]
+     (-> workbook
+         (add-sheet! s-name)
+         (add-rows!  data)))
+   workbook)))
 
 (defn- add-row-indexed!
   "Add row to the sheet, at a specific row index"
@@ -504,36 +508,36 @@
   ([^Workbook workbook] (create-cell-style! workbook {}))
 
   ([^Workbook workbook styles]
-     (assert-type workbook Workbook)
-     (let [cs (.createCellStyle workbook)
-           {:keys [background font halign valign wrap
-                   border-left border-right border-top border-bottom
-                   left-border-color right-border-color
-                   top-border-color bottom-border-color
-                   borders indent data-format]} styles]
-       (whens
-        font   (set-font font cs workbook)
-        background (do (.setFillForegroundColor cs (color-index background))
-                       (.setFillPattern cs CellStyle/SOLID_FOREGROUND))
-        halign (.setAlignment cs (horiz-align halign))
-        valign (.setVerticalAlignment cs (vert-align valign))
-        wrap   (.setWrapText cs true)
-        border-left (.setBorderLeft cs (border border-left))
-        border-right (.setBorderRight cs (border border-right))
-        border-top (.setBorderTop cs (border border-top))
-        border-bottom (.setBorderBottom cs (border border-bottom))
-        left-border-color (.setLeftBorderColor
-                            cs (color-index left-border-color))
-        right-border-color (.setRightBorderColor
-                             cs (color-index right-border-color))
-        top-border-color (.setTopBorderColor
-                           cs (color-index top-border-color))
-        bottom-border-color (.setBottomBorderColor
-                              cs (color-index bottom-border-color))
-        indent (.setIndention cs (short indent))
-        data-format (let [df (.createDataFormat workbook)]
-                      (.setDataFormat cs (.getFormat df data-format))))
-       cs)))
+   (assert-type workbook Workbook)
+   (let [cs (.createCellStyle workbook)
+         {:keys [background font halign valign wrap
+                 border-left border-right border-top border-bottom
+                 left-border-color right-border-color
+                 top-border-color bottom-border-color
+                 borders indent data-format]} styles]
+     (whens
+      font   (set-font font cs workbook)
+      background (do (.setFillForegroundColor cs (color-index background))
+                     (.setFillPattern cs CellStyle/SOLID_FOREGROUND))
+      halign (.setAlignment cs (horiz-align halign))
+      valign (.setVerticalAlignment cs (vert-align valign))
+      wrap   (.setWrapText cs true)
+      border-left (.setBorderLeft cs (border border-left))
+      border-right (.setBorderRight cs (border border-right))
+      border-top (.setBorderTop cs (border border-top))
+      border-bottom (.setBorderBottom cs (border border-bottom))
+      left-border-color (.setLeftBorderColor
+                          cs (color-index left-border-color))
+      right-border-color (.setRightBorderColor
+                           cs (color-index right-border-color))
+      top-border-color (.setTopBorderColor
+                         cs (color-index top-border-color))
+      bottom-border-color (.setBottomBorderColor
+                            cs (color-index bottom-border-color))
+      indent (.setIndention cs (short indent))
+      data-format (let [df (.createDataFormat workbook)]
+                    (.setDataFormat cs (.getFormat df data-format))))
+     cs)))
 
 (defn set-cell-style!
   "Apply a style to a cell.
