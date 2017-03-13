@@ -537,7 +537,7 @@
         indent (.setIndention cs (short indent))
         data-format (let [df (.createDataFormat workbook)]
                       (.setDataFormat cs (.getFormat df data-format))))
-       cs)]))
+       cs)))
 
 (defn set-cell-style!
   "Apply a style to a cell.
