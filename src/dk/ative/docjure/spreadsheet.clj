@@ -246,6 +246,9 @@
     (.setCellValue cell ^Date val)
     (apply-date-format! cell "m/d/yy")))
 
+(defmethod set-cell! java.util.UUID [^Cell cell val]
+  (set-cell! cell (.toString ^java.util.UUID val)))
+
 (defmethod set-cell! nil [^Cell cell val]
   (let [^String null nil]
     (do
