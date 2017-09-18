@@ -277,7 +277,7 @@ To run the tests on all supported Clojure versions use:
 
 ## License
 
-Copyright (c) 2009-2016 Martin Jul
+Copyright (c) 2009-2017 Martin Jul
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
