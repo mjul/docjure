@@ -5,6 +5,11 @@
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
    (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
+                                Row$MissingCellPolicy
+                                HorizontalAlignment
+                                VerticalAlignment
+                                BorderStyle
+                                FillPatternType
                                 FormulaError
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
@@ -169,7 +174,7 @@
    Missing cells will be returned as nil, note this is different from blank cells which have type (CellType/BLANK)"
   cell-seq-dispatch)
 (defmethod cell-seq :row  [^Row row] (map
-                                       #(.getCell row % Row/RETURN_NULL_AND_BLANK)
+                                       #(.getCell row % Row$MissingCellPolicy/RETURN_NULL_AND_BLANK)
                                        (range 0 (.getLastCellNum row))))
 (defmethod cell-seq :sheet [sheet] (for [row (remove nil? (row-seq sheet))
                                          cell (cell-seq row)]
@@ -377,25 +382,25 @@
   "Returns horizontal alignment"
   [kw]
   (case kw
-    :left CellStyle/ALIGN_LEFT
-    :right CellStyle/ALIGN_RIGHT
-    :center CellStyle/ALIGN_CENTER))
+    :left HorizontalAlignment/LEFT
+    :right HorizontalAlignment/RIGHT
+    :center HorizontalAlignment/CENTER))
 
 (defn vert-align
   "Returns vertical alignment"
   [kw]
   (case kw
-    :top CellStyle/VERTICAL_TOP
-    :bottom CellStyle/VERTICAL_BOTTOM
-    :center CellStyle/VERTICAL_CENTER))
+    :top VerticalAlignment/TOP
+    :bottom VerticalAlignment/BOTTOM
+    :center VerticalAlignment/CENTER))
 
 (defn border
   "Returns border style"
   [kw]
   (case kw
-    :thin CellStyle/BORDER_THIN
-    :medium CellStyle/BORDER_MEDIUM
-    :thick CellStyle/BORDER_THICK))
+    :thin BorderStyle/THIN
+    :medium BorderStyle/MEDIUM
+    :thick BorderStyle/THICK))
 
 (defmacro whens
   "Processes any and all expressions whose tests evaluate to true.
@@ -440,7 +445,7 @@
      name      (.setFontName f name)
      size      (.setFontHeightInPoints f size)
      color     (.setColor f (color-index color))
-     bold      (.setBoldweight f Font/BOLDWEIGHT_BOLD)
+     bold      (.setBold true)
      italic    (.setItalic f true)
      underline (.setUnderline f Font/U_SINGLE))
     f))
@@ -514,7 +519,7 @@
        (whens
         font   (set-font font cs workbook)
         background (do (.setFillForegroundColor cs (color-index background))
-                       (.setFillPattern cs CellStyle/SOLID_FOREGROUND))
+                       (.setFillPattern cs FillPatternType/SOLID_FOREGROUND))
         halign (.setAlignment cs (horiz-align halign))
         valign (.setVerticalAlignment cs (vert-align valign))
         wrap   (.setWrapText cs true)
@@ -636,10 +641,9 @@
 (defn- named-area-ref [^Workbook workbook n]
   (let [index (.getNameIndex workbook (name n))]
     (if (>= index 0)
-      (->> index
-           (.getNameAt workbook)
-           (.getRefersToFormula)
-           (AreaReference.))
+      (-> (.getNameAt workbook index)
+          (.getRefersToFormula)
+          (AreaReference. (.getSpreadsheetVersion workbook)))
       nil)))
 
 (defn- cell-from-ref [^Workbook workbook ^CellReference cref]
