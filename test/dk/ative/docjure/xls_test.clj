@@ -1,7 +1,9 @@
 (ns dk.ative.docjure.xls-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors Font CellValue)
+  (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors
+                                        Font CellValue FillPatternType
+                                        HorizontalAlignment VerticalAlignment BorderStyle)
 	   (org.apache.poi.hssf.usermodel HSSFWorkbook HSSFFont)
 	   (java.util Date)))
 
@@ -272,48 +274,48 @@
     (testing "no style"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb)]
-	(is (= CellStyle/NO_FILL (.getFillPattern cs)))
-        (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight (get-font cs wb))))
+	(is (= FillPatternType/NO_FILL (.getFillPatternEnum cs)))
+        (is (= false (.getBold (get-font cs wb))))
         (is (= Font/U_NONE (.getUnderline (get-font cs wb))))
         (is (= Font/COLOR_NORMAL (.getColor (get-font cs wb))))
         (is (not (.getItalic (get-font cs wb))))
         (is (not (.getWrapText cs)))
-        (is (= CellStyle/ALIGN_GENERAL (.getAlignment cs)))
-        (is (= CellStyle/BORDER_NONE (.getBorderLeft cs)))
-        (is (= CellStyle/BORDER_NONE (.getBorderRight cs)))
-        (is (= CellStyle/BORDER_NONE (.getBorderTop cs)))
-        (is (= CellStyle/BORDER_NONE (.getBorderBottom cs)))
+        (is (= HorizontalAlignment/GENERAL (.getAlignmentEnum cs)))
+        (is (= BorderStyle/NONE (.getBorderLeftEnum cs)))
+        (is (= BorderStyle/NONE (.getBorderRightEnum cs)))
+        (is (= BorderStyle/NONE (.getBorderTopEnum cs)))
+        (is (= BorderStyle/NONE (.getBorderBottomEnum cs)))
         (is (zero? (.getIndention cs)))
         (is (= "General" (.getDataFormatString cs)))))
     (testing ":background"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:background :yellow})]
-	(is (= CellStyle/SOLID_FOREGROUND (.getFillPattern cs)))
+	(is (= FillPatternType/SOLID_FOREGROUND (.getFillPatternEnum cs)))
         (is (= (.getIndex IndexedColors/YELLOW) (.getFillForegroundColor cs)))))
     (testing ":halign"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             csl (create-cell-style! wb {:halign :left})
             csr (create-cell-style! wb {:halign :right})
             csc (create-cell-style! wb {:halign :center})]
-	(is (= CellStyle/ALIGN_LEFT (.getAlignment csl)))
-        (is (= CellStyle/ALIGN_RIGHT (.getAlignment csr)))
-        (is (= CellStyle/ALIGN_CENTER (.getAlignment csc)))))
+	(is (= HorizontalAlignment/LEFT (.getAlignmentEnum csl)))
+        (is (= HorizontalAlignment/RIGHT (.getAlignmentEnum csr)))
+        (is (= HorizontalAlignment/CENTER (.getAlignmentEnum csc)))))
     (testing ":valign"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cst (create-cell-style! wb {:valign :top})
             csb (create-cell-style! wb {:valign :bottom})
             csc (create-cell-style! wb {:valign :center})]
-	(is (= CellStyle/VERTICAL_TOP (.getVerticalAlignment cst)))
-        (is (= CellStyle/VERTICAL_BOTTOM (.getVerticalAlignment csb)))
-        (is (= CellStyle/VERTICAL_CENTER (.getVerticalAlignment csc)))))
+	(is (= VerticalAlignment/TOP (.getVerticalAlignmentEnum cst)))
+        (is (= VerticalAlignment/BOTTOM (.getVerticalAlignmentEnum csb)))
+        (is (= VerticalAlignment/CENTER (.getVerticalAlignmentEnum csc)))))
     (testing "borders"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin :border-right :medium
                                        :border-top :thick :border-bottom :thin})]
-	(is (= CellStyle/BORDER_THIN (.getBorderLeft cs)))
-        (is (= CellStyle/BORDER_MEDIUM (.getBorderRight cs)))
-        (is (= CellStyle/BORDER_THICK (.getBorderTop cs)))
-        (is (= CellStyle/BORDER_THIN (.getBorderBottom cs)))))
+	(is (= BorderStyle/THIN (.getBorderLeftEnum cs)))
+        (is (= BorderStyle/MEDIUM (.getBorderRightEnum cs)))
+        (is (= BorderStyle/THICK (.getBorderTopEnum cs)))
+        (is (= BorderStyle/THIN (.getBorderBottomEnum cs)))))
     (testing "border colors"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin
@@ -324,10 +326,10 @@
                                        :right-border-color :blue
                                        :top-border-color :green
                                        :bottom-border-color :yellow})]
-        (is (= CellStyle/BORDER_THIN (.getBorderLeft cs)))
-        (is (= CellStyle/BORDER_MEDIUM (.getBorderRight cs)))
-        (is (= CellStyle/BORDER_THICK (.getBorderTop cs)))
-        (is (= CellStyle/BORDER_THIN (.getBorderBottom cs)))
+        (is (= BorderStyle/THIN (.getBorderLeftEnum cs)))
+        (is (= BorderStyle/MEDIUM (.getBorderRightEnum cs)))
+        (is (= BorderStyle/THICK (.getBorderTopEnum cs)))
+        (is (= BorderStyle/THIN (.getBorderBottomEnum cs)))
         (is (= (.getIndex IndexedColors/RED) (.getLeftBorderColor cs)))
         (is (= (.getIndex IndexedColors/BLUE) (.getRightBorderColor cs)))
         (is (= (.getIndex IndexedColors/GREEN) (.getTopBorderColor cs)))
@@ -342,8 +344,8 @@
             testfont (create-font! wb fontmap)
 	    cs (create-cell-style! wb {:font testfont})
             cs2 (create-cell-style! wb {:font fontmap})]
-	(is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs wb))))
-        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight (get-font cs2 wb))))))
+	(is (= true (.getBold (get-font cs wb))))
+        (is (= true (.getBold (get-font cs2 wb))))))
     (testing ":font :color"
       (let [wb (create-xls-workbook "Dummy" [["fonts"]])
             fontmap {:color :light_green}
@@ -403,9 +405,9 @@
 	(let [f-default (create-font! wb {})
 	      f-not-bold (create-font! wb {:bold false})
 	      f-bold    (create-font! wb {:bold true})]
-	  (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight f-default)))
-	  (is (= Font/BOLDWEIGHT_NORMAL (.getBoldweight f-not-bold)))
-	  (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight f-bold)))))
+	  (is (= false (.getBold f-default)))
+	  (is (= false (.getBold f-not-bold)))
+	  (is (= true (.getBold f-bold)))))
       (is (thrown-with-msg? IllegalArgumentException #"^workbook.*"
 	    (create-font! "not-a-workbook" {})))))
 
@@ -520,8 +522,8 @@
         (is (= comment-str (.getString rts00)))
         (is (= empty-str (.getString rts01)))
         (is (= blank-str (.getString rts02)))
-        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight font03)))
-        (is (= Font/BOLDWEIGHT_BOLD (.getBoldweight font04)))
+        (is (= true (.getBold font03)))
+        (is (= true (.getBold font04)))
         (is (.getItalic font05))
         (is (.getItalic font06))
         (is (= Font/U_SINGLE (.getUnderline font07)))
