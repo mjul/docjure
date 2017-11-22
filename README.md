@@ -322,5 +322,6 @@ This library includes great contributions from
 * [Korny Sietsma](https://github.com/kornysietsma) (kornysietsma)
 * [Antti Virtanen](https://github.com/lokori) (lokori)
 * [alephyud](https://github.com/alephyud) (alephyud)
+* [Markku Rontu](https://github.com/Macroz) (macroz)
 
 Thank you very much!
