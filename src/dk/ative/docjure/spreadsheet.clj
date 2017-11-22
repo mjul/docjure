@@ -445,7 +445,7 @@
      name      (.setFontName f name)
      size      (.setFontHeightInPoints f size)
      color     (.setColor f (color-index color))
-     bold      (.setBold true)
+     bold      (.setBold f true)
      italic    (.setItalic f true)
      underline (.setUnderline f Font/U_SINGLE))
     f))
