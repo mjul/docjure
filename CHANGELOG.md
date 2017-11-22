@@ -1,5 +1,8 @@
 # CHANGELOG for Docjure
 
+## Version 1.13.0-SNAPSHOT
+
+
 ## Version 1.12.0
 * Improved documentation.
 * Added more cell style formatting options.
