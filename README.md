@@ -241,20 +241,20 @@ If you are using the Leiningen build tool just add this line to the
 :dependencies list in project.clj to use it:
 
 ```clj
-[dk.ative/docjure "1.11.0"]
+[dk.ative/docjure "1.12.0"]
 ```
 
 Remember to issue the 'lein deps' command to download it.
 
 
 
-#### Example project.clj for using Docjure 1.11.0
+#### Example project.clj for using Docjure 1.12.0
 
 ```clj
 (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
       :dependencies [[org.clojure/clojure "1.8.0"]
-                     [dk.ative/docjure "1.11.0"]])
+                     [dk.ative/docjure "1.12.0"]])
 ```
 
 ## Installation
