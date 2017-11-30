@@ -130,10 +130,14 @@
         (is (= "D5" (cellvalue 4 3)))
         ))))
 
+(defrecord RowStruct [foo bar])
+
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."
     (is (= ["foo" "bar"] (row-vec [:foo :bar] {:foo "foo", :bar "bar"}))
 	"Should map all columns.")
+    (is (= ["foo" "bar"] (row-vec [:foo :bar] (->RowStruct "foo" "bar")))
+	"Should map record columns.")
     (is (= ["bar" "foo"] (row-vec [:bar :foo] {:foo "foo", :bar "bar"}))
 	"Should respect column order.")
     (is (= [nil nil] (row-vec [:foo :bar] {})) "Should generate all columns.")

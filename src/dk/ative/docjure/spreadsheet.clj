@@ -618,8 +618,8 @@
      (row-vec [:foo :bar] {:foo \"Foo text\", :bar \"Bar text\"})
      > [\"Foo text\" \"Bar text\"]
   "
-  [column-order row]
-  (vec (map row column-order)))
+  [column-order row-struct]
+  (vec (map #(get row-struct %) column-order)))
 
 (defn remove-row!
   "Remove a row from the sheet. Rows are not shifted up - the removed row will display as blank"
