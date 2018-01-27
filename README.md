@@ -76,10 +76,9 @@ to the top header row, then save the spreadsheet.
                            ["Bar Widget" 200]])
       sheet (select-sheet "Price List" wb)
       header-row (first (row-seq sheet))]
-  (do
-    (set-row-style! header-row (create-cell-style! wb {:background :yellow,
-                                                       :font {:bold true}}))
-    (save-workbook! "spreadsheet.xlsx" wb)))
+  (set-row-style! header-row (create-cell-style! wb {:background :yellow,
+                                                     :font {:bold true}}))
+  (save-workbook! "spreadsheet.xlsx" wb))
 ```
 
 ### Example: Create a workbook with multiple sheets
@@ -326,5 +325,6 @@ This library includes great contributions from
 * [Antti Virtanen](https://github.com/lokori) (lokori)
 * [alephyud](https://github.com/alephyud) (alephyud)
 * [Markku Rontu](https://github.com/Macroz) (macroz)
+* [Harold](https://github.com/harold) (harold)
 
 Thank you very much!
