@@ -275,6 +275,9 @@ To run the tests on all supported Clojure versions use:
     lein all test
 
 
+## Build Status
+[![Build Status](https://travis-ci.org/mjul/docjure.svg?branch=master)](https://travis-ci.org/mjul/docjure)
+
 ## License
 
 Copyright (c) 2009-2017 Martin Jul
