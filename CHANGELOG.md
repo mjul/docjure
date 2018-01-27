@@ -1,7 +1,7 @@
 # CHANGELOG for Docjure
 
 ## Version 1.13.0-SNAPSHOT
-
+* Dropped support for Clojure 1.3 and 1.4.
 
 ## Version 1.12.0
 * Improved documentation.
