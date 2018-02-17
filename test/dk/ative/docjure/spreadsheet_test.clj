@@ -265,7 +265,11 @@
         (is (= 1.0 (.getNumericCellValue a1))))
       (testing "should set double"
         (set-cell! a1 (double 1.2))
-        (is (= 1.2 (.getNumericCellValue a1)))))))
+        (is (= 1.2 (.getNumericCellValue a1)))))
+    (testing "set-cell! for UUID"
+      (testing "should set value"
+        (set-cell! a1 (java.util.UUID/fromString "509149b9-0532-46e4-a1f4-4358d7d33ef0"))
+        (is (= "509149b9-0532-46e4-a1f4-4358d7d33ef0" (.getStringCellValue a1)))))))
 
 
 (deftest sheet-seq-test
