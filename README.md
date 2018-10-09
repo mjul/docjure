@@ -326,5 +326,6 @@ This library includes great contributions from
 * [alephyud](https://github.com/alephyud) (alephyud)
 * [Markku Rontu](https://github.com/Macroz) (macroz)
 * [Harold](https://github.com/harold) (harold)
+* [Alex Scott](https://github.com/axrs) (axrs)
 
 Thank you very much!
