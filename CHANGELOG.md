@@ -1,5 +1,7 @@
 # CHANGELOG for Docjure
 
+## Version 1.14.0-SNAPSHOT
+
 ## Version 1.13.0
 * Dropped support for Clojure 1.3 and 1.4.
 * Upgraded to use Clojure 1.9 (test suite runs on Clojure 1.5 through 1.9)
