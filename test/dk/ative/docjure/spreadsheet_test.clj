@@ -251,6 +251,10 @@
         (let [^java.util.Date nil-date nil]
           (set-cell! a1 nil-date))
         (is (= nil (.getDateCellValue a1)))))
+    (testing "set-cell! for Formula"
+      (testing "should set formula"
+        (set-cell! a1 "=b1")
+        (is (= "b1" (.getCellFormula a1)))))
     (testing "set-cell! for String"
       (testing "should set value"
         (set-cell! a1 "foo")

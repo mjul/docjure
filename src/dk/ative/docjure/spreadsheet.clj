@@ -231,9 +231,13 @@
 (defmulti set-cell! (fn [^Cell cell val] (type val)))
 
 (defmethod set-cell! String [^Cell cell val]
-  (do
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
-    (.setCellValue cell ^String val)))
+    (if (clojure.string/starts-with? val "=")
+      (do
+        (.setCellType cell Cell/CELL_TYPE_FORMULA)
+        (.setCellFormula cell ^String (subs val 1)))
+      (do
+        (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
+        (.setCellValue cell ^String val))))
 
 (defmethod set-cell! Number [^Cell cell val]
   (do
