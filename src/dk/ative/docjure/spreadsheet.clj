@@ -220,6 +220,12 @@
   (let [cls (class value)]
     (or (isa? cls Date) (isa? cls Calendar))))
 
+(defn- ^:dynamic create-date-format [^Workbook workbook ^String format]
+  (let [date-style (.createCellStyle workbook)
+        format-helper (.getCreationHelper workbook)]
+    (doto date-style
+          (.setDataFormat (.. format-helper createDataFormat (getFormat format))))))
+
 (defn apply-date-format! [^Cell cell ^String format]
   (let [workbook (.. cell getSheet getWorkbook)
         date-style (.createCellStyle workbook)
@@ -231,31 +237,26 @@
 (defmulti set-cell! (fn [^Cell cell val] (type val)))
 
 (defmethod set-cell! String [^Cell cell val]
-  (do
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
-    (.setCellValue cell ^String val)))
+  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
+  (.setCellValue cell ^String val))
 
 (defmethod set-cell! Number [^Cell cell val]
-  (do
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
-    (.setCellValue cell (double val))))
+  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+  (.setCellValue cell (double val)))
 
 (defmethod set-cell! Boolean [^Cell cell val]
-  (do
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BOOLEAN))
-    (.setCellValue cell ^Boolean val)))
+  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BOOLEAN))
+  (.setCellValue cell ^Boolean val))
 
 (defmethod set-cell! Date [^Cell cell val]
-  (do
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
-    (.setCellValue cell ^Date val)
-    (apply-date-format! cell "m/d/yy")))
+  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+  (.setCellValue cell ^Date val)
+  (.setCellStyle cell (create-date-format (.. cell getSheet getWorkbook) "m/d/yy")))
 
 (defmethod set-cell! nil [^Cell cell val]
   (let [^String null nil]
-    (do
-      (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BLANK))
-      (.setCellValue cell null))))
+    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BLANK))
+    (.setCellValue cell null)))
 
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
@@ -273,8 +274,9 @@
    order on that row."
   [^Sheet sheet rows]
   (assert-type sheet Sheet)
-  (doseq [row rows]
-    (add-row! sheet row)))
+  (binding [create-date-format (memoize create-date-format)]
+    (doseq [row rows]
+      (add-row! sheet row))))
 
 (defn add-sheet!
   "Add a new sheet to the workbook."
