@@ -219,7 +219,6 @@
         row (.getRow sheet 0)
         nil-cell (.getCell row 0 Row$MissingCellPolicy/RETURN_NULL_AND_BLANK)
         blank-cell (.getCell row 1 Row$MissingCellPolicy/RETURN_NULL_AND_BLANK)
-        _ (prn blank-cell)
         _ (set-cell! blank-cell nil)
         blank-cell (.getCell row 1 Row$MissingCellPolicy/RETURN_NULL_AND_BLANK)]
     (testing "Should read nil and blank cell types as nil"
