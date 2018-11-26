@@ -1,6 +1,8 @@
 # CHANGELOG for Docjure
 
 ## Version 1.14.0-SNAPSHOT
+* Added a font cache to create-style to prevent overflowing the number
+  of styles in the document by reusing the styles.
 
 ## Version 1.13.0
 * Dropped support for Clojure 1.3 and 1.4.

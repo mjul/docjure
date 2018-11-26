@@ -327,5 +327,6 @@ This library includes great contributions from
 * [Markku Rontu](https://github.com/Macroz) (macroz)
 * [Harold](https://github.com/harold) (harold)
 * [Alex Scott](https://github.com/axrs) (axrs)
+* [Maurício Szabo](https://github.com/mauricioszabo) (mauricioszabo)
 
 Thank you very much!
