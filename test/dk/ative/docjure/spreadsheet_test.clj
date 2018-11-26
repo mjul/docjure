@@ -940,3 +940,14 @@
         (is (= 1.0      (read-cell (select-cell "A2" worksheet))))
         (is (= 4.0      (read-cell (select-cell "B2" worksheet))))
         (is (= 5.0      (read-cell (select-cell "B3" worksheet))))))))
+
+(deftest no-style-overflows-test
+  (testing "Can add many date cells without overflowing"
+    (let [file (config :save-workbook-location)
+          workbook (create-workbook "Sheet 1"
+                                    (mapv (fn [i] [i #inst "2018-10-01T00:00:00Z"])
+                                          (range 100000)))
+          _ (save-workbook! file workbook)
+          loaded (load-workbook file)
+          _ (io/delete-file file)]
+      (test-loaded-workbook loaded))))
