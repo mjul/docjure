@@ -4,7 +4,7 @@
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
-   (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
+   (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellType
                                 Row$MissingCellPolicy
                                 HorizontalAlignment
                                 VerticalAlignment
@@ -27,33 +27,33 @@
   (.formatAsString (CellReference. (.getRowIndex cell) (.getColumnIndex cell))))
 
 (defmulti read-cell-value (fn [^CellValue cv date-format?] (.getCellType cv)))
-(defmethod read-cell-value Cell/CELL_TYPE_BOOLEAN  [^CellValue cv _]  (.getBooleanValue cv))
-(defmethod read-cell-value Cell/CELL_TYPE_STRING   [^CellValue cv _]  (.getStringValue cv))
-(defmethod read-cell-value Cell/CELL_TYPE_NUMERIC  [^CellValue cv date-format?]
+(defmethod read-cell-value CellType/BOOLEAN  [^CellValue cv _]  (.getBooleanValue cv))
+(defmethod read-cell-value CellType/STRING   [^CellValue cv _]  (.getStringValue cv))
+(defmethod read-cell-value CellType/NUMERIC  [^CellValue cv date-format?]
   (if date-format?
     (DateUtil/getJavaDate (.getNumberValue cv))
     (.getNumberValue cv)))
-(defmethod read-cell-value Cell/CELL_TYPE_ERROR    [^CellValue cv _]
+(defmethod read-cell-value CellType/ERROR    [^CellValue cv _]
   (keyword (.name (FormulaError/forInt (.getErrorValue cv)))))
 
 (defmulti read-cell #(when % (.getCellType ^Cell %)))
-(defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
+(defmethod read-cell CellType/BLANK     [_]     nil)
 (defmethod read-cell nil [_] nil)
-(defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
+(defmethod read-cell CellType/STRING    [^Cell cell]  (.getStringCellValue cell))
+(defmethod read-cell CellType/FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
                       getCreationHelper createFormulaEvaluator)
         cv (.evaluate evaluator cell)]
-    (if (and (= Cell/CELL_TYPE_NUMERIC (.getCellType cv))
+    (if (and (= CellType/NUMERIC (.getCellType cv))
              (DateUtil/isCellDateFormatted cell))
       (.getDateCellValue cell)
       (read-cell-value cv false))))
-(defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
+(defmethod read-cell CellType/BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
+(defmethod read-cell CellType/NUMERIC   [^Cell cell]
   (if (DateUtil/isCellDateFormatted cell)
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
-(defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell]
+(defmethod read-cell CellType/ERROR     [^Cell cell]
   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
 
@@ -214,7 +214,7 @@
           (apply merge)))))
 
 (defn string-cell? [^Cell cell]
-  (= Cell/CELL_TYPE_STRING (.getCellType cell)))
+  (= CellType/STRING (.getCellType cell)))
 
 (defn- date-or-calendar? [value]
   (let [cls (class value)]
@@ -237,25 +237,25 @@
 (defmulti set-cell! (fn [^Cell cell val] (type val)))
 
 (defmethod set-cell! String [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
+  (if (= (.getCellType cell) CellType/FORMULA) (.setCellType cell CellType/STRING))
   (.setCellValue cell ^String val))
 
 (defmethod set-cell! Number [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+  (if (= (.getCellType cell) CellType/FORMULA) (.setCellType cell CellType/NUMERIC))
   (.setCellValue cell (double val)))
 
 (defmethod set-cell! Boolean [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BOOLEAN))
+  (if (= (.getCellType cell) CellType/FORMULA) (.setCellType cell CellType/BOOLEAN))
   (.setCellValue cell ^Boolean val))
 
 (defmethod set-cell! Date [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+  (if (= (.getCellType cell) CellType/FORMULA) (.setCellType cell CellType/NUMERIC))
   (.setCellValue cell ^Date val)
   (.setCellStyle cell (create-date-format (.. cell getSheet getWorkbook) "m/d/yy")))
 
 (defmethod set-cell! nil [^Cell cell val]
   (let [^String null nil]
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BLANK))
+    (if (= (.getCellType cell) CellType/FORMULA) (.setCellType cell CellType/BLANK))
     (.setCellValue cell null)))
 
 (defn add-row! [^Sheet sheet values]
