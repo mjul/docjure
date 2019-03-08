@@ -1,7 +1,7 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:require [cemerick.pomegranate :as pomegranate]
+  (:require 
            [clojure.java.io :as io])
   (:import (org.apache.poi.ss.usermodel Workbook Row
                                         Row$MissingCellPolicy
@@ -801,12 +801,6 @@
     (with-open [stream (FileInputStream. (config :datatypes-file))]
       (let [loaded (load-workbook stream)]
         (test-loaded-workbook loaded)))))
-
-(deftest load-workbook-from-resource-integration-test
-  (let [[dir file] (path->dir-and-file (config :datatypes-file))
-        _ (pomegranate/add-classpath dir)
-        loaded (load-workbook-from-resource file)]
-    (test-loaded-workbook loaded)))
 
 (deftest save-workbook!-test
   (testing "Should fail on invalid parameter types."

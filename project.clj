@@ -12,8 +12,7 @@
              :1.7  {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]]}
-             :test {:global-vars  {*warn-on-reflection* false}
-                    :dependencies [[com.cemerick/pomegranate "0.3.0"]]}}
+             :test {:global-vars  {*warn-on-reflection* false}}}
   :aliases {"all" ["with-profile" "1.5:1.6:1.7:1.8:1.9"]}
   :global-vars {*warn-on-reflection* true})
 
