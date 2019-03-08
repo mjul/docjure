@@ -817,6 +817,7 @@
           stream (io/output-stream file)
           workbook (create-workbook "Sheet 1" [["A1" "B1" "C1"]])
           _ (save-workbook! stream workbook)
+          _ (.close stream)
           loaded (load-workbook file)
           _ (io/delete-file file)]
       (test-loaded-workbook loaded))))
