@@ -1,20 +1,22 @@
 (ns dk.ative.docjure.spreadsheet
   (:import
-    (java.io FileOutputStream FileInputStream InputStream OutputStream)
-   (java.util Date Calendar)
-   (org.apache.poi.xssf.usermodel XSSFWorkbook)
-   (org.apache.poi.hssf.usermodel HSSFWorkbook)
-   (org.apache.poi.ss.usermodel Workbook Sheet Cell Row
-                                Row$MissingCellPolicy
-                                HorizontalAlignment
-                                VerticalAlignment
-                                BorderStyle
-                                FillPatternType
-                                FormulaError
-                                WorkbookFactory DateUtil
-                                IndexedColors CellStyle Font
-                                CellValue Drawing CreationHelper)
-   (org.apache.poi.ss.util CellReference AreaReference)))
+    [java.io FileOutputStream FileInputStream InputStream OutputStream]
+    [java.util Date Calendar]
+    [org.apache.poi.xssf.usermodel XSSFWorkbook]
+    [org.apache.poi.hssf.usermodel HSSFWorkbook]
+    [org.apache.poi.ss.usermodel 
+      Workbook Sheet Cell CellType Row
+      Row$MissingCellPolicy
+      HorizontalAlignment
+      VerticalAlignment
+      BorderStyle
+      FillPatternType
+      FormulaError
+      WorkbookFactory DateUtil
+      IndexedColors CellStyle Font
+      CellValue Drawing CreationHelper]
+    [org.apache.poi.ss.util CellReference AreaReference]))
+;=
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
@@ -26,34 +28,34 @@
 (defn cell-reference [^Cell cell]
   (.formatAsString (CellReference. (.getRowIndex cell) (.getColumnIndex cell))))
 
-(defmulti read-cell-value (fn [^CellValue cv date-format?] (.getCellType cv)))
-(defmethod read-cell-value Cell/CELL_TYPE_BOOLEAN  [^CellValue cv _]  (.getBooleanValue cv))
-(defmethod read-cell-value Cell/CELL_TYPE_STRING   [^CellValue cv _]  (.getStringValue cv))
-(defmethod read-cell-value Cell/CELL_TYPE_NUMERIC  [^CellValue cv date-format?]
+(defmulti read-cell-value (fn [^CellValue cv _date-format?] (.getCellType cv)))
+(defmethod read-cell-value CellType/BOOLEAN  [^CellValue cv _]  (.getBooleanValue cv))
+(defmethod read-cell-value CellType/STRING   [^CellValue cv _]  (.getStringValue cv))
+(defmethod read-cell-value CellType/NUMERIC  [^CellValue cv date-format?]
   (if date-format?
     (DateUtil/getJavaDate (.getNumberValue cv))
     (.getNumberValue cv)))
-(defmethod read-cell-value Cell/CELL_TYPE_ERROR    [^CellValue cv _]
+(defmethod read-cell-value CellType/ERROR    [^CellValue cv _]
   (keyword (.name (FormulaError/forInt (.getErrorValue cv)))))
 
 (defmulti read-cell #(when % (.getCellType ^Cell %)))
-(defmethod read-cell Cell/CELL_TYPE_BLANK     [_]     nil)
+(defmethod read-cell CellType/BLANK     [_]     nil)
 (defmethod read-cell nil [_] nil)
-(defmethod read-cell Cell/CELL_TYPE_STRING    [^Cell cell]  (.getStringCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_FORMULA   [^Cell cell]
+(defmethod read-cell CellType/STRING    [^Cell cell]  (.getStringCellValue cell))
+(defmethod read-cell CellType/FORMULA   [^Cell cell]
   (let [evaluator (.. cell getSheet getWorkbook
                       getCreationHelper createFormulaEvaluator)
         cv (.evaluate evaluator cell)]
-    (if (and (= Cell/CELL_TYPE_NUMERIC (.getCellType cv))
+    (if (and (= CellType/NUMERIC (.getCellType cv))
              (DateUtil/isCellDateFormatted cell))
       (.getDateCellValue cell)
       (read-cell-value cv false))))
-(defmethod read-cell Cell/CELL_TYPE_BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
-(defmethod read-cell Cell/CELL_TYPE_NUMERIC   [^Cell cell]
+(defmethod read-cell CellType/BOOLEAN   [^Cell cell]  (.getBooleanCellValue cell))
+(defmethod read-cell CellType/NUMERIC   [^Cell cell]
   (if (DateUtil/isCellDateFormatted cell)
     (.getDateCellValue cell)
     (.getNumericCellValue cell)))
-(defmethod read-cell Cell/CELL_TYPE_ERROR     [^Cell cell]
+(defmethod read-cell CellType/ERROR     [^Cell cell]
   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
 
@@ -93,7 +95,9 @@
   The caller is required to close the stream after saving is completed."
   [^OutputStream stream ^Workbook workbook]
   (assert-type workbook Workbook)
-  (.write workbook stream))
+  (let [rc (.write workbook stream)]
+    (.flush stream)
+    rc))
 
 (defn save-workbook-into-file!
   "Save the workbook into a file."
@@ -138,7 +142,7 @@
 
 (defmulti select-sheet
   "Select a sheet from the workbook by name, regex or arbitrary predicate"
-  (fn [predicate ^Workbook workbook]
+  (fn [predicate ^Workbook _workbook]
     (class predicate)))
 
 (defmethod select-sheet String
@@ -214,11 +218,11 @@
           (apply merge)))))
 
 (defn string-cell? [^Cell cell]
-  (= Cell/CELL_TYPE_STRING (.getCellType cell)))
+  (= CellType/STRING (.getCellType cell)))
 
-(defn- date-or-calendar? [value]
-  (let [cls (class value)]
-    (or (isa? cls Date) (isa? cls Calendar))))
+; (defn- date-or-calendar? [value]
+;   (let [cls (class value)]
+;     (or (isa? cls Date) (isa? cls Calendar))))
 
 (defn- ^:dynamic create-date-format [^Workbook workbook ^String format]
   (let [date-style (.createCellStyle workbook)
@@ -234,28 +238,33 @@
                     (.. format-helper createDataFormat (getFormat format)))
     (.setCellStyle cell date-style)))
 
-(defmulti set-cell! (fn [^Cell cell val] (type val)))
+(defmulti set-cell! (fn [^Cell _cell val] (type val)))
 
 (defmethod set-cell! String [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_STRING))
+  (when (= (.getCellType cell) CellType/FORMULA) 
+    (.setCellType cell CellType/STRING))
   (.setCellValue cell ^String val))
 
 (defmethod set-cell! Number [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+  (when (= (.getCellType cell) CellType/FORMULA) 
+    (.setCellType cell CellType/NUMERIC))
   (.setCellValue cell (double val)))
 
 (defmethod set-cell! Boolean [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BOOLEAN))
+  (when (= (.getCellType cell) CellType/FORMULA) 
+    (.setCellType cell CellType/BOOLEAN))
   (.setCellValue cell ^Boolean val))
 
 (defmethod set-cell! Date [^Cell cell val]
-  (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_NUMERIC))
+  (when (= (.getCellType cell) CellType/FORMULA) 
+    (.setCellType cell CellType/NUMERIC))
   (.setCellValue cell ^Date val)
   (.setCellStyle cell (create-date-format (.. cell getSheet getWorkbook) "m/d/yy")))
 
-(defmethod set-cell! nil [^Cell cell val]
+(defmethod set-cell! nil [^Cell cell _val]
   (let [^String null nil]
-    (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BLANK))
+    (when (= (.getCellType cell) CellType/FORMULA) 
+      (.setCellType cell CellType/BLANK))
     (.setCellValue cell null)))
 
 (defn add-row! [^Sheet sheet values]
@@ -292,22 +301,22 @@
   (create-workbook \"SheetName1\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]]
                    \"SheetName2\" [[\"A1\" \"A2\"][\"B1\" \"B2\"]] "
  ([sheet-name data]
-   (let [workbook (XSSFWorkbook.)
-         sheet    (add-sheet! workbook sheet-name)]
-     (add-rows! sheet data)
-     workbook))
+  (let [workbook (XSSFWorkbook.)
+        sheet    (add-sheet! workbook sheet-name)]
+    (add-rows! sheet data)
+    workbook))
 
  ([sheet-name data & name-data-pairs]
   ;; incomplete pairs should not be allowed
   {:pre [(even? (count name-data-pairs))]}
   ;; call single arity version to create workbook
-   (let [workbook (create-workbook sheet-name data)]
+  (let [workbook (create-workbook sheet-name data)]
      ;; iterate through pairs adding sheets and rows
-    (doseq [[s-name data] (partition 2 name-data-pairs)]
-      (-> workbook
-          (add-sheet! s-name)
-          (add-rows!  data)))
-    workbook)))
+   (doseq [[s-name data] (partition 2 name-data-pairs)]
+     (-> workbook
+         (add-sheet! s-name)
+         (add-rows!  data)))
+   workbook)))
 
 (defn- add-row-indexed!
   "Add row to the sheet, at a specific row index"
@@ -315,7 +324,7 @@
   (assert-type sheet Sheet)
   (let [row (.createRow sheet index)]
     (doseq [[column-index value] (map-indexed #(list %1 %2) values)]
-      (if value                                             ; nil values are skipped
+      (when value                                             ; nil values are skipped
         (set-cell! (.createCell row column-index) value)))
     row))
 
@@ -511,36 +520,36 @@
   ([^Workbook workbook] (create-cell-style! workbook {}))
 
   ([^Workbook workbook styles]
-     (assert-type workbook Workbook)
-     (let [cs (.createCellStyle workbook)
-           {:keys [background font halign valign wrap
-                   border-left border-right border-top border-bottom
-                   left-border-color right-border-color
-                   top-border-color bottom-border-color
-                   borders indent data-format]} styles]
-       (whens
-        font   (set-font font cs workbook)
-        background (do (.setFillForegroundColor cs (color-index background))
-                       (.setFillPattern cs FillPatternType/SOLID_FOREGROUND))
-        halign (.setAlignment cs (horiz-align halign))
-        valign (.setVerticalAlignment cs (vert-align valign))
-        wrap   (.setWrapText cs true)
-        border-left (.setBorderLeft cs (border border-left))
-        border-right (.setBorderRight cs (border border-right))
-        border-top (.setBorderTop cs (border border-top))
-        border-bottom (.setBorderBottom cs (border border-bottom))
-        left-border-color (.setLeftBorderColor
-                            cs (color-index left-border-color))
-        right-border-color (.setRightBorderColor
-                             cs (color-index right-border-color))
-        top-border-color (.setTopBorderColor
-                           cs (color-index top-border-color))
-        bottom-border-color (.setBottomBorderColor
-                              cs (color-index bottom-border-color))
-        indent (.setIndention cs (short indent))
-        data-format (let [df (.createDataFormat workbook)]
-                      (.setDataFormat cs (.getFormat df data-format))))
-       cs)))
+   (assert-type workbook Workbook)
+   (let [cs (.createCellStyle workbook)
+         {:keys [background font halign valign wrap
+                 border-left border-right border-top border-bottom
+                 left-border-color right-border-color
+                 top-border-color bottom-border-color
+                 _borders indent data-format]} styles]
+     (whens
+      font   (set-font font cs workbook)
+      background (do (.setFillForegroundColor cs (color-index background))
+                     (.setFillPattern cs FillPatternType/SOLID_FOREGROUND))
+      halign (.setAlignment cs (horiz-align halign))
+      valign (.setVerticalAlignment cs (vert-align valign))
+      wrap   (.setWrapText cs true)
+      border-left (.setBorderLeft cs (border border-left))
+      border-right (.setBorderRight cs (border border-right))
+      border-top (.setBorderTop cs (border border-top))
+      border-bottom (.setBorderBottom cs (border border-bottom))
+      left-border-color (.setLeftBorderColor
+                          cs (color-index left-border-color))
+      right-border-color (.setRightBorderColor
+                           cs (color-index right-border-color))
+      top-border-color (.setTopBorderColor
+                         cs (color-index top-border-color))
+      bottom-border-color (.setBottomBorderColor
+                            cs (color-index bottom-border-color))
+      indent (.setIndention cs (short indent))
+      data-format (let [df (.createDataFormat workbook)]
+                    (.setDataFormat cs (.getFormat df data-format))))
+     cs)))
 
 (defn set-cell-style!
   "Apply a style to a cell.
@@ -626,11 +635,10 @@
 (defn remove-row!
   "Remove a row from the sheet. Rows are not shifted up - the removed row will display as blank"
   [^Sheet sheet ^Row row]
-  (do
-    (assert-type sheet Sheet)
-    (assert-type row Row)
-    (.removeRow sheet row)
-    sheet))
+  (assert-type sheet Sheet)
+  (assert-type row Row)
+  (.removeRow sheet row)
+  sheet)
 
 (defn remove-all-rows!
   "Remove all the rows from the sheet."
@@ -668,7 +676,9 @@
   (let [cellref (CellReference. n)
         row (.getRow cellref)
         col (.getCol cellref)]
-    (try (.getCell (.getRow sheet row) col) (catch Exception e nil))))
+    (try 
+      (.getCell (.getRow sheet row) col) 
+      (catch Exception _e nil))))
 
 (defn add-name! [^Workbook workbook n string-ref]
   (let [the-name (.createName workbook)]
@@ -681,7 +691,9 @@
   sheet with the supplied values and return the value of the cell outputcell.
   Cell names are specified using Excel syntax, i.e. A2 or B12."
   [outputcell ^Sheet sheet & inputcells]
-  (fn [& input] (do
-                  (doseq [pair (seq (apply hash-map (interleave inputcells input)))]
-                    (set-cell! (select-cell (first pair) sheet) (last pair)))
-                  (read-cell (select-cell outputcell sheet)))))
+  (fn [& input] 
+    (doseq [pair (seq (apply hash-map (interleave inputcells input)))]
+      (set-cell! (select-cell (first pair) sheet) (last pair)))
+    (read-cell (select-cell outputcell sheet))))
+
+;;.
