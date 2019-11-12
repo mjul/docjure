@@ -1,0 +1,21 @@
+{:deps
+ {org.clojure/clojure      {:mvn/version "1.10.0"},
+  org.apache.poi/poi       {:mvn/version "4.1.0"},
+  org.apache.poi/poi-ooxml {:mvn/version "4.1.0"}}
+
+ :aliases
+ {:test
+  {:extra-paths ["test"],
+   :extra-deps  {org.clojure/test.check {:mvn/version "RELEASE"}}},
+  :runner
+  {:extra-deps
+   {com.cognitect/test-runner
+    {:git/url "https://github.com/cognitect-labs/test-runner",
+     :sha     "76568540e7f40268ad2b646110f237a60295fa3c"}},
+   :main-opts ["-m" "cognitect.test-runner" "-d" "test"]},
+  :1.5  {:extra-deps {org.clojure/clojure {:mvn/version "1.5.1"}}}
+  :1.6  {:extra-deps {org.clojure/clojure {:mvn/version "1.6.0"}}}
+  :1.7  {:extra-deps {org.clojure/clojure {:mvn/version "1.7.0"}}}
+  :1.8  {:extra-deps {org.clojure/clojure {:mvn/version "1.8.0"}}}
+  :1.9  {:extra-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
+  :1.10 {:extra-deps {org.clojure/clojure {:mvn/version "1.10.0"}}}}}
