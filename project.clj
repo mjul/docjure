@@ -4,8 +4,8 @@
   :license {:name "MIT License"
             :url "http://http://en.wikipedia.org/wiki/MIT_License"}
   :dependencies [[org.clojure/clojure "1.10.0"]
-                 [org.apache.poi/poi "4.0.1"]
-                 [org.apache.poi/poi-ooxml "4.0.1"]]
+                 [org.apache.poi/poi "4.1.0"]
+                 [org.apache.poi/poi-ooxml "4.1.0"]]
   :plugins [[lein-difftest "2.0.0"]]
   :profiles {:1.5  {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6  {:dependencies [[org.clojure/clojure "1.6.0"]]}
