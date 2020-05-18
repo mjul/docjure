@@ -100,7 +100,7 @@ the data argument.
                            [1 1]
                            [2 8]
                            [3 27]])]
-   (save-workbook! "exponents.xlsx" wb)))
+   (save-workbook! "exponents.xlsx" wb))
 ```
 
 ### Example: Use Excel Formulas in Clojure
