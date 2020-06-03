@@ -328,5 +328,6 @@ This library includes great contributions from
 * [Harold](https://github.com/harold) (harold)
 * [Alex Scott](https://github.com/axrs) (axrs)
 * [Maurício Szabo](https://github.com/mauricioszabo) (mauricioszabo)
+* [Mic Sokoli](https://github.com/MicSokoli) (MicSokoli)
 
 Thank you very much!
