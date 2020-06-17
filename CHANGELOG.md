@@ -8,6 +8,8 @@
 * (Java SE 8 is still supported)
 * Added support for Java SE 10, 11, 12 and 13
 * Added `escape-cell` utility function to escape text clashing with Excel's `_x..._` Unicode notation.
+* Upgraded to use Clojure 1.10 (test suite runs on Clojure 1.5 through 1.10)
+* Upgraded to use Apache POI 4.1.0
 
 ## Version 1.13.0
 * Dropped support for Clojure 1.3 and 1.4.
