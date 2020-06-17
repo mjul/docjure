@@ -258,6 +258,33 @@
     (if (= (.getCellType cell) Cell/CELL_TYPE_FORMULA) (.setCellType cell Cell/CELL_TYPE_BLANK))
     (.setCellValue cell null)))
 
+(defn escape-cell
+  "When inputting a cell's value in an xlsx workbook, Excel allows 16-bit
+  unicode characters to be input in an escaped form matching this regular
+  expression: _x[0-9A-F]{4}_.
+
+  For example, the character 'A' can be input as '_x0041_', the
+  lowercase greek character pi can be input as '_x03C0_'.
+
+  If your data contains cell values that match this form that you do not
+  want to be interpreted as 16-bit unicode values, the string '_x005F'
+  needs to be prepended to each occurance. For example, to stop
+  '_x03C0_' from being interpreted as the character pi you must input
+  '_x005F_x03C0_'.
+
+  This function will escape all occurances of the Excel 16-bit unicode
+  escape sequence in the specified cell value.
+
+  (escape-cell \"foo _x0041_ bar _x03C0_\")
+  => \"foo _x005F_x0041_ bar _x005F_x03C0_\""
+  [value]
+  (if (string? value)
+    (clojure.string/replace
+     value
+     #"(_x[0-9A-F]{4}_)"
+     "_x005F$1")
+    value))
+
 (defn add-row! [^Sheet sheet values]
   (assert-type sheet Sheet)
   (let [row-num (if (= 0 (.getPhysicalNumberOfRows sheet))

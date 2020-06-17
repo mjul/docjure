@@ -263,8 +263,24 @@
         (is (= 1.0 (.getNumericCellValue a1))))
       (testing "should set double"
         (set-cell! a1 (double 1.2))
-        (is (= 1.2 (.getNumericCellValue a1)))))))
-
+        (is (= 1.2 (.getNumericCellValue a1)))))
+    (testing "set-cell! for unicode"
+      (testing "regular unicode"
+        (set-cell! a1 "foo\u220Fbar")
+        (is (= "foo\u220Fbar"
+               (.getStringCellValue a1))))
+      (testing "unescaped"
+        (set-cell! a1 "foo_x220F_bar")
+        (is (= "foo\u220Fbar"
+               (.getStringCellValue a1))))
+      (testing "escaped"
+        (set-cell! a1 (escape-cell "foo_x220F_bar"))
+        (is (= "foo_x220F_bar"
+               (.getStringCellValue a1))))
+      (testing "multiple escaped"
+        (set-cell! a1 (escape-cell "foo _x0041_ bar _x03C0_"))
+        (is (= "foo _x0041_ bar _x03C0_"
+               (.getStringCellValue a1)))))))
 
 (deftest sheet-seq-test
   (let [sheet-name "Sheet 1"
