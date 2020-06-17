@@ -1,3 +1,4 @@
+dist: precise
 language: clojure
 lein: lein
 script: lein all test
