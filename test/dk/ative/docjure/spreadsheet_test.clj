@@ -1,8 +1,7 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
-  (:require [cemerick.pomegranate :as pomegranate]
-           [clojure.java.io :as io])
+  (:require [clojure.java.io :as io])
   (:import (org.apache.poi.ss.usermodel Workbook Row
                                         Row$MissingCellPolicy
                                         CellStyle IndexedColors Font
@@ -804,7 +803,6 @@
 
 (deftest load-workbook-from-resource-integration-test
   (let [[dir file] (path->dir-and-file (config :datatypes-file))
-        _ (pomegranate/add-classpath dir)
         loaded (load-workbook-from-resource file)]
     (test-loaded-workbook loaded)))
 
