@@ -247,13 +247,13 @@ Remember to issue the 'lein deps' command to download it.
 
 
 
-#### Example project.clj for using Docjure 1.12.0
+#### Example project.clj for using Docjure 1.14.0
 
 ```clj
 (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
-      :dependencies [[org.clojure/clojure "1.8.0"]
-                     [dk.ative/docjure "1.12.0"]])
+      :dependencies [[org.clojure/clojure "1.10.0"]
+                     [dk.ative/docjure "1.14.0"]])
 ```
 
 ## Installation
