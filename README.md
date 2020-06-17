@@ -329,5 +329,6 @@ This library includes great contributions from
 * [Alex Scott](https://github.com/axrs) (axrs)
 * [Maurício Szabo](https://github.com/mauricioszabo) (mauricioszabo)
 * [Mic Sokoli](https://github.com/MicSokoli) (MicSokoli)
+* [Ekaitz Zárraga](https://github.com/ekaitz-zarraga) (ekaitz-zarraga)
 
 Thank you very much!
