@@ -4,7 +4,9 @@
 * Added a font cache to create-date-format to prevent overflowing the number
   of styles in the document by reusing the styles.
 * Fixed some documentation errors
-* Dropped support for Java 6 (OpenJDK 6) since it was end-of-lifed in 2018
+* Dropped support for Java SE 6 and 7
+* (Java SE 8 is still supported)
+* Added support for Java SE 10, 11, 12 and 13
 
 ## Version 1.13.0
 * Dropped support for Clojure 1.3 and 1.4.
