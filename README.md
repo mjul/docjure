@@ -331,5 +331,7 @@ This library includes great contributions from
 * [Mic Sokoli](https://github.com/MicSokoli) (MicSokoli)
 * [Ekaitz Zárraga](https://github.com/ekaitz-zarraga) (ekaitz-zarraga)
 * [Ross Gibb](https://github.com/rossgibb) (rossgibb)
+* [Manuel Herzog](https://github.com/manuelherzog) (manuelherzog)
+* [Francisco Vides Fernández](https://github.com/fvides) (fvides)
 
 Thank you very much!
