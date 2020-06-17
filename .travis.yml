@@ -2,6 +2,10 @@ dist: trusty
 language: clojure
 lein: lein
 script: lein all test
+addons:
+  apt:
+    packages:
+      - openjdk-6-jdk
 jdk:
   - openjdk6
   - openjdk7
