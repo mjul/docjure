@@ -330,5 +330,6 @@ This library includes great contributions from
 * [Maurício Szabo](https://github.com/mauricioszabo) (mauricioszabo)
 * [Mic Sokoli](https://github.com/MicSokoli) (MicSokoli)
 * [Ekaitz Zárraga](https://github.com/ekaitz-zarraga) (ekaitz-zarraga)
+* [Ross Gibb](https://github.com/rossgibb) (rossgibb)
 
 Thank you very much!
