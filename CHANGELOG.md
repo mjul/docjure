@@ -7,6 +7,7 @@
 * Dropped support for Java SE 6 and 7
 * (Java SE 8 is still supported)
 * Added support for Java SE 10, 11, 12 and 13
+* Added `escape-cell` utility function to escape text clashing with Excel's `_x..._` Unicode notation.
 
 ## Version 1.13.0
 * Dropped support for Clojure 1.3 and 1.4.
