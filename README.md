@@ -106,7 +106,7 @@ the data argument.
 ### Example: Use Excel Formulas in Clojure
 
 Docjure allows you not only to evaluate a formula cell in a speadsheet, it also
-provides a way of exposing a formla in a cell as a Clojure function using the
+provides a way of exposing a formula in a cell as a Clojure function using the
 `cell-fn` function.
 
     (use 'dk.ative.docjure.spreadsheet)
