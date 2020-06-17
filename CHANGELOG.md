@@ -1,6 +1,6 @@
 # CHANGELOG for Docjure
 
-## Version 1.14.0-SNAPSHOT
+## Version 1.14.0
 * Added a font cache to create-date-format to prevent overflowing the number
   of styles in the document by reusing the styles.
 * Fixed some documentation errors
