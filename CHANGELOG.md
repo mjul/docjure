@@ -1,6 +1,7 @@
 # CHANGELOG for Docjure
 
 ## Version 1.15.0-SNAPSHOT
+* Upgraded to use Clojure 1.10.1 (from 1.10.0)
 
 ## Version 1.14.0
 * Added a font cache to create-date-format to prevent overflowing the number
