@@ -1,6 +1,6 @@
 # Docjure
 
-Docjure makes reading and writing Office documents in Clojure easy.
+Docjure makes reading and writing Office Excel spreadsheet documents in Clojure easy.
 
 ## Usage
 
@@ -217,7 +217,7 @@ You can iterate over all the cells in a row with `cell-seq` - this returns a seq
 For example, if you run the above snippet on a sparse spreadsheet like:
 
 | First Name | Middle Name | Last Name |
-|---
+| --- | --- | --- |
 | Edger | Allen | Poe |
 | `(missing row)` |
 | John | `(missing)` | Smith |
