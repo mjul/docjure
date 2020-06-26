@@ -27,7 +27,7 @@ actual value, use `read-cell`
 ```clj
 (use 'dk.ative.docjure.spreadsheet)
 (read-cell
- (->> (load-workbook "spreadsheet.xslx")
+ (->> (load-workbook "spreadsheet.xlsx")
       (select-sheet "Price List")
       (select-cell "A1")))
 ```
@@ -113,7 +113,7 @@ provides a way of exposing a formula in a cell as a Clojure function using the
     ;; Load a speadsheet and take the first sheet, construct a function from cell A2, taking
     ;; A1 as input.
     (def formula-from-a2 (cell-fn "A2"
-                                      (first (sheet-seq (load-workbook "spreadsheet.xslx")))
+                                      (first (sheet-seq (load-workbook "spreadsheet.xlsx")))
                                       "A1"))
 
     ;; Returns value of cell A2, as if value in cell A1 were 1.0
