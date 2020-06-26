@@ -256,7 +256,7 @@ Remember to issue the 'lein deps' command to download it.
                      [dk.ative/docjure "1.14.0"]])
 ```
 
-## Installation
+## Installation for Contributors
 You need to install the Leiningen build tool to build the library.
 You can get it here: [Leiningen](http://github.com/technomancy/leiningen)
 
@@ -277,6 +277,9 @@ To check for security issues use:
 
     lein nvd check
 
+To check for new versions of dependencies:
+
+    lein ancient
 
 
 ## Build Status
