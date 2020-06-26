@@ -333,5 +333,6 @@ This library includes great contributions from
 * [Ross Gibb](https://github.com/rossgibb) (rossgibb)
 * [Manuel Herzog](https://github.com/manuelherzog) (manuelherzog)
 * [Francisco Vides Fernández](https://github.com/fvides) (fvides)
+* [WonJun Lee](https://github.com/Lee-WonJun) (Lee-WonJun)
 
 Thank you very much!
