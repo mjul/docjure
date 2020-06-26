@@ -273,6 +273,11 @@ To run the tests on all supported Clojure versions use:
 
     lein all test
 
+To check for security issues use:
+
+    lein nvd check
+
+
 
 ## Build Status
 [![Build Status](https://travis-ci.org/mjul/docjure.svg?branch=master)](https://travis-ci.org/mjul/docjure)
@@ -336,3 +341,12 @@ This library includes great contributions from
 * [WonJun Lee](https://github.com/Lee-WonJun) (Lee-WonJun)
 
 Thank you very much!
+
+## Honorary Mention
+
+A special thank you also goes out to people that did not contribute code
+but shared their ideas, reported security issues or bugs and otherwise
+inspired the continuing work on the project.
+
+
+* [vemv](https://github.com/vemv) (vemv)
