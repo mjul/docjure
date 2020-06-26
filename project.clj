@@ -7,7 +7,8 @@
                  [org.apache.poi/poi "4.1.0"]
                  [org.apache.poi/poi-ooxml "4.1.0"]]
   :plugins [[lein-difftest "2.0.0"]
-            [lein-nvd "1.4.0"]]
+            [lein-nvd "1.4.0"]
+            [lein-ancient "0.6.15"]]
   :profiles {:1.5  {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6  {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7  {:dependencies [[org.clojure/clojure "1.7.0"]]}
