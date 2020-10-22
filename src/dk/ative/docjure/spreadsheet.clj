@@ -213,6 +213,22 @@
      (->> (map #(project-cell column-map %) row)
           (apply merge)))))
 
+(defn select-columns-by-header
+  "Takes a sheet. Returns a sequence of map with the names of header fields as the
+   key, and the value of following cells. The table in the sheet should occupy a
+   normal space.
+
+   For example, to select columns A and B according to the header from the sheet
+
+   (select-columns-by-header sheet)
+   => [{\"first\" \"Value in cell A2\", \"second\" \"Value in cell B2\"} ...] "
+  [^Sheet sheet]
+  (assert-type sheet Sheet)
+  (let [rows (->> sheet row-seq (map cell-seq) (map #(map read-cell %)))
+        thead (first rows)
+        tbody (rest rows)]
+    (vec (map #(zipmap thead %) tbody))))
+
 (defn string-cell? [^Cell cell]
   (= CellType/STRING (.getCellType cell)))
 

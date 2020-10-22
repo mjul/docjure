@@ -518,7 +518,7 @@
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin
                                        :border-right :medium
-                                       :border-top :thick 
+                                       :border-top :thick
                                        :border-bottom :thin
                                        :left-border-color :red
                                        :right-border-color :blue
@@ -965,3 +965,18 @@
           loaded (load-workbook file)
           _ (io/delete-file file)]
       (test-loaded-workbook loaded))))
+
+(deftest auto-header-test
+  (letfn [(read-sheet [file]
+            (->> (load-workbook file)
+                 sheet-seq
+                 first
+                 (select-columns-by-header)))
+          (year [^java.util.Date date]
+            (+ 1900 (.getYear date)))]
+    (testing "Can read workbooks with 1900-based dates"
+      (let [actual (read-sheet (config :1900-based-file))]
+        (is (every? #(== (year (get % "Date")) (get % "Year")) actual))))
+    (testing "Can read workbooks with 1904-based dates"
+      (let [actual (read-sheet (config :1904-based-file))]
+        (is (every? #(== (year (get % "Date")) (get % "Year")) actual))))))
