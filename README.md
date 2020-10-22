@@ -342,6 +342,7 @@ This library includes great contributions from
 * [Manuel Herzog](https://github.com/manuelherzog) (manuelherzog)
 * [Francisco Vides Fernández](https://github.com/fvides) (fvides)
 * [WonJun Lee](https://github.com/Lee-WonJun) (Lee-WonJun)
+* [Kimi Ma](https://github.com/kimim) (kimim)
 
 Thank you very much!
 
