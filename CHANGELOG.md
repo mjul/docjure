@@ -1,7 +1,7 @@
 # CHANGELOG for Docjure
 
 ## Version 1.17.0-SNAPSHOT
-
+* Upgraded to use Clojure 1.10.3
 
 ## Version 1.16.0
 * Upgraded to use Apache POI 4.1.1 (fixes for CVE-2019-12415)
