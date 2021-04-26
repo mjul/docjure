@@ -1,6 +1,6 @@
 # CHANGELOG for Docjure
 
-## Version 1.15.0-SNAPSHOT
+## Version 1.15.0
 * Upgraded to use Clojure 1.10.1 (from 1.10.0)
 
 ## Version 1.14.0
