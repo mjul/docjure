@@ -343,6 +343,8 @@ This library includes great contributions from
 * [Francisco Vides Fernández](https://github.com/fvides) (fvides)
 * [WonJun Lee](https://github.com/Lee-WonJun) (Lee-WonJun)
 * [Kimi Ma](https://github.com/kimim) (kimim)
+* [Jari Hanhela](https://github.com/Jarzka) (Jarzka)
+* [Maxim Penzin](https://github.com/maxp) (maxp)
 
 Thank you very much!
 
