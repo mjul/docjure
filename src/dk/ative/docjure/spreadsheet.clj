@@ -1,6 +1,6 @@
 (ns dk.ative.docjure.spreadsheet
   (:import
-    (java.io FileOutputStream FileInputStream InputStream OutputStream)
+   (java.io FileOutputStream FileInputStream InputStream OutputStream)
    (java.util Date Calendar)
    (org.apache.poi.xssf.usermodel XSSFWorkbook)
    (org.apache.poi.hssf.usermodel HSSFWorkbook)
@@ -14,7 +14,9 @@
                                 WorkbookFactory DateUtil
                                 IndexedColors CellStyle Font
                                 CellValue Drawing CreationHelper)
-   (org.apache.poi.ss.util CellReference AreaReference)))
+   (org.apache.poi.ss.util CellReference AreaReference))
+  (:require [clojure.java.io :as io]))
+
 
 (defmacro assert-type [value expected-type]
   `(when-not (isa? (class ~value) ~expected-type)
@@ -63,12 +65,14 @@
   [^InputStream stream]
   (WorkbookFactory/create stream))
 
+
 (defn load-workbook-from-file
   "Load an Excel .xls or .xlsx workbook from a file."
-  [^String filename]
-  (with-open [stream (FileInputStream. filename)]
+  [file]
+  (with-open [stream (io/input-stream file)]
     (load-workbook-from-stream stream)))
 
+  
 (defn load-workbook-from-resource
   "Load an Excel workbook from a named resource.
   Used when reading from a resource on a classpath
@@ -84,9 +88,15 @@
   [filename]
   (load-workbook-from-file filename))
 
+(defmethod load-workbook java.io.File
+  [file]
+  (load-workbook-from-file file))
+
 (defmethod load-workbook InputStream
   [stream]
   (load-workbook-from-stream stream))
+
+
 
 (defn save-workbook-into-stream!
   "Save the workbook into a stream.

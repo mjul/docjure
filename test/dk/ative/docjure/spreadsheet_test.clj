@@ -796,9 +796,14 @@
       (test-loaded-workbook loaded))))
 
 (deftest load-workbook-from-file-integration-test
-  (let [file (config :datatypes-file)
-        loaded (load-workbook-from-file file)]
-    (test-loaded-workbook loaded)))
+  (testing "Load from file name as string"
+    (let [file (config :datatypes-file)
+          loaded (load-workbook-from-file file)]
+      (test-loaded-workbook loaded)))
+  (testing "Load from file name as java.io.File"
+    (let [file (io/file (config :datatypes-file))
+          loaded (load-workbook-from-file file)]
+      (test-loaded-workbook loaded))))
 
 (defn- path->dir-and-file
   [^String path]
@@ -810,6 +815,10 @@
 (deftest load-workbook-integration-test
   (testing "should accept file name as string"
     (let [file (config :datatypes-file)
+          loaded (load-workbook file)]
+      (test-loaded-workbook loaded)))
+  (testing "should accept file name as java.io.File"
+    (let [file (io/file (config :datatypes-file))
           loaded (load-workbook file)]
       (test-loaded-workbook loaded)))
   (testing "should accept InputStream"

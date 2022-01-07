@@ -2,6 +2,9 @@
 
 ## Version 1.17.0-SNAPSHOT
 * Upgraded to use Clojure 1.10.3
+* `load-workbook-from-file` now accepts file as both a string filename or a java.io.File object.
+* `load-workbook` now also accepts a `java.io.File` as input
+
 
 ## Version 1.16.0
 * Upgraded to use Apache POI 4.1.1 (fixes for CVE-2019-12415)
