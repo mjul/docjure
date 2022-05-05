@@ -678,9 +678,9 @@
   sheet)
 
 (defn- named-area-ref [^Workbook workbook n]
-  (let [index (.getNameIndex workbook (name n))]
-    (if (>= index 0)
-      (-> (.getNameAt workbook index)
+  (let [named-range (.getName workbook (name n))]
+    (if named-range
+      (-> named-range
           (.getRefersToFormula)
           (AreaReference. (.getSpreadsheetVersion workbook)))
       nil)))
