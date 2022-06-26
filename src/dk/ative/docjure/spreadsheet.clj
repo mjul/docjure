@@ -576,7 +576,7 @@
                               cs (color-index bottom-border-color))
         indent (.setIndention cs (short indent))
         data-format (let [df (.createDataFormat workbook)]
-                      (.setDataFormat cs (.getFormat df data-format))))
+                      (.setDataFormat cs (.getFormat df ^String data-format))))
        cs)))
 
 (defn set-cell-style!
