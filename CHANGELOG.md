@@ -4,7 +4,7 @@
 
 * Upgraded to use Apache POI 5.2.2.
 * Upgraded use Clojure 1.11.1 (note that the library is backwards compatible with Clojure 1.5 and later)
-* Remove some Clojure reflection warnings
+* Removed some Clojure reflection warnings
 
 Note that Apache POI 5.2.2 has some breaking changes, it is not
 not a drop-in replacement. For instance, the POI project has
