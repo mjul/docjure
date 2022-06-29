@@ -1,6 +1,23 @@
 # Docjure
 
-Docjure makes reading and writing Office Excel spreadsheet documents in Clojure easy.
+Docjure makes reading and writing Office Excel spreadsheet documents
+in Clojure easy.
+
+## Who is this for?
+Docjure is aimed at making the basic use case of reading and writing
+spreadsheets easy.
+
+If you need advanced charting, pivot tables *etc.*, the easiest way is
+to build template spreadsheets with Excel and populate them with
+Docjure.
+
+If you want to manipulate advanced features programatically,
+you are probably better off using the underlying Apache POI
+spreadsheet library directly or looking for another tool.
+
+Docjure has low churn. It is very stable library with a history going
+back to 2009 (open-sourced in 2010).
+
 
 ## Usage
 
