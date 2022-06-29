@@ -576,7 +576,7 @@
                               cs (color-index bottom-border-color))
         indent (.setIndention cs (short indent))
         data-format (let [df (.createDataFormat workbook)]
-                      (.setDataFormat cs (.getFormat df data-format))))
+                      (.setDataFormat cs (.getFormat df ^String data-format))))
        cs)))
 
 (defn set-cell-style!
@@ -701,7 +701,7 @@
 (defn select-cell
   "Given a Sheet and a cell reference (A1), select-cell returns the cell
   or nil if the cell could not be found"
-  [n ^Sheet sheet]
+  [^String n ^Sheet sheet]
   (let [cellref (CellReference. n)
         row (.getRow cellref)
         col (.getCol cellref)]
