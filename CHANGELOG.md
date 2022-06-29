@@ -3,6 +3,7 @@
 ## Version 1.18.0-SNAPSHOT
 
 * Upgraded to use Apache POI 5.2.2.
+* Upgraded use Clojure 1.11.1 (note that the library is backwards compatible with Clojure 1.5 and later)
 * Remove some Clojure reflection warnings
 
 Note that Apache POI 5.2.2 has some breaking changes, it is not
