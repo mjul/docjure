@@ -3,6 +3,7 @@
 ## Version 1.18.0-SNAPSHOT
 
 * Upgraded to use Apache POI 5.2.2.
+* Remove some Clojure reflection warnings
 
 Note that Apache POI 5.2.2 has some breaking changes, it is not
 not a drop-in replacement. For instance, the POI project has

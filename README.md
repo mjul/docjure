@@ -345,6 +345,7 @@ This library includes great contributions from
 * [Jari Hanhela](https://github.com/Jarzka) (Jarzka)
 * [Maxim Penzin](https://github.com/maxp) (maxp)
 * [Christopher Miles](https://github.com/cmiles74) (cmiles74)
+* [Danny Freeman](https://github.com/dannyfreeman) (dannyfreeman)
 
 Thank you very much!
 
