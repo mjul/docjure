@@ -247,13 +247,13 @@ Remember to issue the 'lein deps' command to download it.
 
 
 
-#### Example project.clj for using Docjure 1.14.0
+#### Example project.clj for using Docjure 1.17.0
 
 ```clj
 (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
       :dependencies [[org.clojure/clojure "1.10.0"]
-                     [dk.ative/docjure "1.14.0"]])
+                     [dk.ative/docjure "1.17.0"]])
 ```
 
 ## Installation for Contributors
@@ -287,7 +287,7 @@ To check for new versions of dependencies:
 
 ## License
 
-Copyright (c) 2009-2020 Martin Jul
+Copyright (c) 2009-2022 Martin Jul
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
@@ -344,6 +344,7 @@ This library includes great contributions from
 * [WonJun Lee](https://github.com/Lee-WonJun) (Lee-WonJun)
 * [Jari Hanhela](https://github.com/Jarzka) (Jarzka)
 * [Maxim Penzin](https://github.com/maxp) (maxp)
+* [Christopher Miles](https://github.com/cmiles74) (cmiles74)
 
 Thank you very much!
 

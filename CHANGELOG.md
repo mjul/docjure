@@ -1,10 +1,20 @@
 # CHANGELOG for Docjure
 
-## Version 1.17.0-SNAPSHOT
+## Version 1.18.0-SNAPSHOT
+
+* Upgraded to use Apache POI 5.2.2.
+
+Note that Apache POI 5.2.2 has some breaking changes, it is not
+not a drop-in replacement. For instance, the POI project has
+eliminated the "Enum" methods (*i.e.* `getBorderBottomEnum`,
+`getFillPatternEnum`, *etc.*) The "Enum"-less methods work the same
+(`getBorderBottom`, `getFillPattern`), but client code that depends on
+these methods being present will fail.
+
+## Version 1.17.0
 * Upgraded to use Clojure 1.10.3
 * `load-workbook-from-file` now accepts file as both a string filename or a java.io.File object.
 * `load-workbook` now also accepts a `java.io.File` as input
-
 
 ## Version 1.16.0
 * Upgraded to use Apache POI 4.1.1 (fixes for CVE-2019-12415)
