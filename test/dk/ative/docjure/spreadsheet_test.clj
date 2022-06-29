@@ -471,49 +471,49 @@
     (testing "no style"
       (let [wb (create-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb)]
-	(is (= FillPatternType/NO_FILL (.getFillPatternEnum cs)))
+	(is (= FillPatternType/NO_FILL (.getFillPattern cs)))
         (is (= false (.getBold (get-font cs wb))))
         (is (= Font/U_NONE (.getUnderline (get-font cs wb))))
         ;Font/COLOR_NORMAL doesn't work right in xssf
         (is (= XSSFFont/DEFAULT_FONT_COLOR (.getColor (get-font cs wb))))
         (is (not (.getItalic (get-font cs wb))))
         (is (not (.getWrapText cs)))
-        (is (= HorizontalAlignment/GENERAL (.getAlignmentEnum cs)))
-        (is (= BorderStyle/NONE (.getBorderLeftEnum cs)))
-        (is (= BorderStyle/NONE (.getBorderRightEnum cs)))
-        (is (= BorderStyle/NONE (.getBorderTopEnum cs)))
-        (is (= BorderStyle/NONE (.getBorderBottomEnum cs)))
+        (is (= HorizontalAlignment/GENERAL (.getAlignment cs)))
+        (is (= BorderStyle/NONE (.getBorderLeft cs)))
+        (is (= BorderStyle/NONE (.getBorderRight cs)))
+        (is (= BorderStyle/NONE (.getBorderTop cs)))
+        (is (= BorderStyle/NONE (.getBorderBottom cs)))
         (is (zero? (.getIndention cs)))
         (is (= "General" (.getDataFormatString cs)))))
     (testing ":background"
       (let [wb (create-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:background :yellow})]
-	(is (= FillPatternType/SOLID_FOREGROUND (.getFillPatternEnum cs)))
+	(is (= FillPatternType/SOLID_FOREGROUND (.getFillPattern cs)))
         (is (= (.getIndex IndexedColors/YELLOW) (.getFillForegroundColor cs)))))
     (testing ":halign"
       (let [wb (create-workbook "Dummy" [["foo"]])
             csl (create-cell-style! wb {:halign :left})
             csr (create-cell-style! wb {:halign :right})
             csc (create-cell-style! wb {:halign :center})]
-	(is (= HorizontalAlignment/LEFT (.getAlignmentEnum csl)))
-        (is (= HorizontalAlignment/RIGHT (.getAlignmentEnum csr)))
-        (is (= HorizontalAlignment/CENTER (.getAlignmentEnum csc)))))
+	(is (= HorizontalAlignment/LEFT (.getAlignment csl)))
+        (is (= HorizontalAlignment/RIGHT (.getAlignment csr)))
+        (is (= HorizontalAlignment/CENTER (.getAlignment csc)))))
     (testing ":valign"
       (let [wb (create-workbook "Dummy" [["foo"]])
             cst (create-cell-style! wb {:valign :top})
             csb (create-cell-style! wb {:valign :bottom})
             csc (create-cell-style! wb {:valign :center})]
-	(is (= VerticalAlignment/TOP (.getVerticalAlignmentEnum cst)))
-        (is (= VerticalAlignment/BOTTOM (.getVerticalAlignmentEnum csb)))
-        (is (= VerticalAlignment/CENTER (.getVerticalAlignmentEnum csc)))))
+	(is (= VerticalAlignment/TOP (.getVerticalAlignment cst)))
+        (is (= VerticalAlignment/BOTTOM (.getVerticalAlignment csb)))
+        (is (= VerticalAlignment/CENTER (.getVerticalAlignment csc)))))
     (testing "borders"
       (let [wb (create-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin :border-right :medium
                                        :border-top :thick :border-bottom :thin})]
-	(is (= BorderStyle/THIN (.getBorderLeftEnum cs)))
-        (is (= BorderStyle/MEDIUM (.getBorderRightEnum cs)))
-        (is (= BorderStyle/THICK (.getBorderTopEnum cs)))
-        (is (= BorderStyle/THIN (.getBorderBottomEnum cs)))))
+	(is (= BorderStyle/THIN (.getBorderLeft cs)))
+        (is (= BorderStyle/MEDIUM (.getBorderRight cs)))
+        (is (= BorderStyle/THICK (.getBorderTop cs)))
+        (is (= BorderStyle/THIN (.getBorderBottom cs)))))
     (testing "border colors"
       (let [wb (create-xls-workbook "Dummy" [["foo"]])
             cs (create-cell-style! wb {:border-left :thin
@@ -524,10 +524,10 @@
                                        :right-border-color :blue
                                        :top-border-color :green
                                        :bottom-border-color :yellow})]
-        (is (= BorderStyle/THIN (.getBorderLeftEnum cs)))
-        (is (= BorderStyle/MEDIUM (.getBorderRightEnum cs)))
-        (is (= BorderStyle/THICK (.getBorderTopEnum cs)))
-        (is (= BorderStyle/THIN (.getBorderBottomEnum cs)))
+        (is (= BorderStyle/THIN (.getBorderLeft cs)))
+        (is (= BorderStyle/MEDIUM (.getBorderRight cs)))
+        (is (= BorderStyle/THICK (.getBorderTop cs)))
+        (is (= BorderStyle/THIN (.getBorderBottom cs)))
         (is (= (.getIndex IndexedColors/RED) (.getLeftBorderColor cs)))
         (is (= (.getIndex IndexedColors/BLUE) (.getRightBorderColor cs)))
         (is (= (.getIndex IndexedColors/GREEN) (.getTopBorderColor cs)))
