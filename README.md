@@ -298,6 +298,27 @@ To check for new versions of dependencies:
 
     lein ancient
 
+### Releaseing to Clojars
+When releasing a version to Clojars you must provide your user-name. The password is a deployment token, not your normal password. You can generate this by logging into Clojars. These tokens have an expiration date so if it does not work, log in a check if you need a new token.
+
+
+```
+    lein deploy clojars
+```
+
+You also need a GPG key to sign the releases.
+
+These also expire, and must be periodically renewed. You can check your keys and their status like this:
+
+
+```
+    gpg --list-keys
+```
+
+See also `lein help deploy` and `lein help gpg`.
+
+Remember to tag releases in git. You can list the tags with `git tag -n` and tag with `git tag -a TAGNAME -m 'Tag comment'`.
+
 
 ## Build Status
 [![Build Status](https://travis-ci.org/mjul/docjure.svg?branch=master)](https://travis-ci.org/mjul/docjure)
