@@ -1,6 +1,6 @@
 # CHANGELOG for Docjure
 
-## Version 1.18.0-SNAPSHOT
+## Version 1.19.0-SNAPSHOT
 
 * Added `workbook?` predicate.
 
