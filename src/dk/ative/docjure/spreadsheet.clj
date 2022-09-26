@@ -59,6 +59,12 @@
   (keyword (.name (FormulaError/forInt (.getErrorCellValue cell)))))
 
 
+(defn workbook?
+  "Return true if and only if x is a workbook (also known as a spreadsheet)."
+  [x]
+  (instance? Workbook x))
+  
+
 (defn load-workbook-from-stream
   "Load an Excel workbook from a stream.
   The caller is required to close the stream after loading is completed."

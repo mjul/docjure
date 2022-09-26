@@ -129,6 +129,18 @@
         (is (= "D5" (cellvalue 4 3)))
         ))))
 
+
+(deftest workbook?-test
+  (let [wb (create-workbook "Sheet 1" [["A1" "B1"]
+                                       ["A2" "B2"]])]
+    (testing "workbook? must recognize workbook"
+      (is (workbook? wb)))
+    (testing "workbook? must be false for non-workbook types"
+      (is (not (workbook? (sheet-seq wb))))
+      (is (not (workbook? (first (sheet-seq wb))))))))
+
+
+
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."
     (is (= ["foo" "bar"] (row-vec [:foo :bar] {:foo "foo", :bar "bar"}))
