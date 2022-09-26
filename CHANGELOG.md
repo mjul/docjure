@@ -2,6 +2,11 @@
 
 ## Version 1.18.0-SNAPSHOT
 
+* Added `workbook?` predicate.
+
+
+## Version 1.18.0
+
 * Upgraded to use Apache POI 5.2.2.
 * Upgraded use Clojure 1.11.1 (note that the library is backwards compatible with Clojure 1.5 and later)
 * Removed some Clojure reflection warnings
