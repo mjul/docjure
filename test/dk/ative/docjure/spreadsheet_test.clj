@@ -150,6 +150,18 @@
       (is (not (sheet? nil))))))
 
 
+(deftest row?-test
+  (let [wb (create-workbook "Sheet 1" [["A1" "B1"]
+                                       ["A2" "B2"]])
+        sheet (first (sheet-seq wb))
+        row (first (row-seq sheet))]
+    (testing "row? must recognize sheet"
+      (is (row? row)))
+    (testing "row? must be false for non-row types"
+      (is (not (row? wb)))
+      (is (not (row? sheet)))
+      (is (not (row? nil))))))
+
 
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."
@@ -1021,3 +1033,46 @@
                   [1.0 true]]
                  (map (juxt :id :value) actual-data-with-headers))))))))
 
+
+(deftest column-index-seq-test
+  (testing "Can get the column indices for sheet with no columns."
+    (let [wb (create-workbook "Sheet 1" [[]
+                                         []])
+          row (-> wb sheet-seq first row-seq first)
+          actual (column-index-seq row)]
+      (is (empty? actual))))
+  (testing "Can get the column indices for sheet with single column."
+    (let [wb (create-workbook "Sheet 1" [["ID"]
+                                         [1]])
+          row (-> wb sheet-seq first row-seq first)
+          actual (column-index-seq row)]
+      (is (= [0] actual))))
+  (testing "Can get the column indices for sheet with single column."
+    (let [wb (create-workbook "Sheet 1" [["Col 1" "Col 2" "Col 3"]
+                                         [1 2 3]])
+          row (-> wb sheet-seq first row-seq first)
+          actual (column-index-seq row)]
+      (is (= [0 1 2] actual)))))
+
+
+(deftest auto-size-all-columns!-test
+  (testing "Can adjust column widths automatically"
+    (let [data-with-headers [["ID" "Name has a very long header that does not fit"]
+                             [0 false]
+                             [1 true]]
+          wb (create-workbook "Sheet 1"
+                              data-with-headers)
+          sheet (select-sheet "Sheet 1" wb)
+          cws-before [(.getColumnWidth ^Sheet sheet 0) (.getColumnWidth ^Sheet sheet 1)]
+          _ (auto-size-all-columns! sheet)]
+      (testing "Width of columns must be updated"
+        (is (not= cws-before
+                  [(.getColumnWidth ^Sheet sheet 0) (.getColumnWidth ^Sheet sheet 1)])))
+      (testing "Resizing does not change data"
+        (let [actual-data-with-headers (->> wb
+                                            (select-sheet "Sheet 1")
+                                            (select-columns {:A :id :B :value}))]
+          (is (= [["ID" "Name has a very long header that does not fit"]
+                  [0.0 false]
+                  [1.0 true]]
+                 (map (juxt :id :value) actual-data-with-headers))))))))

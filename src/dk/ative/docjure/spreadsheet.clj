@@ -70,6 +70,11 @@
   [x]
   (instance? Sheet x))
 
+(defn row?
+  "Return true if and only if x is a row in a sheet."
+  [x]
+  (instance? Row x))
+
 
 (defn load-workbook-from-stream
   "Load an Excel workbook from a stream.
@@ -739,8 +744,38 @@
   "Adjusts the column width to fit the contents.
   i is the index of the columnm, typically starting at 0.
 
+  This operation is quite slow. Recommended usage is as a post-processing step when
+  a sheet has been fully populated.
+  
   Note that this may require fonts to be available and thus not work in headless mode."
   [sheet i]
   {:pre [(sheet? sheet) (int? i)]}
   (.autoSizeColumn ^Sheet sheet i))
+
+
+(defn column-index-seq
+  "Get the a sequence of the the column indices for a row from the first to the last.
+  
+  Indices are used to address columns in e.g. auto-size-column!"
+  [row]
+  {:pre [(row? row)]}
+  (let [fst (.getFirstCellNum ^Row row)
+        lst (.getLastCellNum ^Row row)]
+    (range fst lst)))
+  
+
+(defn auto-size-all-columns!
+  "Adjusts the column width to fit the contents for all columns on a sheet.
+
+  This is quite slow. It is recommended to use as a post-processing step only.
+  
+  Note that this may require fonts to be available and thus not work in headless mode."
+  [sheet]
+  {:pre [(sheet? sheet)]}
+  (let [col-indices (sort (set (for [r (row-seq sheet)
+                                     i (column-index-seq r)]
+                                 i)))]
+    (doall (for [i col-indices]
+             (auto-size-column! sheet i)))))
+
 
