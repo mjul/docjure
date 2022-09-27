@@ -140,6 +140,16 @@
       (is (not (workbook? (first (sheet-seq wb))))))))
 
 
+(deftest sheet?-test
+  (let [wb (create-workbook "Sheet 1" [["A1" "B1"]
+                                       ["A2" "B2"]])]
+    (testing "sheet? must recognize sheet"
+      (is (sheet? (first (sheet-seq wb)))))
+    (testing "sheet? must be false for non-sheet types"
+      (is (not (sheet? wb)))
+      (is (not (sheet? nil))))))
+
+
 
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."

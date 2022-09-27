@@ -63,7 +63,13 @@
   "Return true if and only if x is a workbook (also known as a spreadsheet)."
   [x]
   (instance? Workbook x))
-  
+
+
+(defn sheet?
+  "Return true if and only if x is a sheet in a workbook."
+  [x]
+  (instance? Sheet x))
+
 
 (defn load-workbook-from-stream
   "Load an Excel workbook from a stream.
@@ -735,5 +741,6 @@
 
   Note that this may require fonts to be available and thus not work in headless mode."
   [sheet i]
-  {:pre [(int? i)]}
+  {:pre [(sheet? sheet) (int? i)]}
   (.autoSizeColumn ^Sheet sheet i))
+

@@ -2,7 +2,7 @@
 
 ## Version 1.19.0-SNAPSHOT
 
-* Added `workbook?` predicate.
+* Added `workbook?` and `sheet?` predicates.
 * Added `auto-size-column!` function to automatically adjust column width to contents.
 
 
