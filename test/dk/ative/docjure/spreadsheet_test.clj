@@ -2,7 +2,7 @@
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
   (:use [clojure.test])
   (:require [clojure.java.io :as io])
-  (:import (org.apache.poi.ss.usermodel Workbook Row
+  (:import (org.apache.poi.ss.usermodel Workbook Sheet Row
                                         Row$MissingCellPolicy
                                         CellStyle IndexedColors Font
                                         CellValue HorizontalAlignment
@@ -986,3 +986,28 @@
           loaded (load-workbook file)
           _ (io/delete-file file)]
       (test-loaded-workbook loaded))))
+
+
+(deftest auto-size-column!-test
+  (testing "Can adjust column width automatically"
+    (let [data-with-headers [["ID" "Name has a very long header that does not fit"]
+                             [0 false]
+                             [1 true]]
+          wb (create-workbook "Sheet 1"
+                              data-with-headers)
+          sheet (select-sheet "Sheet 1" wb)
+          cws-before [(.getColumnWidth ^Sheet sheet 0) (.getColumnWidth ^Sheet sheet 1)]
+          _ (auto-size-column! sheet 0)
+          _ (auto-size-column! sheet 1)]
+      (testing "Width of columns must be updated"
+        (is (not= cws-before
+                  [(.getColumnWidth ^Sheet sheet 0) (.getColumnWidth ^Sheet sheet 1)])))
+      (testing "Resizing does not change data"
+        (let [actual-data-with-headers (->> wb
+                                            (select-sheet "Sheet 1")
+                                            (select-columns {:A :id :B :value}))]
+          (is (= [["ID" "Name has a very long header that does not fit"]
+                  [0.0 false]
+                  [1.0 true]]
+                 (map (juxt :id :value) actual-data-with-headers))))))))
+

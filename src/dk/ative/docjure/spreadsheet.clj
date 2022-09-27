@@ -728,3 +728,12 @@
                   (doseq [pair (seq (apply hash-map (interleave inputcells input)))]
                     (set-cell! (select-cell (first pair) sheet) (last pair)))
                   (read-cell (select-cell outputcell sheet)))))
+
+(defn auto-size-column!
+  "Adjusts the column width to fit the contents.
+  i is the index of the columnm, typically starting at 0.
+
+  Note that this may require fonts to be available and thus not work in headless mode."
+  [sheet i]
+  {:pre [(int? i)]}
+  (.autoSizeColumn ^Sheet sheet i))
