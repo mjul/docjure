@@ -247,6 +247,25 @@ Then it will return:
  ("John" nil "Smith"))
 ```
 
+### Formatting: Adjust Column Width to Contents
+
+You can adjust the column widths to they fit the contents.
+This makes generated workbooks look nicer.
+
+For example, to auto-size all the columns in all the sheets
+in a workbook, use this:
+
+```clj
+;; wb is a workbook
+(dorun (for [sheet (sheet-seq wb)]
+             (auto-size-all-columns! sheet)))
+```
+
+To apply auto-width to individual columns in a sheet, use the
+`auto-size-column!` function.
+
+
+
 ### Automatically get the Docjure jar from Clojars
 
 The Docjure jar is distributed on
