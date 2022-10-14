@@ -156,6 +156,18 @@
   (assert-type sheet Sheet)
   (.getSheetName sheet))
 
+
+(defn sheet-name?
+  "Is x a valid sheet name?"
+  [x]
+  (and (string? x)
+       (try
+         (org.apache.poi.ss.util.WorkbookUtil/validateSheetName ^String x)
+         true
+         (catch IllegalArgumentException e
+           false))))
+
+
 (defn- find-sheet
   [matching-fn ^Workbook workbook]
   (assert-type workbook Workbook)

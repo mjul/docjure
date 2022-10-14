@@ -3,6 +3,7 @@
 ## Version 1.19.0-SNAPSHOT
 
 * Added `workbook?`, `sheet?` and `row?` predicates.
+* Added `sheet-name?` predicate.
 * Added `auto-size-column!` and `auto-size-all-columns!` functions to automatically adjust column widths to contents.
 * Added `column-index-seq` function to get the indices of the columns in a row.
 

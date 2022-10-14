@@ -163,6 +163,18 @@
       (is (not (row? nil))))))
 
 
+(deftest sheet-name?-test
+  (testing "Valid name"
+    (is (sheet-name? "Sheet 1")))
+  (testing "Invalid names"
+    (are [x] (not (sheet-name? x))
+      :foo ;; not a string
+      1 ;; not a string
+      "" ;; not at least 1 char
+      "12345678901234567890123456789012" ;; over 31 chars
+      )))
+
+
 (deftest row-vec-test
   (testing "Should transform row struct to row vector."
     (is (= ["foo" "bar"] (row-vec [:foo :bar] {:foo "foo", :bar "bar"}))
