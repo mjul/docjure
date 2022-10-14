@@ -403,6 +403,7 @@ This library includes great contributions from
 * [Maxim Penzin](https://github.com/maxp) (maxp)
 * [Christopher Miles](https://github.com/cmiles74) (cmiles74)
 * [Danny Freeman](https://github.com/dannyfreeman) (dannyfreeman)
+* [Orestis Markou](https://github.com/orestis) (orestis)
 
 Thank you very much!
 
