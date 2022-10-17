@@ -7,6 +7,7 @@
 * Added `auto-size-column!` and `auto-size-all-columns!` functions to automatically adjust column widths to contents.
 * Added `column-index-seq` function to get the indices of the columns in a row.
 * Exposed `:quote-prefixed` cell style option in `create-cell-style!`
+* Upgraded to use Apache POI 5.2.3.
 
 ## Version 1.18.0
 
