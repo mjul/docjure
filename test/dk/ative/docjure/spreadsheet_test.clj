@@ -641,7 +641,11 @@
             cs (create-cell-style! wb {:data-format "#,##0"})
             cs2 (create-cell-style! wb {:data-format "#,##0"})]
         (is (= "#,##0" (.getDataFormatString cs)))
-        (is (= (.getDataFormat cs) (.getDataFormat cs2)))))))
+        (is (= (.getDataFormat cs) (.getDataFormat cs2)))))
+    (testing ":quote-prefixed"
+      (let [wb (create-xls-workbook "Dummy" [["foo"]])
+            cs (create-cell-style! wb {:quote-prefixed true})]
+        (is (= true (.getQuotePrefixed cs)))))))
 
 (deftest create-font!-test
     (let [wb (create-workbook "Dummy" [["foo"]])]

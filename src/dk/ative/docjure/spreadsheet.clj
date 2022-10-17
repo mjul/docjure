@@ -558,6 +558,7 @@
       :bottom-border-color colour keyword
       :indent              number from 0 to 15
       :data-format         string
+      :quote-prefixed      true | false - shows a leading ' when editing formula-like text
 
    Valid colour keywords are the colour names defined in
    org.apache.ss.usermodel.IndexedColors as lowercase keywords, eg.
@@ -583,7 +584,7 @@
                    border-left border-right border-top border-bottom
                    left-border-color right-border-color
                    top-border-color bottom-border-color
-                   borders indent data-format]} styles]
+                   borders indent data-format quote-prefixed]} styles]
        (whens
         font   (set-font font cs workbook)
         background (do (.setFillForegroundColor cs (color-index background))
@@ -605,7 +606,8 @@
                               cs (color-index bottom-border-color))
         indent (.setIndention cs (short indent))
         data-format (let [df (.createDataFormat workbook)]
-                      (.setDataFormat cs (.getFormat df ^String data-format))))
+                      (.setDataFormat cs (.getFormat df ^String data-format)))
+        quote-prefixed (.setQuotePrefixed cs (boolean quote-prefixed)))
        cs)))
 
 (defn set-cell-style!
@@ -789,5 +791,3 @@
                                  i)))]
     (doall (for [i col-indices]
              (auto-size-column! sheet i)))))
-
-
