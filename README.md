@@ -20,6 +20,9 @@ back to 2009 (open-sourced in 2010).
 
 
 ## Usage
+> **Cljdoc Badge**
+ > [![cljdoc badge](https://cljdoc.org/badge/metosin/malli)](https://cljdoc.org/d/metosin/malli)<br>
+ > For more details please refer to [API documentation](https://github.com/cljdoc/cljdoc/blob/master/doc/userguide/for-library-authors.adoc#api)
 
 ### Example: Read a Price List spreadsheet
 
@@ -404,7 +407,8 @@ This library includes great contributions from
 * [Christopher Miles](https://github.com/cmiles74) (cmiles74)
 * [Danny Freeman](https://github.com/dannyfreeman) (dannyfreeman)
 * [Orestis Markou](https://github.com/orestis) (orestis)
-
+* [Eleeka N](https://github.com/EleekaN)(EleekaN)
+  
 Thank you very much!
 
 ## Honorary Mention
