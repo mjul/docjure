@@ -21,8 +21,10 @@ back to 2009 (open-sourced in 2010).
 
 ## Usage
 > **Cljdoc Badge**
- > [![cljdoc badge](https://cljdoc.org/badge/metosin/malli)](https://cljdoc.org/d/metosin/malli)<br>
- > For more details please refer to [API documentation](https://github.com/cljdoc/cljdoc/blob/master/doc/userguide/for-library-authors.adoc#api)
+ > [![cljdoc badge](https://cljdoc.org/badge/dk.ative/docjure)](https://cljdoc.org/d/dk.ative/docjure)<br>
+ > For more details please refer to [API documentation](https://cljdoc.org/d/dk.ative/docjure/1.19.0/api/dk.ative.docjure.spreadsheet)
+
+
 
 ### Example: Read a Price List spreadsheet
 
