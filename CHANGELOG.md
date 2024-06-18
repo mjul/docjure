@@ -2,6 +2,7 @@
 
 ## Version 1.20.0
 * Upgraded to Clojure 1.11.3
+* Upgraded to use Apache POI 5.2.5
 * Made auto-size-column! work on Clojure 1.5 - 1.8 (removed use of `int?`)
 
 ## Version 1.19.0
