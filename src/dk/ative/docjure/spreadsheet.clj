@@ -763,7 +763,12 @@
   
   Note that this may require fonts to be available and thus not work in headless mode."
   [sheet i]
-  {:pre [(sheet? sheet) (int? i)]}
+  {:pre [(sheet? sheet)
+         ;; int? did not exist before Clojure 1.9, so do this for backwards compatibility:
+         (or (instance? Long i)
+             (instance? Integer i)
+             (instance? Short i)
+             (instance? Byte i))]}
   (.autoSizeColumn ^Sheet sheet i))
 
 

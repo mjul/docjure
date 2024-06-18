@@ -1,5 +1,9 @@
 # CHANGELOG for Docjure
 
+## Version 1.20.0
+* Upgraded to Clojure 1.11.3
+* Made auto-size-column! work on Clojure 1.5 - 1.8 (removed use of `int?`)
+
 ## Version 1.19.0
 
 * Added `workbook?`, `sheet?` and `row?` predicates.
