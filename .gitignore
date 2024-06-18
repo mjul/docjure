@@ -7,3 +7,6 @@ test/docjure/testdata/~$*.xlsx
 ~$*.xlsx
 
 .nrepl-port
+
+/clj-kondo
+**/.clj-kondo/.cache
