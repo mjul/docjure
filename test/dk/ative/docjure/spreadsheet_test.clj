@@ -353,12 +353,14 @@
 
 (deftest row-seq-test
   (let [sheet-name "Sheet 1"
-	sheet-data [["A1" "B1"] ["A2" "B2"]]
-	workbook (create-workbook sheet-name sheet-data)
-	sheet (select-sheet sheet-name workbook)]
-    (testing "Sheet"
+        sheet-data [["A1" "B1"] ["A2" "B2"]]
+        workbook (create-workbook sheet-name sheet-data)
+        sheet (select-sheet sheet-name workbook)]
+    (testing "Can get rows of non-empty sheet"
       (let [actual (row-seq sheet)]
-	(is (= 2 (count actual)))))))
+        (is (= 2 (count actual))))))
+  (testing "Should fail on invalid parameter types."
+    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (row-seq "not-a-sheet")))))
 
 (deftest sparse-row-seq-test
   (let [sheet-name "Sheet 1"
@@ -503,10 +505,6 @@
                      nil
                      {:name "foo" :thing nil}
                      {:name "bar" :thing "!"}]))))))
-
-(deftest row-seq-test
-  (testing "Should fail on invalid parameter types."
-    (is (thrown-with-msg? IllegalArgumentException #"sheet.*" (row-seq "not-a-sheet")))))
 
 ;; ----------------------------------------------------------------
 ;; Styling
