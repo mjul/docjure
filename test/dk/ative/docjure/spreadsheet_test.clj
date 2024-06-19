@@ -1,7 +1,7 @@
 (ns dk.ative.docjure.spreadsheet-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
-  (:use [clojure.test])
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.test :refer [deftest is are testing]])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Row
                                         Row$MissingCellPolicy
                                         CellStyle IndexedColors Font

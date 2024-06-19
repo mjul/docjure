@@ -1,6 +1,6 @@
 (ns dk.ative.docjure.xls-test
   (:use [dk.ative.docjure.spreadsheet] :reload-all)
-  (:use [clojure.test])
+  (:require [clojure.test :refer [deftest is are testing]])
   (:import (org.apache.poi.ss.usermodel Workbook Sheet Cell Row CellStyle IndexedColors
                                         Font CellValue FillPatternType
                                         HorizontalAlignment VerticalAlignment BorderStyle)
