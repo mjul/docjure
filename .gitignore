@@ -10,3 +10,6 @@ test/docjure/testdata/~$*.xlsx
 
 /clj-kondo
 **/.clj-kondo/.cache
+
+.calva/
+.lsp/
