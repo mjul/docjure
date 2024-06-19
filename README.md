@@ -317,6 +317,11 @@ To check for new versions of dependencies:
 
     lein ancient
 
+To run the static analysis of the code:
+
+    lein clj-kondo
+
+
 ### Releasing to Clojars
 When releasing a version to Clojars you must provide your user-name. The password is a deployment token, not your normal password. You can generate this by logging into Clojars. These tokens have an expiration date so if it does not work, log in a check if you need a new token.
 
