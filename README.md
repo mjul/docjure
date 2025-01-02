@@ -349,7 +349,7 @@ Remember to tag releases in git. You can list the tags with `git tag -n` and tag
 
 ## License
 
-Copyright (c) 2009-2022 Martin Jul
+Copyright (c) 2009-2025 Martin Jul
 
 Docjure is licensed under the MIT License. See the LICENSE file for
 the license terms.
