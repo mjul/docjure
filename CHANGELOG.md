@@ -1,5 +1,8 @@
 # CHANGELOG for Docjure
 
+## Version 1.22.0
+
+
 ## Version 1.21.0
 * Upgraded to Clojure 1.12.0
 * Upgraded to Apache POI 5.3.0
