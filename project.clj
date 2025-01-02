@@ -9,7 +9,8 @@
   :plugins [[lein-difftest "2.0.0"]
             [lein-nvd "1.4.0"]
             [lein-ancient "0.6.15"]
-            [com.github.clj-kondo/lein-clj-kondo "0.2.5"]]
+            [com.github.clj-kondo/lein-clj-kondo "0.2.5"]
+            [dev.weavejester/lein-cljfmt "0.13.0"]]
   :profiles {:1.5  {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6  {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7  {:dependencies [[org.clojure/clojure "1.7.0"]]}
