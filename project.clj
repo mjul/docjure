@@ -3,7 +3,7 @@
   :url "http://github.com/mjul/docjure"
   :license {:name "MIT License"
             :url "http://http://en.wikipedia.org/wiki/MIT_License"}
-  :dependencies [[org.clojure/clojure "1.11.3"]
+  :dependencies [[org.clojure/clojure "1.12.0"]
                  [org.apache.poi/poi "5.3.0"]
                  [org.apache.poi/poi-ooxml "5.3.0"]]
   :plugins [[lein-difftest "2.0.0"]
@@ -18,8 +18,9 @@
              :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
              :1.11 {:dependencies [[org.clojure/clojure "1.11.3"]]}
+             :1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}
              :test {:global-vars  {*warn-on-reflection* false}
                     :resource-paths ["test/dk/ative/docjure/testdata"]}}
-  :aliases {"all" ["with-profile" "1.5:1.6:1.7:1.8:1.9:1.10:1.11"]}
+  :aliases {"all" ["with-profile" "1.5:1.6:1.7:1.8:1.9:1.10:1.11:1.12"]}
   :global-vars {*warn-on-reflection* true})
 
