@@ -1,5 +1,7 @@
 # Docjure
 
+[Documentation on cljdoc](https://cljdoc.org/d/dk.ative/docjure/)
+
 Docjure makes reading and writing Office Excel spreadsheet documents
 in Clojure easy.
 
