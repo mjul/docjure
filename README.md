@@ -270,40 +270,33 @@ To apply auto-width to individual columns in a sheet, use the
 
 ### Automatically get the Docjure jar from Clojars
 
-#### Using Leiningen
-
 The Docjure jar is distributed on
 [Clojars](http://clojars.org/dk.ative/docjure). Here you can find both
 release builds and snapshot builds of pre-release versions.
 
+#### Using Leiningen
 If you are using the Leiningen build tool just add this line to the
-:dependencies list in project.clj to use it:
+`:dependencies` list in `project.clj` to use it:
 
 ```clj
-[dk.ative/docjure "1.14.0"]
+[dk.ative/docjure "1.21.0"]
 ```
 
-Remember to issue the 'lein deps' command to download it.
-
-#### Using deps.edn with the Clojure CLI
-
-To use Docjure with the Clojure CLI, add the following dependency to your `deps.edn` file:
-
-```clj
-{:deps {dk.ative/docjure {:mvn/version "1.14.0"}}}
-```
-
-Then, run the Clojure CLI to download the dependencies.
-
-
-
-#### Example project.clj for using Docjure 1.17.0
+##### Example project.clj for using Docjure 1.21.0
 
 ```clj
 (defproject some.cool/project "1.0.0-SNAPSHOT"
       :description "Spreadsheet magic using Docjure"
-      :dependencies [[org.clojure/clojure "1.10.0"]
-                     [dk.ative/docjure "1.17.0"]])
+      :dependencies [[org.clojure/clojure "1.12.0"]
+                     [dk.ative/docjure "1.21.0"]])
+```
+
+#### Using `deps.edn` with the Clojure CLI
+
+To add Docjure to a project using the Clojure CLI tools, add the dependency to your `deps.edn` file:
+
+```clj
+{:deps {dk.ative/docjure {:mvn/version "1.21.0"}}}
 ```
 
 ## Installation for Contributors
