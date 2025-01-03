@@ -270,6 +270,8 @@ To apply auto-width to individual columns in a sheet, use the
 
 ### Automatically get the Docjure jar from Clojars
 
+#### Using Leiningen
+
 The Docjure jar is distributed on
 [Clojars](http://clojars.org/dk.ative/docjure). Here you can find both
 release builds and snapshot builds of pre-release versions.
@@ -282,6 +284,16 @@ If you are using the Leiningen build tool just add this line to the
 ```
 
 Remember to issue the 'lein deps' command to download it.
+
+#### Using deps.edn with the Clojure CLI
+
+To use Docjure with the Clojure CLI, add the following dependency to your `deps.edn` file:
+
+```clj
+{:deps {dk.ative/docjure {:mvn/version "1.14.0"}}}
+```
+
+Then, run the Clojure CLI to download the dependencies.
 
 
 
