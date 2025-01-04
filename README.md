@@ -1,4 +1,7 @@
 # Docjure
+[![Clojars Project](https://img.shields.io/clojars/v/dk.ative/docjure.svg)](https://clojars.org/dk.ative/docjure)
+[![cljdoc documentation](https://cljdoc.org/badge/dk.ative/docjure)](https://cljdoc.org/d/dk.ative/docjure)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 Docjure makes reading and writing Office Excel spreadsheet documents
 in Clojure easy.
@@ -22,6 +25,7 @@ back to 2009 (open-sourced in 2010).
 ## Usage
 
 The complete documentation is available on [cljdoc](https://cljdoc.org/d/dk.ative/docjure/).
+
 
 ### Example: Read a Price List spreadsheet
 
