@@ -23,6 +23,11 @@ back to 2009 (open-sourced in 2010).
 
 
 ## Usage
+> **Cljdoc Badge**
+ > [![cljdoc badge](https://cljdoc.org/badge/dk.ative/docjure)](https://cljdoc.org/d/dk.ative/docjure)<br>
+ > For more details please refer to [API documentation](https://cljdoc.org/d/dk.ative/docjure/1.19.0/api/dk.ative.docjure.spreadsheet)
+
+
 
 The complete documentation is available on [cljdoc](https://cljdoc.org/d/dk.ative/docjure/).
 
@@ -420,7 +425,8 @@ This library includes great contributions from
 * [Christopher Miles](https://github.com/cmiles74) (cmiles74)
 * [Danny Freeman](https://github.com/dannyfreeman) (dannyfreeman)
 * [Orestis Markou](https://github.com/orestis) (orestis)
-
+* [Eleeka N](https://github.com/EleekaN)(EleekaN)
+  
 Thank you very much!
 
 ## Honorary Mention
