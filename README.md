@@ -420,6 +420,7 @@ This library includes great contributions from
 * [Christopher Miles](https://github.com/cmiles74) (cmiles74)
 * [Danny Freeman](https://github.com/dannyfreeman) (dannyfreeman)
 * [Orestis Markou](https://github.com/orestis) (orestis)
+* [Nick Nichols](https://github.com/nnichols) (nnichols)
 
 Thank you very much!
 

@@ -1,7 +1,7 @@
 # CHANGELOG for Docjure
 
 ## Version 1.22.0
-
+* Upgraded to Apache POI 5.4.1 (fixes CVE-2025-31672)
 
 ## Version 1.21.0
 * Upgraded to Clojure 1.12.0
