@@ -89,7 +89,7 @@
   (with-open [stream (io/input-stream file)]
     (load-workbook-from-stream stream)))
 
-  
+
 (defn load-workbook-from-resource
   "Load an Excel workbook from a named resource.
   Used when reading from a resource on a classpath
@@ -221,6 +221,8 @@
 (defmethod cell-seq :coll [coll] (for [x (remove nil? coll),
                                        cell (cell-seq x)]
                                    cell))
+
+(defmethod cell-seq :default [something] something)
 
 (defn into-seq
   [^Iterable sheet-or-row]
@@ -760,7 +762,7 @@
 
   This operation is quite slow. Recommended usage is as a post-processing step when
   a sheet has been fully populated.
-  
+
   Note that this may require fonts to be available and thus not work in headless mode."
   [sheet i]
   {:pre [(sheet? sheet)
@@ -774,20 +776,20 @@
 
 (defn column-index-seq
   "Get the a sequence of the the column indices for a row from the first to the last.
-  
+
   Indices are used to address columns in e.g. auto-size-column!"
   [row]
   {:pre [(row? row)]}
   (let [fst (.getFirstCellNum ^Row row)
         lst (.getLastCellNum ^Row row)]
     (range fst lst)))
-  
+
 
 (defn auto-size-all-columns!
   "Adjusts the column width to fit the contents for all columns on a sheet.
 
   This is quite slow. It is recommended to use as a post-processing step only.
-  
+
   Note that this may require fonts to be available and thus not work in headless mode."
   [sheet]
   {:pre [(sheet? sheet)]}
