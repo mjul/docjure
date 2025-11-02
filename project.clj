@@ -2,7 +2,7 @@
   :description "Easily read and write Office documents from Clojure."
   :url "http://github.com/mjul/docjure"
   :license {:name "MIT License"
-            :url "http://http://en.wikipedia.org/wiki/MIT_License"}
+            :url "http://en.wikipedia.org/wiki/MIT_License"}
   :dependencies [[org.clojure/clojure "1.12.0"]
                  [org.apache.poi/poi "5.4.1"]
                  [org.apache.poi/poi-ooxml "5.4.1"]]
