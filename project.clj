@@ -3,7 +3,7 @@
   :url "http://github.com/mjul/docjure"
   :license {:name "MIT License"
             :url "http://en.wikipedia.org/wiki/MIT_License"}
-  :dependencies [[org.clojure/clojure "1.12.0"]
+  :dependencies [[org.clojure/clojure "1.12.3"]
                  [org.apache.poi/poi "5.4.1"]
                  [org.apache.poi/poi-ooxml "5.4.1"]]
   :plugins [[lein-difftest "2.0.0"]
